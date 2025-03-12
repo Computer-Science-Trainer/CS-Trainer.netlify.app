@@ -1,53 +1,36 @@
-# Next.js & HeroUI Template
+# Computer Science Trainer Site
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+## Welcome to Computer Science Trainer! 🎉
+**Computer Science Trainer** is your go-to interactive learning platform designed to help you grasp the fundamentals of computer science, from theoretical concepts to practical coding skills. Whether you're a beginner or brushing up on your knowledge, we've got you covered!
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+## 🌟 Features
+- 📚 Engaging lessons on **Fundamental Informatics** and **Algorithms & Data Structures**
+- 🎯 Fun and interactive quizzes
+- 💡 Step-by-step explanations and hints
+- 📊 Track your progress and improve over time
+- 🔄 Adaptive difficulty for a personalized experience
 
-## Technologies Used
+## 🚀 Getting Started
+Want to try it out? Follow these simple steps:
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [HeroUI v2](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+```sh
+# Clone the repository
+git clone https://github.com/Computer-Science-Trainer/CS-Trainer.netlify.app
+cd CS-Trainer.netlify.app
 
-## How to Use
-
-### Use the template with create-next-app
-
-To create a new project based on this template using `create-next-app`, run the following command:
-
-```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
-```
-
-### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
-
-```bash
+# Install dependencies
 npm install
+
+# Start the development server
+npm start
 ```
 
-### Run the development server
+Then open your browser and go to `http://localhost:3000`. Choose a topic, take a quiz, and start learning!
 
-```bash
-npm run dev
-```
+## 🤝 Contributing
+We’d love your help in making **Computer Science Trainer** even better! Feel free to fork the repository, suggest improvements, or submit a pull request.
 
-### Setup pnpm (optional)
+## 📜 License
+This project is open-source and available under the MIT License. Check out `LICENSE` for details.
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
-## License
-
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+Happy Learning! 🚀

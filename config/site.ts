@@ -1,8 +1,8 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Next.js + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "CS Trainer",
+  description: "Interactive learning platform designed to help you grasp the computer science",
   navItems: [
     {
       label: "Problems",
@@ -44,10 +44,6 @@ export const siteConfig = {
     },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    telegram_bot: "https://t.me/",
-    docs: "https://heroui.com",
-    discord: "https://discord.gg/9b6yyZKmH4",
-    sponsor: "https://patreon.com/jrgarciadev",
+    telegram_bot: "https://t.me/CS_Trainer_bot",
   },
 };

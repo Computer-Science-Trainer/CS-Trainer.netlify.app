@@ -1,8 +1,9 @@
+'use client';
+
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
   NavbarMenu,
-  NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
   NavbarMenuItem,
@@ -10,22 +11,24 @@ import {
 import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
 import { Input } from "@heroui/input";
-import { link as linkStyles } from "@heroui/theme";
+import { heroui, link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
 import {User} from "@heroui/user";
 
+import LoginWindow from "@/components/login"
+import { Button } from "@heroui/button"
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import {
-  GithubIcon,
   TelegramIcon,
-  HeartFilledIcon,
   SearchIcon,
   Logo,
 } from "@/components/icons";
+import { useDisclosure } from "@heroui/react";
 
 export const Navbar = () => {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const searchInput = (
     <Input
       aria-label="Search"
@@ -53,7 +56,7 @@ export const Navbar = () => {
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
             <Logo />
-            <p className="font-bold text-inherit">Computer Science Trainer</p>
+            <p className="font-bold text-inherit">CS Trainer</p>
           </NextLink>
         </NavbarBrand>
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
@@ -85,7 +88,7 @@ export const Navbar = () => {
           <ThemeSwitch />
         </NavbarItem>
         <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
-        <NavbarItem className="hidden md:flex">
+        {/* <NavbarItem className="hidden md:flex">
             <User
                 avatarProps={{
                     src: "https://i.pravatar.cc/150?u=a04258114e29026702d",
@@ -93,15 +96,10 @@ export const Navbar = () => {
                 description="Junior"
                 name="Jane Doe"
             />
-        </NavbarItem>
-      </NavbarContent>
-
-      <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-          <GithubIcon className="text-default-500" />
-        </Link>
-        <ThemeSwitch />
-        <NavbarMenuToggle />
+        </NavbarItem> */}
+      <Button color="primary" onPress={onOpen}>
+        Log in
+      </Button>
       </NavbarContent>
 
       <NavbarMenu>
@@ -126,6 +124,7 @@ export const Navbar = () => {
           ))}
         </div>
       </NavbarMenu>
+      <LoginWindow isOpen={isOpen} onOpenChange={onOpenChange} />
     </HeroUINavbar>
   );
 };

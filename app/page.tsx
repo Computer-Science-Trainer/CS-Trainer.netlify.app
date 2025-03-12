@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <section className="flex flex-col items-center justify-center gap-5 py-8 md:py-16">
       <div className="inline-block max-w-xxl text-center justify-center">
-        <span className={title({ color: "violet" })}>CS&nbsp;</span>
+        <span className={title({ color: "violet" })}>Computer Science&nbsp;</span>
         <span className={title()}>
           Trainer
         </span>
@@ -34,19 +34,11 @@ export default function Home() {
         <Link
           isExternal
           className={buttonStyles({ variant: "bordered", radius: "full" })}
-          href={siteConfig.links.github}
+          href={siteConfig.links.telegram_bot}
         >
           <TelegramIcon size={20} />
           Telegram-bot
         </Link>
-      </div>
-
-      <div className="mt-8">
-        <Snippet hideCopyButton hideSymbol variant="bordered">
-          <span>
-            Get started by <Code color="primary">register or login</Code>
-          </span>
-        </Snippet>
       </div>
     </section>
   );
