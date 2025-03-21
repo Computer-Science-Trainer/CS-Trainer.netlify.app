@@ -1,4 +1,5 @@
 # Computer Science Trainer Site
+[![Netlify Status](https://api.netlify.com/api/v1/badges/98fe3271-e956-4b44-bbdc-771ce5f0bab2/deploy-status)](https://app.netlify.com/sites/cs-trainer/deploys)
 
 ## Welcome to Computer Science Trainer! 🎉
 **Computer Science Trainer** is your go-to interactive learning platform designed to help you grasp the fundamentals of computer science, from theoretical concepts to practical coding skills. Whether you're a beginner or brushing up on your knowledge, we've got you covered!
