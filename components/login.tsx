@@ -10,7 +10,8 @@ import {
     Link,
     Tooltip,
 } from "@heroui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Eye, EyeOffIcon } from "lucide-react";
 
 export function BaselinePerson(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -178,11 +179,17 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
 
     // Проверка на активность кнопки
     const isSignUpDisabled =
-        currentState == 0 ? !email || !password || emailError || passwordError :
+        currentState == 0 ? !email || !password || emailError :
         currentState == 1 ? !nickname || !email || !password || !confirmPassword ||
         nicknameError || emailError || passwordError || confirmPasswordError : !email || emailError;
 
-    
+    const [showPassword, setShowPassword] = useState(false);
+    const toggleShowPassword = () => setShowPassword(!showPassword);
+
+    useEffect(() => {
+        setShowPassword(false);
+      }, [currentState]);
+
     return (
         <Modal isOpen={isOpen} placement="top-center" onOpenChange={onOpenChange}>
             <ModalContent>
@@ -218,36 +225,36 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                                 onChange={handleEmailChange}
                                 variant="bordered"
                             />
-                            {(currentState == 0) && (
+                            {(currentState != 2) && (
                                 <Input
-                                    endContent={<LockPasswordBold className="text-2xl text-default-400 flex-shrink-0" />}
                                     label="Password"
                                     placeholder="Enter your password"
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     variant="bordered"
-                                    onChange={(e) => setPassword(e.target.value)}
-                            />
+                                    value={password}
+                                    onChange={handlePasswordChange}
+                                    errorMessage={!validatePassword(password) && password ? "Invalid password format" : ""}
+                                    endContent={
+                                        <>
+                                            <Button size="sm" isIconOnly onPress={toggleShowPassword} className="mr-1" variant="ghost">
+                                                {showPassword ? <EyeOffIcon size="20" /> : <Eye size="20" />}
+                                            </Button>
+                                            {currentState === 0 ? (
+                                                <LockPasswordBold className="text-2xl text-default-400" />
+                                            ) : (
+                                                <Tooltip content={getInputProps(password, passwordError).tooltip} placement="top">
+                                                    <LockPasswordBold className={`text-2xl cursor-pointer ${getInputProps(password, passwordError).color}`} />
+                                                </Tooltip>
+                                            )}
+                                        </>
+                                    }
+                                />
                             )}
                             {currentState == 1 && (
-                                <>
-                                    <Input
-                                        label="Password"
-                                        placeholder="Enter your password"
-                                        type="password"
-                                        variant="bordered"
-                                        value={password}
-                                        onChange={handlePasswordChange}
-                                        errorMessage={!validatePassword(password) && password ? "Invalid password format" : ""}
-                                        endContent={
-                                            <Tooltip content={getInputProps(password, passwordError).tooltip} placement="top">
-                                                <LockPasswordBold className={`text-2xl cursor-pointer ${getInputProps(password, passwordError).color}`} />
-                                            </Tooltip>
-                                        }
-                                    />
                                     <Input
                                         label="Confirm Password"
                                         placeholder="Confirm your password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         variant="bordered"
                                         value={confirmPassword}
                                         onChange={handleConfirmPasswordChange}
@@ -257,7 +264,6 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                                             </Tooltip>
                                         }
                                     />
-                                </>
                             )}
                             {(currentState == 0) && (
                                 <>
