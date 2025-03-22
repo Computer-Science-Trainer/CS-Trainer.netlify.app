@@ -119,29 +119,35 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
     const [confirmPasswordError, setConfirmPasswordError] = useState("")
     
     // Валидация никнейма (мин. 4 символа, только латинские буквы и цифры)
-    const validateNickname = (value) => /^[A-Za-z0-9]{4,}$/.test(value);
+    const validateNickname = (value: string): boolean => /^[A-Za-z0-9]{4,}$/.test(value);
 
     // Валидация email
-    const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    const validateEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
     // Валидация пароля (8-64 символа, латинские буквы и цифры)
-    const validatePassword = (value) => /^[A-Za-z0-9]{8,64}$/.test(value);
+    const validatePassword = (value: string): boolean => /^[A-Za-z0-9]{8,64}$/.test(value);
 
     // Обработчики изменения полей
-    const handleNicknameChange = (e) => {
-        const value = e.target.value;
+    interface NicknameChangeEvent extends React.ChangeEvent<HTMLInputElement> {}
+
+    const handleNicknameChange = (e: NicknameChangeEvent): void => {
+        const value: string = e.target.value;
         setNickname(value);
         setNicknameError(validateNickname(value) ? "" : "Минимум 4 символа, только латинские буквы и цифры.");
     };
 
-    const handleEmailChange = (e) => {
-        const value = e.target.value;
+    interface EmailChangeEvent extends React.ChangeEvent<HTMLInputElement> {}
+
+    const handleEmailChange = (e: EmailChangeEvent): void => {
+        const value: string = e.target.value;
         setEmail(value);
         setEmailError(validateEmail(value) ? "" : "Некорректный email.");
     };
 
-    const handlePasswordChange = (e) => {
-        const value = e.target.value;
+    interface PasswordChangeEvent extends React.ChangeEvent<HTMLInputElement> {}
+
+    const handlePasswordChange = (e: PasswordChangeEvent): void => {
+        const value: string = e.target.value;
         setPassword(value);
         setPasswordError(validatePassword(value) ? "" : "Пароль должен содержать 8-64 символов, только латинские буквы и цифры.");
 
@@ -151,22 +157,30 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
         }
     };
 
-    const handleConfirmPasswordChange = (e) => {
-        const value = e.target.value;
+    interface ConfirmPasswordChangeEvent extends React.ChangeEvent<HTMLInputElement> {}
+
+    const handleConfirmPasswordChange = (e: ConfirmPasswordChangeEvent): void => {
+        const value: string = e.target.value;
         setConfirmPassword(value);
         setConfirmPasswordError(value === password ? "" : "Пароли не совпадают.");
     };
 
     // Получение цветов иконки
-    const getInputProps = (value, error) => ({
+    interface InputProps {
+        color: string;
+        tooltip: string;
+    }
+
+    const getInputProps = (value: string, error: string): InputProps => ({
         color: !value ? "text-default-400" : error ? "text-red-500" : "text-green-400",
         tooltip: !value ? "Введите данные" : error ? error : "Данные корректны"
     });
 
     // Проверка на активность кнопки
     const isSignUpDisabled =
-        !nickname || !email || !password || !confirmPassword ||
-        nicknameError || emailError || passwordError || confirmPasswordError;
+        currentState == 0 ? !email || !password || emailError || passwordError :
+        currentState == 1 ? !nickname || !email || !password || !confirmPassword ||
+        nicknameError || emailError || passwordError || confirmPasswordError : !email || emailError;
 
     
     return (
@@ -288,7 +302,8 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                             <Button color="danger" variant="flat" onPress={onClose}>
                                 Close
                             </Button>
-                            <Button disabled={isSignUpDisabled} color="primary" onPress={onClose}>
+
+                            <Button {...(isSignUpDisabled && { isDisabled: true })} color="primary" onPress={onClose}>
                                 {(currentState == 1) ? "Sign up" : currentState == 0 ? "Sign in" : "Recover"}
                             </Button>
                         </ModalFooter>
