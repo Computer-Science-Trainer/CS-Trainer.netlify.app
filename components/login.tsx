@@ -9,6 +9,7 @@ import {
     Input,
     Link,
     Tooltip,
+    addToast,
 } from "@heroui/react";
 import { useState, useEffect } from "react";
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -18,14 +19,19 @@ import {
     LockPasswordIcon,
     PasswordValidationIcon,
     ViewIcon,
-    ViewOffSlashIcon
+    ViewOffSlashIcon,
+    SquareArrowReload02Icon
 } from '@hugeicons/core-free-icons';
 
-// Enum representing the different authentication states: Login, Register, and Recover.
+// Enum representing the different authentication states: Login, Register, Verify (for registration),
+// Recover (initial recover stage), RecoverVerify (code verification for recovery) and ChangePassword (password change form).
 enum AuthState {
     Login,
     Register,
-    Recover,
+    Verify,       // New state for email verification code input during registration
+    Recover,      // Initial recover stage: пользователь видит email и может запросить отправку кода
+    RecoverVerify,// Этап ввода 6-значного кода для восстановления аккаунта
+    ChangePassword, // Окно смены пароля после успешной проверки кода
 }
 
 // Props for the LoginWindow component, including its open state and a callback to change that state.
@@ -35,16 +41,21 @@ interface LoginWindowProps {
 }
 
 // The LoginWindow component renders a modal for user authentication.
-// It manages state for different auth modes (login, register, recover) and form fields.
+// It manages state for different auth modes (login, register, verify, recover, recover verify, change password) and form fields.
 export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) {
-    // Current authentication state (Login, Register, or Recover)
+    // Current authentication state (Login, Register, Verify, Recover, RecoverVerify, or ChangePassword)
     const [authState, setAuthState] = useState<AuthState>(AuthState.Login);
 
-    // Form field states
+    // Form field states for registration/login
     const [nickname, setNickname] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    // New state for verification code input during registration or recovery.
+    // В этом случае мы храним код как строку длиной до 6 символов.
+    const [verificationCode, setVerificationCode] = useState("");
+    const [verificationCodeError, setVerificationCodeError] = useState("");
 
     // Error messages for form field validation
     const [nicknameError, setNicknameError] = useState("");
@@ -59,6 +70,8 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
     const validateEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     // Validates that password is 8-64 characters long and contains only Latin letters and numbers
     const validatePassword = (value: string): boolean => /^[A-Za-z0-9]{8,64}$/.test(value);
+    // Validates that the verification code is exactly 6 digits
+    const validateVerificationCode = (value: string): boolean => /^\d{6}$/.test(value);
 
     // Interface for input properties used to style the icons and provide tooltips.
     interface InputProps {
@@ -127,6 +140,8 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                 <Tooltip content={getInputProps(nickname, nicknameError).tooltip} placement="top">
                     <HugeiconsIcon
                         icon={User03Icon}
+                        onMouseDown={(e) => e.preventDefault()}
+                        style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
                         className={`text-2xl cursor-pointer ${getInputProps(nickname, nicknameError).color}`}
                     />
                 </Tooltip>
@@ -135,20 +150,38 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
     );
 
     // Renders the Email input field for all authentication states.
+    // Делаем поле только для чтения, если пользователь находится на этапах верификации или восстановления.
     const renderEmailInput = () => (
         <Input
+            isReadOnly={authState === AuthState.Verify || authState === AuthState.RecoverVerify || authState === AuthState.ChangePassword}
             label="Email"
             placeholder="Enter your email"
             value={email}
             onChange={handleEmailChange}
             variant="bordered"
             endContent={
-                <Tooltip content={getInputProps(email, emailError).tooltip} placement="top">
-                    <HugeiconsIcon
-                        icon={Mail02Icon}
-                        className={`text-2xl cursor-pointer ${getInputProps(email, emailError).color}`}
-                    />
-                </Tooltip>
+                <div className="flex items-center gap-1">
+                    {authState === AuthState.Verify || authState === AuthState.RecoverVerify ? (
+                        <Tooltip content="Resend Email" placement="top">
+                            <Button size="sm" isIconOnly onPress={() => console.log("Resending verification code to", email)} variant="ghost" className="opacity-70">
+                                <HugeiconsIcon
+                                    icon={SquareArrowReload02Icon}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
+                                />
+                            </Button>
+                        </Tooltip>
+                    ) : (
+                        <Tooltip content={getInputProps(email, emailError).tooltip} placement="top">
+                            <HugeiconsIcon
+                                icon={Mail02Icon}
+                                onMouseDown={(e) => e.preventDefault()}
+                                style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
+                                className={`text-2xl cursor-pointer ${getInputProps(email, emailError).color}`}
+                            />
+                        </Tooltip>
+                    )}
+                </div>
             }
         />
     );
@@ -167,13 +200,32 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
             endContent={
                 <div className="flex items-center gap-1">
                     <Button size="sm" isIconOnly onPress={toggleShowPassword} variant="ghost" className="opacity-70">
-                        {showPassword ? <HugeiconsIcon icon={ViewOffSlashIcon} /> : <HugeiconsIcon icon={ViewIcon} />}
+                        {showPassword ? 
+                            <HugeiconsIcon
+                                icon={ViewOffSlashIcon}
+                                onMouseDown={(e) => e.preventDefault()}
+                                style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
+                            /> 
+                        : 
+                            <HugeiconsIcon
+                                icon={ViewIcon}
+                                onMouseDown={(e) => e.preventDefault()}
+                                style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
+                            />}
                     </Button>
                     {authState === AuthState.Login ? (
-                        <HugeiconsIcon icon={LockPasswordIcon} className="text-default-400" />
+                        <HugeiconsIcon
+                        icon={LockPasswordIcon}
+                        onMouseDown={(e) => e.preventDefault()}
+                        style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
+                        className="text-default-400" />
                     ) : (
                         <Tooltip content={getInputProps(password, passwordError).tooltip} placement="top">
-                            <HugeiconsIcon icon={LockPasswordIcon} className={`${getInputProps(password, passwordError).color}`} />
+                            <HugeiconsIcon
+                            icon={LockPasswordIcon} 
+                            onMouseDown={(e) => e.preventDefault()}
+                            style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
+                            className={`${getInputProps(password, passwordError).color}`} />
                         </Tooltip>
                     )}
                 </div>
@@ -183,6 +235,7 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
 
     // Renders the Confirm Password input field for the Register state.
     const renderConfirmPasswordInput = () => (
+        // TODO: Back to Login on ChangePassword
         <Input
             label="Confirm Password"
             placeholder="Confirm your password"
@@ -194,6 +247,8 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                 <Tooltip content={getInputProps(confirmPassword, confirmPasswordError).tooltip} placement="top">
                     <HugeiconsIcon
                         icon={PasswordValidationIcon}
+                        onMouseDown={(e) => e.preventDefault()}
+                        style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
                         className={`text-2xl cursor-pointer ${getInputProps(confirmPassword, confirmPasswordError).color}`}
                     />
                 </Tooltip>
@@ -201,41 +256,117 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
         />
     );
 
+    /**
+     * Renders the Verify Email stage for registration.
+     * Displays:
+     * - 6 individual input cells for a single-digit code.
+     * - A "Back to Registration" link.
+     */
+    const renderVerificationCodeInput = () => {
+        // Обработчик для изменения значения в конкретной ячейке.
+        const handleCellChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+            const val = e.target.value;
+            if (/^\d?$/.test(val)) {
+                const codeArr = verificationCode.split("");
+                while (codeArr.length < 6) codeArr.push("");
+                codeArr[index] = val;
+                const newCode = codeArr.join("");
+                setVerificationCode(newCode);
+                if (val && index < 5) {
+                    const nextInput = document.getElementById(`code-${index + 1}`);
+                    if (nextInput) (nextInput as HTMLInputElement).focus();
+                }
+            }
+        };
+
+        const inputs = [];
+        for (let i = 0; i < 6; i++) {
+            inputs.push(
+                <input
+                    key={i}
+                    id={`code-${i}`}
+                    type="text"
+                    maxLength={1}
+                    value={verificationCode[i] || ""}
+                    onChange={(e) => handleCellChange(i, e)}
+                    className="w-10 h-10 border-2 border-default-300 text-center mx-1 rounded-xl"
+                />
+            );
+        }
+        return (
+            <div className="flex flex-col items-center">
+                {/* Ячейки ввода кода */}
+                <div className="flex justify-center">{inputs}</div>
+                {/* Ссылка "Back to Registration" */}
+                <div className="flex gap-4 mt-4">
+                    <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Register)}>
+                        Back to Registration
+                    </Link>
+                </div>
+            </div>
+        );
+    };
+
     // Determines whether the primary action button should be disabled based on the current state and form validation errors.
     // - For Login state: disables if email or password are missing or email is invalid.
     // - For Register state: disables if any required field (nickname, email, password, confirmPassword) is missing or any has validation errors.
-    // - For Recover state: disables if email is missing or invalid.
+    // - For Verify state: disables if verification code is missing or invalid.
+    // - For Recover state: disables if email is missing or email is invalid.
+    // - For RecoverVerify state: disables if verification code is missing or invalid.
+    // - For ChangePassword state: disables if new password fields are missing or invalid.
     const isActionDisabled =
         authState === AuthState.Login ? !email || !password || !!emailError :
         authState === AuthState.Register ? !nickname || !email || !password || !confirmPassword ||
         !!nicknameError || !!emailError || !!passwordError || !!confirmPasswordError :
-        !email || !!emailError;
+        authState === AuthState.Verify ? !verificationCode || !!verificationCodeError :
+        authState === AuthState.Recover ? !email || !!emailError :
+        authState === AuthState.RecoverVerify ? !verificationCode || !!verificationCodeError :
+        authState === AuthState.ChangePassword ? !password || !confirmPassword || !!passwordError || !!confirmPasswordError :
+        false;
 
     // Returns the text to be displayed in the header of the modal based on the current authentication state.
     // - For Register state: returns "Register"
-    // - For Recover state: returns "Recover password"
+    // - For Verify state: returns "Verify Email"
+    // - For Recover state: returns "Recover Account"
+    // - For RecoverVerify state: returns "Verify Recovery Code"
+    // - For ChangePassword state: returns "Change Password"
     // - For Login state: returns "Log In"
     const getHeaderText = () => {
         switch (authState) {
             case AuthState.Register:
                 return "Register";
+            case AuthState.Verify:
+                return "Verify Email";
             case AuthState.Recover:
-                return "Recover password";
+                return "Recover Account";
+            case AuthState.RecoverVerify:
+                return "Verify Recovery Code";
+            case AuthState.ChangePassword:
+                return "Change Password";
             default:
                 return "Log In";
         }
     };
 
     // Returns the text to be displayed on the primary action button based on the current authentication state.
-    // - For Register state: returns "Sign up"
-    // - For Recover state: returns "Recover"
+    // - For Register state: returns "Send Verification Code" (to trigger sending code)
+    // - For Verify state: returns "Verify" (to finish registration)
+    // - For Recover state: returns "Send Recovery Code" (to trigger sending code)
+    // - For RecoverVerify state: returns "Verify" (to proceed to password change)
+    // - For ChangePassword state: returns "Change Password"
     // - For Login state: returns "Sign in"
     const getActionButtonText = () => {
         switch (authState) {
             case AuthState.Register:
-                return "Sign up";
+                return "Send Verification Code";
+            case AuthState.Verify:
+                return "Verify";
             case AuthState.Recover:
-                return "Recover";
+                return "Send Recovery Code";
+            case AuthState.RecoverVerify:
+                return "Verify";
+            case AuthState.ChangePassword:
+                return "Change Password";
             default:
                 return "Sign in";
         }
@@ -247,6 +378,7 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
      * - For Login state: displays a "Remember me" checkbox, "Forgot password?" link, and "Not registered yet?" link.
      * - For Register state: displays a "Remember me" checkbox and "Already have an account?" link.
      * - For Recover state: displays a "Back to login" link.
+     * - For Verify state: ссылки уже отображаются в самом компоненте этапа верификации.
      */
     const renderFooterLinks = () => {
         if (authState === AuthState.Login) {
@@ -282,6 +414,63 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                     </Link>
                 </div>
             );
+        } else if (authState === AuthState.ChangePassword) {
+            return (
+                <div className="flex py-2 px-1 justify-end">
+                    <Checkbox classNames={{ label: "text-small" }}>Remember me</Checkbox>
+                </div>
+            );
+        }
+    };
+
+    // Primary action button handler.
+    // Handles different actions based on the current auth state:
+    // - For Login: performs sign in and shows a success toast.
+    // - For Register: sends the verification code to the user's email and switches to Verify state.
+    // - For Verify: validates the verification code and, if valid, completes registration (shows toast).
+    // - For Recover: sends the recovery code to the user's email and switches to RecoverVerify state.
+    // - For RecoverVerify: validates the recovery code and, if valid, switches to ChangePassword stage.
+    // - For ChangePassword: validates new password fields, updates the password, shows a success toast, and closes the modal.
+    const handleAction = () => {
+        if (authState === AuthState.Login) {
+            // Здесь должна быть логика входа; при успешном входе показываем toast.
+            console.log("Logged in successfully.");
+            addToast({ title: "Success", description: "Logged in successfully.", color: "success" });
+            onOpenChange(false);
+        } else if (authState === AuthState.Register) {
+            // Логика отправки verification code на email для регистрации.
+            console.log("Sending verification code to", email);
+            setAuthState(AuthState.Verify);
+        } else if (authState === AuthState.Verify) {
+            // Логика проверки введённого verification code для регистрации.
+            if (validateVerificationCode(verificationCode)) {
+                console.log("Verification successful. Registration completed.");
+                addToast({ title: "Success", description: "Registration completed successfully.", color: "success" });
+                onOpenChange(false);
+            } else {
+                console.log("Invalid verification code.");
+            }
+        } else if (authState === AuthState.Recover) {
+            // Логика отправки recovery code на email для восстановления аккаунта.
+            console.log("Sending recovery code to", email);
+            setAuthState(AuthState.RecoverVerify);
+        } else if (authState === AuthState.RecoverVerify) {
+            // Логика проверки введённого recovery code.
+            if (validateVerificationCode(verificationCode)) {
+                console.log("Recovery code verified.");
+                setAuthState(AuthState.ChangePassword);
+            } else {
+                console.log("Invalid recovery code.");
+            }
+        } else if (authState === AuthState.ChangePassword) {
+            if (!password || !confirmPassword || password !== confirmPassword || !validatePassword(password)) {
+                if (!validatePassword(password)) setPasswordError("Password must be 8-64 chars, only Latin letters and digits.");
+                if (password !== confirmPassword) setConfirmPasswordError("Passwords do not match.");
+            } else {
+                console.log("Password changed successfully.");
+                addToast({ title: "Success", description: "Password changed successfully. Logged in.", color: "success" });
+                onOpenChange(false);
+            }
         }
     };
 
@@ -296,15 +485,18 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                         <ModalBody>
                             {authState === AuthState.Register && renderNicknameInput()}
                             {renderEmailInput()}
-                            {authState !== AuthState.Recover && renderPasswordInput()}
-                            {authState === AuthState.Register && renderConfirmPasswordInput()}
+                            {authState === AuthState.Login && renderPasswordInput()}
+                            {(authState === AuthState.Register || authState === AuthState.ChangePassword) && renderPasswordInput()}
+                            {(authState === AuthState.Register || authState === AuthState.ChangePassword) && renderConfirmPasswordInput()}
+                            {authState === AuthState.Verify && renderVerificationCodeInput()}
+                            {authState === AuthState.RecoverVerify && renderVerificationCodeInput()}
                             {renderFooterLinks()}
                         </ModalBody>
                         <ModalFooter>
                             <Button color="danger" variant="flat" onPress={onClose}>
                                 Close
                             </Button>
-                            <Button {...(isActionDisabled && { isDisabled: true })} color="primary" onPress={onClose}>
+                            <Button {...(isActionDisabled && { isDisabled: true })} color="primary" onPress={handleAction}>
                                 {getActionButtonText()}
                             </Button>
                         </ModalFooter>
