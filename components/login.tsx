@@ -158,7 +158,7 @@ export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) 
                                                 {showPassword ? <HugeiconsIcon icon={ViewOffSlashIcon} /> : <HugeiconsIcon icon={ViewIcon} />}
                                             </Button>
                                             {currentState === 0 ? (
-                                                <HugeiconsIcon icon={LockPasswordIcon} />
+                                                <HugeiconsIcon icon={LockPasswordIcon} className="text-default-400" />
                                             ) : (
                                                 <Tooltip content={getInputProps(password, passwordError).tooltip} placement="top">
                                                     <HugeiconsIcon icon={LockPasswordIcon} className={`${getInputProps(password, passwordError).color}`} />
