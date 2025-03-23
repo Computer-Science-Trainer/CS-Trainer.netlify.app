@@ -146,7 +146,23 @@ import {
     // State to determine if the password should be visible.
     const [showPassword, setShowPassword] = useState(false);
     // Toggles the password visibility.
-    const toggleShowPassword = () => setShowPassword((prev) => !prev);
+    // Remembers the cursor position when displaying and returns the cursor back after toggling.
+    const toggleShowPassword = () => {
+        const input = document.getElementById("password-input") as HTMLInputElement;
+        if (!input) return;
+      
+        const cursorPosition = input.selectionStart;
+        const isFocused = document.activeElement === input;
+      
+        setShowPassword((prev) => !prev);
+      
+        setTimeout(() => {
+          if (isFocused) {
+            input.focus();
+            input.setSelectionRange(cursorPosition, cursorPosition);
+          }
+        }, 0);
+      };
     // When the auth state changes, reset the password visibility.
     useEffect(() => {
       setShowPassword(false);
@@ -233,6 +249,7 @@ import {
     // Includes a button to toggle password visibility and shows an appropriate icon tooltip.
     const renderPasswordInput = () => (
       <Input
+        id="password-input"
         label="Password"
         placeholder="Enter your password"
         type={showPassword ? "text" : "password"}
