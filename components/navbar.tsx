@@ -4,6 +4,7 @@ import {
   Navbar as HeroUINavbar,
   NavbarContent,
   NavbarMenu,
+  NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
   NavbarMenuItem,
@@ -185,6 +186,9 @@ export const Navbar = () => {
             <h1>{t("nav.login")}</h1>
         </Button>
       </NavbarContent>
+    <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
+        <NavbarMenuToggle className="" />
+    </NavbarContent>
 
       <NavbarMenu>
         {searchInput}
@@ -202,8 +206,8 @@ export const Navbar = () => {
                 href="#"
                 size="lg"
               >
-                {item.label}
-              </Link>
+                {t(item.label)}
+                </Link>
             </NavbarMenuItem>
           ))}
         </div>
