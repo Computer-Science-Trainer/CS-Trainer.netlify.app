@@ -31,7 +31,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Settings02Icon,
+  Settings01Icon,
   ArrowRight01Icon,
   Globe02Icon,
 } from "@hugeicons/core-free-icons";
@@ -56,7 +56,7 @@ export const SettingsDropdown = () => {
       <Dropdown closeOnSelect={false} placement="bottom-end">
         <DropdownTrigger>
           <Button isIconOnly variant="light" aria-label="Settings">
-            <HugeiconsIcon icon={Settings02Icon} className="text-default-500"/>
+            <HugeiconsIcon icon={Settings01Icon} className="text-default-500" strokeWidth={2.5}/>
           </Button>
         </DropdownTrigger>
   
