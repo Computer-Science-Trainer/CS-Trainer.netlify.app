@@ -76,7 +76,7 @@ export const ThemeSwitch = () => {
           isSelected={isDark}
           onValueChange={toggleTheme}
           color="success"
-          size="lg"
+          size="sm"
           aria-label="Toggle theme"
         />
       </div>
