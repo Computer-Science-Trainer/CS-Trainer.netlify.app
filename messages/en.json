@@ -1,0 +1,22 @@
+{
+    "subtitle": "Fundamental Computer Science, Algorithms and Data Structures",
+    "problems": "Problems",
+    "telegramBot": "Telegram-bot",
+    "nav": {
+        "problems": "Problems",
+        "news": "News",
+        "about": "About",
+        "search_placeholder": "Search...",
+        "login": "Log in"
+    },
+    "menu": {
+        "profile": "Profile",
+        "rating": "Rating",
+        "logout": "Logout"
+    },
+    "theme": {
+        "light": "Light theme",
+        "dark": "Dark theme"
+    }
+}
+  
