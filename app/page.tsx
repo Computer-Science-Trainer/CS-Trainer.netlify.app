@@ -6,8 +6,11 @@ import { button as buttonStyles } from "@heroui/theme";
 import { siteConfig } from "@/config/site";
 import { title, subtitle } from "@/components/primitives";
 import { TelegramIcon } from "@/components/icons";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
+  const t = useTranslations();
+
   return (
     <section className="flex flex-col items-center justify-center gap-5 py-8 md:py-16">
       <div className="inline-block max-w-xxl text-center justify-center">
@@ -16,7 +19,7 @@ export default function Home() {
           Trainer
         </span>
         <div className={subtitle({ class: "mt-4" })}>
-        Fundamental Computer Science, Algorithms and Data Structures
+            <h1>{t("subtitle")}</h1>
         </div>
       </div>
 
@@ -29,7 +32,7 @@ export default function Home() {
           })}
           href="/problems"
         >
-          Problems
+        <h1>{t("problems")}</h1>
         </Link>
         <Link
           isExternal
@@ -37,7 +40,7 @@ export default function Home() {
           href={siteConfig.links.telegram_bot}
         >
           <TelegramIcon size={20} />
-          Telegram-bot
+            <h1>{t("telegramBot")}</h1>
         </Link>
       </div>
     </section>

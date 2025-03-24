@@ -9,6 +9,9 @@ import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
 
+import {getLocale} from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
@@ -27,13 +30,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({
+    children
+  }: {
+    children: React.ReactNode;
+  }) {
+    const locale = await getLocale();
+
   return (
-    <html suppressHydrationWarning lang="en">
+    <html suppressHydrationWarning lang={locale}>
       <head />
       <body
         className={clsx(
@@ -43,9 +48,9 @@ export default function RootLayout({
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <div className="relative flex flex-col h-screen">
-            <Navbar />
+            <NextIntlClientProvider><Navbar /></NextIntlClientProvider>
             <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              {children}
+                <NextIntlClientProvider>{children}</NextIntlClientProvider>
             </main>
             <footer className="w-full flex items-center justify-center py-3">
               <Link
