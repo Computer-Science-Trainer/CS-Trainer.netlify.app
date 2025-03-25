@@ -1,0 +1,22 @@
+{
+    "subtitle": "Фундаментальная Информатика, Алгоритмы и Структуры Данных",
+    "problems": "Задачи",
+    "telegramBot": "Telegram-бот",
+    "nav": {
+        "problems": "Задачи",
+        "news": "Новости",
+        "about": "О нас",
+        "search_placeholder": "Искать...",
+        "login": "Войти"
+      },
+    "menu": {
+        "profile": "Профиль",
+        "rating": "Рейтинг",
+        "logout": "Выйти"
+    },
+    "theme": {
+        "light": "Светлая тема",
+        "dark": "Тёмная тема"
+    }
+}
+  

@@ -4,6 +4,9 @@ const nextConfig = {
         REACT_APP_API_URL: process.env.REACT_APP_API_URL,
     }
   };
-  
-  module.exports = nextConfig;
-  
+
+const createNextIntlPlugin = require('next-intl/plugin');
+ 
+const withNextIntl = createNextIntlPlugin();
+ 
+module.exports = withNextIntl(nextConfig);

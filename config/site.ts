@@ -2,44 +2,44 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "CS Trainer",
-  description: "Interactive learning platform designed to help you grasp the computer science",
+  description: "site.description",
   navItems: [
     {
-      label: "Problems",
+      label: "nav.problems",
       href: "/problems",
     },
     {
-      label: "News",
+      label: "nav.news",
       href: "/news",
     },
     {
-      label: "About",
+      label: "nav.about",
       href: "/about",
     },
   ],
   navMenuItems: [
     {
-      label: "Profile",
+      label: "menu.profile",
       href: "/profile",
     },
     {
-      label: "Rating",
+      label: "menu.rating",
       href: "/rating",
     },
     {
-      label: "Problems",
+      label: "nav.problems",
       href: "/problems",
     },
     {
-      label: "News",
+      label: "nav.news",
       href: "/news",
     },
     {
-        label: "About",
-        href: "/news",
+      label: "nav.about",
+      href: "/about",
     },
     {
-      label: "Logout",
+      label: "menu.logout",
       href: "/logout",
     },
   ],
