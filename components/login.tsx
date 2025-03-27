@@ -9,9 +9,10 @@ import {
     Input,
     Link,
     Tooltip,
+    Spinner,
     addToast,
   } from "@heroui/react";
-  import { useState, useEffect } from "react";
+  import { useState, useEffect, useCallback, useMemo } from "react";
   import { HugeiconsIcon } from "@hugeicons/react";
   import {
     User03Icon,
@@ -20,672 +21,825 @@ import {
     PasswordValidationIcon,
     ViewIcon,
     ViewOffSlashIcon,
-    SquareArrowReload02Icon,
   } from "@hugeicons/core-free-icons";
+  import { useTranslations } from "next-intl";
   
-  // API URL for backend requests
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  // Enum representing the different authentication states: Login, Register, Verify (for registration),
-  // Recover (initial recover stage), RecoverVerify (code verification for recovery) and ChangePassword (password change form).
   enum AuthState {
     Login,
     Register,
-    Verify, // State for email verification code input during registration
-    Recover, // Initial recover stage: user sees email and can request a code
-    RecoverVerify, // Stage for entering the 6-digit code to recover the account
-    ChangePassword, // Password change form after successful code verification
+    Verify,
+    Recover,
+    RecoverVerify,
+    ChangePassword,
   }
   
-  // Props for the LoginWindow component, including its open state and a callback to change that state.
-  interface LoginWindowProps {
+  interface AuthWindowProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
+    onAuthSuccess?: (token?: string) => void;
+  }  
+  
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  interface ApiError extends Error {
+    response?: Response;
+    detail?: {
+      code?: string;
+    } | string;
   }
+
+  async function makeApiRequest(
+    endpoint: string,
+    method: string,
+    body?: any
+) {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        const error: ApiError = new Error(
+            typeof errorData.detail === 'string' 
+              ? errorData.detail 
+              : errorData.detail?.code || errorData.message || 'Request failed'
+          );
+        error.response = response;
+        error.detail = errorData.detail;
+        throw error;
+    }
+
+    return response.json();
+}
+
+  export default function AuthWindow({ isOpen, onOpenChange, onAuthSuccess }: AuthWindowProps) {
+    const t = useTranslations();
+    const [isLoading, setIsLoading] = useState(false);
   
-  // The LoginWindow component renders a modal for user authentication.
-  // It manages state for different auth modes (login, register, verify, recover, recover verify, change password) and form fields.
-  export default function LoginWindow({ isOpen, onOpenChange }: LoginWindowProps) {
-    // Current authentication state (Login, Register, Verify, Recover, RecoverVerify, or ChangePassword)
+    // Form states
     const [authState, setAuthState] = useState<AuthState>(AuthState.Login);
-  
-    // Form field states for registration/login
     const [nickname, setNickname] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-  
-    // New state for verification code input during registration or recovery.
-    // Here we store the code as a string of up to 6 characters.
     const [verificationCode, setVerificationCode] = useState("");
-    const [verificationCodeError, setVerificationCodeError] = useState("");
-  
-    // New states for ChangePassword stage (for account recovery)
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmNewPassword, setConfirmNewPassword] = useState("");
-    const [newPasswordError, setNewPasswordError] = useState("");
-    const [confirmNewPasswordError, setConfirmNewPasswordError] = useState("");
-  
-    // Error messages for form field validation
-    const [nicknameError, setNicknameError] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  
-    // Validation functions for input fields
-    // Validates that nickname has at least 4 characters and contains only Latin letters and digits.
-    const validateNickname = (value: string): boolean => /^[A-Za-z0-9]{4,}$/.test(value);
-    // Validates correct email format.
-    const validateEmail = (value: string): boolean => /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(value);
-    // Validates that password is 8-64 characters long and contains only Latin letters and digits.
-    const validatePassword = (value: string): boolean => /^[A-Za-z0-9]{8,64}$/.test(value);
-  
-    // Interface for input properties used to style icons and provide tooltips.
-    interface InputProps {
-      color: string;
-      tooltip: string;
-    }
-    // Returns properties (color and tooltip message) for the input icon based on the value and error state.
-    const getInputProps = (value: string, error: string): InputProps => ({
-      color: !value ? "text-default-400" : error ? "text-red-500" : "text-green-400",
-      tooltip: !value ? "Enter data" : error ? error : "Data is valid",
-    });
-  
-    // Handler for changes in the Nickname input field.
-    // Updates the nickname state and sets an error message if validation fails.
-    const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const value = e.target.value;
-      setNickname(value);
-      setNicknameError(validateNickname(value) ? "" : "Minimum 4 characters, only Latin letters and digits.");
-    };
-  
-    // Handler for changes in the Email input field.
-    // Updates the email state and sets an error message if the email is invalid.
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const value = e.target.value;
-      setEmail(value);
-      setEmailError(validateEmail(value) ? "" : "Invalid email.");
-    };
-  
-    // Handler for changes in the Password input field.
-    // Updates the password state, validates it, and checks confirm password if provided.
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const value = e.target.value;
-      setPassword(value);
-      setPasswordError(validatePassword(value) ? "" : "Password must be 8-64 characters, only Latin letters and digits.");
-      if (confirmPassword) {
-        setConfirmPasswordError(value === confirmPassword ? "" : "Passwords do not match.");
-      }
-    };
-  
-    // Handler for changes in the Confirm Password input field.
-    // Updates the confirmPassword state and sets an error if it doesn't match the password.
-    const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const value = e.target.value;
-      setConfirmPassword(value);
-      setConfirmPasswordError(value === password ? "" : "Passwords do not match.");
-    };
-  
-    // Handler for changes in the New Password input field (ChangePassword stage).
-    const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const value = e.target.value;
-      setNewPassword(value);
-      setNewPasswordError(validatePassword(value) ? "" : "Password must be 8-64 characters, only Latin letters and digits.");
-      if (confirmNewPassword) {
-        setConfirmNewPasswordError(value === confirmNewPassword ? "" : "Passwords do not match.");
-      }
-    };
-  
-    // Handler for changes in the Confirm New Password input field (ChangePassword stage).
-    const handleConfirmNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const value = e.target.value;
-      setConfirmNewPassword(value);
-      setConfirmNewPasswordError(value === newPassword ? "" : "Passwords do not match.");
-    };
-  
-    // State to determine if the password should be visible.
+    const [termsAccepted, setTermsAccepted] = useState(false);
+
+    const [isConfirmPasswordDirty, setIsConfirmPasswordDirty] = useState(false);
+
+    // UI states
     const [showPassword, setShowPassword] = useState(false);
-    // Toggles the password visibility.
-    // Remembers the cursor position when displaying and returns the cursor back after toggling.
-    const toggleShowPassword = () => {
-        const input = document.getElementById("password-input") as HTMLInputElement;
-        if (!input) return;
-      
-        const cursorPosition = input.selectionStart;
-        const isFocused = document.activeElement === input;
-      
-        setShowPassword((prev) => !prev);
-      
-        setTimeout(() => {
-          if (isFocused) {
-            input.focus();
-            input.setSelectionRange(cursorPosition, cursorPosition);
-          }
-        }, 0);
-      };
-    // When the auth state changes, reset the password visibility.
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
     useEffect(() => {
-      setShowPassword(false);
-    }, [authState]);
+        if (password && confirmPassword && isConfirmPasswordDirty) {
+          const error = validateConfirmPassword(password, confirmPassword);
+          setErrors(prev => ({
+            ...prev,
+            confirmPassword: error || ''
+          }));
+        }
+    }, [password, confirmPassword, isConfirmPasswordDirty]);
+
+    // const resetForm = () => {
+    //   setAuthState(AuthState.Login);
+    //   setNickname("");
+    //   setEmail("");
+    //   setPassword("");
+    //   setConfirmPassword("");
+    //   setNewPassword("");
+    //   setConfirmNewPassword("");
+    //   setVerificationCode("");
+    //   setTermsAccepted(false);
+    //   setErrors({});
+    //   setShowPassword(false);
+    //   setShowNewPassword(false);
+    //   setIsLoading(false);
+    // };
   
-    // Renders the Nickname input field for the Register state.
+    // Validation functions
+    const validateEmail = useCallback((value: string): string | null => {
+      if (!value) return t("auth.errors.emailMissing");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return t("auth.errors.emailInvalid");
+      return null;
+    }, [t]);
+  
+    const validateNickname = useCallback((value: string): string | null => {
+      if (!value) return t("auth.errors.nicknameMissing");
+      if (value.length < 3) return t("auth.errors.nicknameShort");
+      if (value.length > 20) return t("auth.errors.nicknameLong");
+      if (!/^[a-zA-Z0-9_]+$/.test(value)) return t("auth.errors.nicknameInvalid");
+      return null;
+    }, [t]);
+  
+    const validatePassword = useCallback((value: string): string | null => {
+        if (!value) return t("auth.errors.passwordMissing");
+        if (value.length < 8) return t("auth.errors.passwordShort");
+        return null;
+      }, [t]);
+  
+    const validateConfirmPassword = useCallback(
+      (password: string, confirm: string): string | null => {
+        if (!confirm) return t("auth.errors.confirmPasswordMissing");
+        if (password !== confirm) return t("auth.errors.passwordMismatch");
+        return null;
+      },
+      [t]
+    );
+  
+    const validateVerificationCode = useCallback((code: string): string | null => {
+      if (!code) return t("auth.errors.codeMissing");
+      if (code.length !== 6) return t("auth.errors.codeInvalid");
+      return null;
+    }, [t]);
+  
+    // Validate current form
+    const validateCurrentForm = useCallback(() => {
+      const newErrors: Record<string, string> = {};
+  
+      switch (authState) {
+        case AuthState.Login:
+          const emailError = validateEmail(email);
+          const passwordError = validatePassword(password);
+          if (emailError) newErrors.email = emailError;
+          if (passwordError) newErrors.password = passwordError;
+          break;
+  
+        case AuthState.Register:
+          const nicknameError = validateNickname(nickname);
+          const regEmailError = validateEmail(email);
+          const regPasswordError = validatePassword(password);
+          const confirmError = validateConfirmPassword(password, confirmPassword);
+          if (nicknameError) newErrors.nickname = nicknameError;
+          if (regEmailError) newErrors.email = regEmailError;
+          if (regPasswordError) newErrors.password = regPasswordError;
+          if (confirmError) newErrors.confirmPassword = confirmError;
+          if (!termsAccepted) newErrors.terms = t("auth.errors.terms");
+          break;
+  
+        case AuthState.Verify:
+        case AuthState.RecoverVerify:
+          const codeError = validateVerificationCode(verificationCode);
+          if (codeError) newErrors.verificationCode = codeError;
+          break;
+  
+        case AuthState.Recover:
+          const recoverEmailError = validateEmail(email);
+          if (recoverEmailError) newErrors.email = recoverEmailError;
+          break;
+  
+        case AuthState.ChangePassword:
+          const newPasswordError = validatePassword(password);
+          const confirmNewError = validateConfirmPassword(password, confirmPassword);
+          if (newPasswordError) newErrors.newPassword = newPasswordError;
+          if (confirmNewError) newErrors.confirmNewPassword = confirmNewError;
+          break;
+      }
+  
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }, [
+      authState,
+      email,
+      password,
+      nickname,
+      confirmPassword,
+      verificationCode,
+      termsAccepted,
+      validateEmail,
+      validateNickname,
+      validatePassword,
+      validateConfirmPassword,
+      validateVerificationCode,
+      t
+    ]);
+  
+    // Check if form is ready for submission
+    const isFormValid = useMemo(() => {
+      switch (authState) {
+        case AuthState.Login:
+          return !!email && !!password && !validateEmail(email) && !validatePassword(password);
+  
+        case AuthState.Register:
+          return (
+            !!nickname &&
+            !!email &&
+            !!password &&
+            !!confirmPassword &&
+            !validateNickname(nickname) &&
+            !validateEmail(email) &&
+            !validatePassword(password) &&
+            !validateConfirmPassword(password, confirmPassword) &&
+            termsAccepted
+          );
+  
+        case AuthState.Verify:
+        case AuthState.RecoverVerify:
+          return verificationCode.length === 6;
+  
+        case AuthState.Recover:
+          return !!email && !validateEmail(email);
+  
+        case AuthState.ChangePassword:
+          return (
+            !!password &&
+            !!confirmPassword &&
+            !validatePassword(password) &&
+            !validateConfirmPassword(password, confirmPassword)
+          );
+  
+        default:
+          return false;
+      }
+    }, [
+      authState,
+      email,
+      password,
+      nickname,
+      confirmPassword,
+      verificationCode,
+      termsAccepted,
+      validateEmail,
+      validateNickname,
+      validatePassword,
+      validateConfirmPassword
+    ]);
+  
+    const handleLogin = async () => {
+        try {
+            const data = await makeApiRequest(
+                'auth/login',
+                'POST',
+                { email, password }
+            );
+            
+            addToast({
+                title: t("auth.success.title.loginSuccess"),
+                description: t("auth.success.loginSuccess"),
+                color: 'success'
+            });
+            
+            if (onAuthSuccess) onAuthSuccess(data.token);
+            onOpenChange(false);
+        } catch (error: any) {
+            if (error.message === "account_not_verified") {
+                setAuthState(AuthState.Verify);
+                addToast({
+                    title: t("auth.errors.title.accountNotVerified"),
+                    description: t("auth.errors.detail.accountNotVerified"),
+                    color: 'warning'
+                });
+            } else {
+                addToast({
+                    title: t("auth.errors.title.loginFailed"),
+                    description: t(`auth.errors.detail.${error.message}`),
+                    color: 'danger'
+                });
+            }
+        }
+    };
+
+    const handleRegister = async () => {
+        try {
+            await makeApiRequest('auth/register', 'POST', { email, password, nickname });
+            setAuthState(AuthState.Verify);
+        } catch (error: any) {
+            addToast({
+                title: t("auth.errors.title.registerFailed"),
+                description: t(`auth.errors.detail.${error.message}`),
+                color: 'danger'
+            });
+        }
+    };
+
+    const handleVerify = async () => {
+        try {
+            const data = await makeApiRequest('auth/verify', 'POST', { email, code: verificationCode });
+            addToast({
+                title: t("auth.success.title.verifySuccess"),
+                description: t("auth.success.verifySuccess"),
+                color: 'success'
+            });
+            if (onAuthSuccess) onAuthSuccess(data.token);
+            onOpenChange(false);
+        } catch (error: any) {
+            addToast({
+                title: t("auth.errors.title.verifyFailed"),
+                description: t(`auth.errors.detail.${error.message}`),
+                color: 'danger'
+            });
+        }
+    };
+
+    const handleRecover = async () => {
+        try {
+            await makeApiRequest('auth/recover', 'POST', { email });
+            setAuthState(AuthState.RecoverVerify);
+        } catch (error: any) {
+            addToast({
+                title: t("auth.errors.title.recoverFailed"),
+                description: t(`auth.errors.detail.${error.message}`),
+                color: 'danger'
+            });
+        }
+    };
+
+    const handleResendCode = async () => {
+        setIsLoading(true);
+        try {
+          await makeApiRequest('auth/verify/resend', 'POST', {
+            email,
+            code_type: authState === AuthState.Verify ? 'verification' : 'recovery'
+          });
+          addToast({
+            title: t("auth.success.title.codeResent"),
+            description: t("auth.success.codeResent"),
+            color: 'success'
+          });
+        } catch (error: any) {
+          addToast({
+            title: t("auth.errors.title.resendFailed"),
+            description: t(`auth.errors.detail.${error.message}`),
+            color: 'danger'
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+    const handleRecoverVerify = async () => {
+        try {
+            await makeApiRequest('auth/recover/verify', 'POST', { email, code: verificationCode });
+            setAuthState(AuthState.ChangePassword);
+        } catch (error: any) {
+            addToast({
+                title: t("auth.errors.title.recoverVerifyFailed"),
+                description: t(`auth.errors.detail.${error.message}`),
+                color: 'danger'
+            });
+        }
+    };
+
+    const handleChangePassword = async () => {
+        try {
+            const data = await makeApiRequest('auth/recover/change', 'POST', { 
+                email, 
+                code: verificationCode, 
+                password 
+            });
+            addToast({
+                title: t("auth.success.title.changePasswordSuccess"),
+                description: t("auth.success.changePasswordSuccess"),
+                color: 'success'
+            });
+            if (onAuthSuccess) onAuthSuccess(data.token);
+            onOpenChange(false);
+        } catch (error: any) {
+            addToast({
+                title: t("auth.errors.changePasswordFailed"),
+                description: t(`auth.errors.detail.${error.message}`),
+                color: 'danger'
+            });
+        }
+    };
+
+    const handleSubmit = useCallback(async (e?: React.FormEvent) => {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (!validateCurrentForm()) return;
+        
+        setIsLoading(true);
+        setErrors({});
+    
+        try {
+          switch (authState) {
+            case AuthState.Login:
+              await handleLogin();
+              break;
+            case AuthState.Register:
+              await handleRegister();
+              break;
+            case AuthState.Verify:
+              await handleVerify();
+              break;
+            case AuthState.Recover:
+              await handleRecover();
+              break;
+            case AuthState.RecoverVerify:
+              await handleRecoverVerify();
+              break;
+            case AuthState.ChangePassword:
+              await handleChangePassword();
+              break;
+          }
+        } catch (error: any) {
+          setErrors({ form: error.message || t("auth.errors.general") });
+        } finally {
+          setIsLoading(false);
+        }
+      }, [
+        authState,
+        email,
+        password,
+        nickname,
+        confirmPassword,
+        verificationCode,
+        termsAccepted,
+        validateCurrentForm,
+        t
+      ]);
+  
+    // Input field renderers
     const renderNicknameInput = () => (
       <Input
-        label="Nickname"
-        placeholder="Enter your nickname"
+        isRequired
+        name="nickname"
+        label={t("auth.labels.nickname")}
+        placeholder={t("auth.placeholders.nickname")}
         value={nickname}
-        onChange={handleNicknameChange}
-        variant="bordered"
+        onValueChange={setNickname}
+        onBlur={() => {
+          const error = validateNickname(nickname);
+          setErrors(prev => ({ ...prev, nickname: error || '' }));
+        }}
         endContent={
-          <Tooltip content={getInputProps(nickname, nicknameError).tooltip} placement="top">
-            <HugeiconsIcon
-              icon={User03Icon}
-              onMouseDown={(e) => e.preventDefault()}
-              style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-              className={`text-2xl cursor-pointer select-none ${getInputProps(nickname, nicknameError).color}`}
-            />
+          <Tooltip content={t("auth.rules.nickname")} placement="top">
+            <HugeiconsIcon icon={User03Icon} className="text-2xl text-default-400" />
           </Tooltip>
         }
+        errorMessage={errors.nickname}
+        isInvalid={!!errors.nickname}
       />
     );
   
-    // Renders the Email input field for states: Login, Register, Recover and ChangePassword.
-    // The field is read-only on Verify, RecoverVerify, and ChangePassword stages.
-    const renderEmailInput = () => (
-      <Input
-        isReadOnly={authState === AuthState.Verify || authState === AuthState.RecoverVerify || authState === AuthState.ChangePassword}
-        label="Email"
-        placeholder="Enter your email"
+    const renderEmailInput = (readOnly = false) => (
+        <Input
+        isRequired
+        isReadOnly={readOnly}
+        name="email"
+        label={t("auth.labels.email")}
+        placeholder={t("auth.placeholders.email")}
+        type="email"
         value={email}
-        onChange={handleEmailChange}
-        variant="bordered"
+        onValueChange={setEmail}
+        onBlur={() => {
+          const error = validateEmail(email);
+          setErrors(prev => ({ ...prev, email: error || '' }));
+        }}
         endContent={
-          <div className="flex items-center gap-1">
-            {authState === AuthState.Verify || authState === AuthState.RecoverVerify ? (
-              <Tooltip content="Resend Email" placement="top">
-                <Button
-                  size="sm"
-                  isIconOnly
-                  onPress={() => {
-                    // Backend request to resend the verification code
-                    fetch("/api/send-verification-code", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email }),
-                    })
-                      .then((res) => res.json())
-                      .then((data) => {
-                        console.log("Resent verification code:", data);
-                        addToast({ title: "Success", description: "Verification code resent.", color: "success" });
-                      })
-                      .catch((err) => console.error(err));
-                  }}
-                  variant="ghost"
-                  className="opacity-70"
-                >
-                  <HugeiconsIcon
-                    icon={SquareArrowReload02Icon}
-                    onMouseDown={(e) => e.preventDefault()}
-                    style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                  />
-                </Button>
-              </Tooltip>
-            ) : (
-              <Tooltip content={getInputProps(email, emailError).tooltip} placement="top">
-                <HugeiconsIcon
-                  icon={Mail02Icon}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                  className={`text-2xl cursor-pointer select-none ${getInputProps(email, emailError).color}`}
-                />
-              </Tooltip>
-            )}
-          </div>
+          readOnly ? (
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={handleResendCode}
+                isDisabled={isLoading}
+                className="text-sm"
+              >
+                {isLoading ? (
+                  <Spinner size="sm" />
+                ) : (
+                    t("auth.actions.resendCode")
+                )}
+              </Button>
+            </div>
+          ) : (
+            <Tooltip content={t("auth.rules.email")} placement="top">
+              <HugeiconsIcon icon={Mail02Icon} className="text-2xl text-default-400" />
+            </Tooltip>
+          )
         }
+        errorMessage={errors.email}
+        isInvalid={!!errors.email}
       />
     );
   
-    // Renders the Password input field for Login and Register states.
-    // Includes a button to toggle password visibility and shows an appropriate icon tooltip.
     const renderPasswordInput = () => (
       <Input
-        id="password-input"
-        label="Password"
-        placeholder="Enter your password"
+        isRequired
+        name='password'
+        label={t("auth.labels.password")}
+        placeholder={t("auth.placeholders.password")}
         type={showPassword ? "text" : "password"}
-        variant="bordered"
         value={password}
-        onChange={handlePasswordChange}
-        errorMessage={!validatePassword(password) && password ? "Invalid password format" : ""}
+        onValueChange={setPassword}
+        onBlur={() => {
+          const error = validatePassword(password);
+          setErrors(prev => ({ ...prev, ['password']: error || '' }));
+        }}
         endContent={
           <div className="flex items-center gap-1">
-            <Button size="sm" isIconOnly onPress={toggleShowPassword} variant="ghost" className="opacity-70">
-              {showPassword ? (
-                <HugeiconsIcon
-                  icon={ViewOffSlashIcon}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                />
-              ) : (
-                <HugeiconsIcon
-                  icon={ViewIcon}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                />
-              )}
-            </Button>
-            {authState === AuthState.Login ? (
+            <Button
+              isIconOnly
+              size="sm"
+              type="button"
+              variant="bordered"
+              onPress={() => setShowPassword(!showPassword)}
+              className="focus:outline-none ml-2"
+            >
               <HugeiconsIcon
-                icon={LockPasswordIcon}
-                onMouseDown={(e) => e.preventDefault()}
-                style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                className="text-default-400 select-none"
+                icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+                className="text-2xl text-default-400"
               />
-            ) : (
-              <Tooltip content={getInputProps(password, passwordError).tooltip} placement="top">
-                <HugeiconsIcon
-                  icon={LockPasswordIcon}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                  className={`select-none ${getInputProps(password, passwordError).color}`}
-                />
-              </Tooltip>
-            )}
+            </Button>
+            <Tooltip content={t("auth.rules.password")} placement="top">
+              <HugeiconsIcon icon={LockPasswordIcon} className="text-2xl text-default-400" />
+            </Tooltip>
           </div>
         }
+        errorMessage={errors['password']}
+        isInvalid={!!errors['password']}
       />
     );
   
-    // Renders the Confirm Password input field for the Register state.
-    const renderConfirmPasswordInput = () => (
-      <Input
-        label="Confirm Password"
-        placeholder="Confirm your password"
-        type={showPassword ? "text" : "password"}
-        variant="bordered"
-        value={confirmPassword}
-        onChange={handleConfirmPasswordChange}
-        endContent={
-          <Tooltip content={getInputProps(confirmPassword, confirmPasswordError).tooltip} placement="top">
-            <HugeiconsIcon
-              icon={PasswordValidationIcon}
-              onMouseDown={(e) => e.preventDefault()}
-              style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-              className={`text-2xl cursor-pointer select-none ${getInputProps(confirmPassword, confirmPasswordError).color}`}
-            />
-          </Tooltip>
-        }
-      />
-    );
-  
-    /**
-     * Renders the Verify Email stage for registration.
-     * Displays:
-     * - 6 individual input cells for a single-digit code.
-     * - A "Back to Registration" link (or "Back to Login" for recovery verification).
-     */
-    const renderVerificationCodeInput = () => {
-      // Handler for changing the value in a specific cell.
-      const handleCellChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        if (/^\d?$/.test(val)) {
-          const codeArr = verificationCode.split("");
-          while (codeArr.length < 6) codeArr.push("");
-          codeArr[index] = val;
-          const newCode = codeArr.join("");
-          setVerificationCode(newCode);
-          if (val && index < 5) {
-            const nextInput = document.getElementById(`code-${index + 1}`);
-            if (nextInput) (nextInput as HTMLInputElement).focus();
-          }
-        }
-      };
-  
-      const inputs = [];
-      for (let i = 0; i < 6; i++) {
-        inputs.push(
-          <input
-            key={i}
-            id={`code-${i}`}
-            type="text"
-            maxLength={1}
-            value={verificationCode[i] || ""}
-            onChange={(e) => handleCellChange(i, e)}
-            className="w-10 h-10 border-2 border-default-300 text-center mx-1 rounded-xl select-none"
+    const renderConfirmPasswordInput = () => {
+        const shouldShowError = isConfirmPasswordDirty || !!errors.confirmPassword;
+        const isInvalid = shouldShowError && !!validateConfirmPassword(password, confirmPassword);
+    
+        return (
+          <Input
+            isRequired
+            name="confirmPassword"
+            label={t("auth.labels.confirmPassword")}
+            placeholder={t("auth.placeholders.confirmPassword")}
+            type={showPassword ? "text" : "password"}
+            value={confirmPassword}
+            onValueChange={(value) => {
+              setConfirmPassword(value);
+              setIsConfirmPasswordDirty(true);
+            }}
+            onBlur={() => setIsConfirmPasswordDirty(true)}
+            endContent={
+              <Tooltip content={t("auth.rules.confirmPassword")} placement="top">
+                <HugeiconsIcon
+                  icon={PasswordValidationIcon}
+                  className="text-2xl text-default-400 pointer-events-none"
+                />
+              </Tooltip>
+            }
+            errorMessage={isInvalid ? validateConfirmPassword(password, confirmPassword) : undefined}
+            isInvalid={isInvalid}
           />
         );
-      }
+      };
+    
+  
+    const renderTermsCheckbox = () => (
+      <Checkbox
+        isSelected={termsAccepted}
+        onValueChange={setTermsAccepted}
+        classNames={{ label: "text-small" }}
+        isInvalid={!!errors.terms}
+      >
+        {t("auth.footer.acceptTerms")}
+        <Link href="/terms" className="ml-1" size="sm">
+          {t("auth.footer.termsLink")}
+        </Link>
+      </Checkbox>
+    );
+  
+    // Form renderers
+    const renderLoginForm = () => (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {renderEmailInput()}
+        {renderPasswordInput()}
+        <div className="flex justify-between items-center">
+          <Checkbox classNames={{ label: "text-small" }}>
+            {t("auth.footer.rememberMe")}
+          </Checkbox>
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Recover)}
+          >
+            {t("auth.footer.forgotPassword")}
+          </Link>
+        </div>
+        <div className="flex justify-end pt-2">
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Register)}
+          >
+            {t("auth.footer.notRegistered")}
+          </Link>
+        </div>
+      </form>
+    );
+  
+    const renderRegisterForm = () => (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {renderNicknameInput()}
+        {renderEmailInput()}
+        {renderPasswordInput()}
+        {renderConfirmPasswordInput()}
+        {renderTermsCheckbox()}
+        <div className="flex justify-between items-center pt-2">
+          <Checkbox classNames={{ label: "text-small" }}>
+            {t("auth.footer.rememberMe")}
+          </Checkbox>
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Login)}
+          >
+            {t("auth.footer.alreadyRegistered")}
+          </Link>
+        </div>
+      </form>
+    );
+  
+    const renderRecoverForm = () => (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {renderEmailInput()}
+        <div className="flex justify-end pt-2">
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Login)}
+          >
+            {t("auth.footer.backToLogin")}
+          </Link>
+        </div>
+      </form>
+    );
+  
+    const renderChangePasswordForm = () => (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {renderEmailInput(true)}
+        {renderPasswordInput()}
+        {renderConfirmPasswordInput()}
+        <div className="flex justify-between items-center pt-2">
+          <Checkbox classNames={{ label: "text-small" }}>
+            {t("auth.footer.rememberMe")}
+          </Checkbox>
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Login)}
+          >
+            {t("auth.footer.backToLogin")}
+          </Link>
+        </div>
+      </form>
+    );
+  
+    const renderVerificationCodeInput = () => {
+        const handleCodeChange = (index: number, value: string) => {
+          if (/^[0-9]?$/.test(value)) {
+            const codeArr = Array.from(verificationCode.padEnd(6, ' '));
+            codeArr[index] = value;
+            const newCode = codeArr.join('').trim();
+            setVerificationCode(newCode);
+            
+            if (value && index < 5) {
+              const nextInput = document.getElementById(`code-${index + 1}`);
+              if (nextInput) (nextInput as HTMLInputElement).focus();
+            }
+          }
+        };
+      
+        const handlePaste = (e: React.ClipboardEvent) => {
+          e.preventDefault();
+          const pasteData = e.clipboardData.getData('text/plain').replace(/\D/g, '').substring(0, 6);
+          if (pasteData.length === 6) {
+            setVerificationCode(pasteData);
+          }
+        };
+  
       return (
-        <div className="flex flex-col items-center">
-          {/* Input cells for the verification code */}
-          <div className="flex justify-center">{inputs}</div>
-          {/* "Back" link: conditionally display depending on state */}
-          <div className="flex gap-4 mt-4">
-            {authState === AuthState.Verify ? (
-              <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Register)}>
-                Back to Registration
-              </Link>
-            ) : authState === AuthState.RecoverVerify ? (
-              <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Recover)}>
-                Back to Recover
-              </Link>
-            ) : null}
+        <div className="space-y-6">
+          {renderEmailInput(true)}
+          <div className="flex justify-center gap-2">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <input
+                key={index}
+                id={`code-${index}`}
+                type="text"
+                maxLength={1}
+                value={verificationCode[index] || ""}
+                onChange={(e) => handleCodeChange(index, e.target.value)}
+                onPaste={handlePaste}
+                className="w-12 h-12 text-center text-xl border-2 rounded-lg focus:border-primary focus:outline-none"
+                inputMode="numeric"
+                pattern="[0-9]*"
+              />
+            ))}
+          </div>
+          {errors.verificationCode && (
+            <p className="text-danger text-sm text-center">{errors.verificationCode}</p>
+          )}
+          <div className="flex justify-center pt-4">
+            <Link 
+              color="primary" 
+              size="sm" 
+              onPress={() => setAuthState(
+                authState === AuthState.Verify ? AuthState.Register : AuthState.Recover
+              )}
+            >
+              {authState === AuthState.Verify 
+                ? t("auth.footer.backToRegistration") 
+                : t("auth.footer.backToRecover")}
+            </Link>
           </div>
         </div>
       );
     };
+
+    // Determine which form to render
+    const renderCurrentForm = () => {
+    // TODO: Implement verification code input for not-verified account with resend button
+      switch (authState) {
+        case AuthState.Register:
+          return renderRegisterForm();
+        case AuthState.Verify:
+        case AuthState.RecoverVerify:
+          return renderVerificationCodeInput();
+        case AuthState.Recover:
+          return renderRecoverForm();
+        case AuthState.ChangePassword:
+          return renderChangePasswordForm();
+        default:
+          return renderLoginForm();
+      }
+    };
   
-    // Renders the Change Password stage for recovery.
-    // Displays two input fields: New Password and Confirm New Password.
-    // Contains a button to toggle password visibility and validation indicators.
-    const renderChangePasswordInputs = () => (
-      <div className="flex flex-col gap-4">
-        <Input
-          label="New Password"
-          placeholder="Enter new password"
-          type={showPassword ? "text" : "password"}
-          value={newPassword}
-          onChange={handleNewPasswordChange}
-          variant="bordered"
-          errorMessage={newPasswordError}
-          endContent={
-            <div className="flex items-center gap-1">
-              <Button size="sm" isIconOnly onPress={toggleShowPassword} variant="ghost" className="opacity-70">
-                {showPassword ? (
-                  <HugeiconsIcon
-                    icon={ViewOffSlashIcon}
-                    onMouseDown={(e) => e.preventDefault()}
-                    style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                  />
-                ) : (
-                  <HugeiconsIcon
-                    icon={ViewIcon}
-                    onMouseDown={(e) => e.preventDefault()}
-                    style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                  />
-                )}
-              </Button>
-              <Tooltip content={getInputProps(newPassword, newPasswordError).tooltip} placement="top">
-                <HugeiconsIcon
-                  icon={LockPasswordIcon}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                  className={`select-none ${getInputProps(newPassword, newPasswordError).color}`}
-                />
-              </Tooltip>
-            </div>
-          }
-        />
-        <Input
-          label="Confirm New Password"
-          placeholder="Confirm new password"
-          type={showPassword ? "text" : "password"}
-          value={confirmNewPassword}
-          onChange={handleConfirmNewPasswordChange}
-          variant="bordered"
-          errorMessage={confirmNewPasswordError}
-          endContent={
-            <Tooltip content={getInputProps(confirmNewPassword, confirmNewPasswordError).tooltip} placement="top">
-              <HugeiconsIcon
-                icon={PasswordValidationIcon}
-                onMouseDown={(e) => e.preventDefault()}
-                style={{ userSelect: "none", WebkitUserDrag: "none" } as React.CSSProperties & { WebkitUserDrag: string }}
-                className={`text-2xl cursor-pointer select-none ${getInputProps(confirmNewPassword, confirmNewPasswordError).color}`}
-              />
-            </Tooltip>
-          }
-        />
-      </div>
-    );
-  
-    // Determines whether the primary action button should be disabled based on the current state and validation errors.
-    const isActionDisabled =
-      authState === AuthState.Login
-        ? !email || !password || !!emailError
-        : authState === AuthState.Register
-        ? !nickname || !email || !password || !confirmPassword ||
-          !!nicknameError || !!emailError || !!passwordError || !!confirmPasswordError
-        : authState === AuthState.Verify
-        ? !verificationCode || !!verificationCodeError
-        : authState === AuthState.Recover
-        ? !email || !!emailError
-        : authState === AuthState.RecoverVerify
-        ? !verificationCode || !!verificationCodeError
-        : authState === AuthState.ChangePassword
-        ? !newPassword || !confirmNewPassword || !!newPasswordError || !!confirmNewPasswordError
-        : false;
-  
-    // Returns the header text based on the current authentication state.
+    // Get header text based on auth state
     const getHeaderText = () => {
       switch (authState) {
         case AuthState.Register:
-          return "Register";
+          return t("auth.header.register");
         case AuthState.Verify:
-          return "Verify Email";
+          return t("auth.header.verifyEmail");
         case AuthState.Recover:
-          return "Recover Account";
+          return t("auth.header.recoverAccount");
         case AuthState.RecoverVerify:
-          return "Verify Recovery Code";
+          return t("auth.header.recoverVerify");
         case AuthState.ChangePassword:
-          return "Change Password";
+          return t("auth.header.changePassword");
         default:
-          return "Log In";
+          return t("auth.header.login");
       }
     };
   
-    // Returns the primary action button text based on the current authentication state.
-    const getActionButtonText = () => {
+    // Get submit button text based on auth state
+    const getSubmitButtonText = () => {
       switch (authState) {
         case AuthState.Register:
-          return "Send Verification Code";
+          return t("auth.actions.register");
         case AuthState.Verify:
-          return "Verify";
-        case AuthState.Recover:
-          return "Send Recovery Code";
         case AuthState.RecoverVerify:
-          return "Verify";
+          return t("auth.actions.verify");
+        case AuthState.Recover:
+          return t("auth.actions.recover");
         case AuthState.ChangePassword:
-          return "Change Password";
+          return t("auth.actions.changePassword");
         default:
-          return "Sign in";
-      }
-    };
-  
-    /**
-     * Renders the footer section containing links and checkboxes based on the current authentication state.
-     * - For Login: shows "Remember me", "Forgot password?" and "Not registered yet?" links.
-     * - For Register: shows "Remember me" and "Already have an account?" links.
-     * - For Recover: shows "Back to login".
-     * - For Verify: links are rendered within the verification component.
-     */
-    const renderFooterLinks = () => {
-      if (authState === AuthState.Login) {
-        return (
-          <>
-            <div className="flex py-2 px-1 justify-between">
-              <Checkbox classNames={{ label: "text-small" }}>Remember me</Checkbox>
-              <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Recover)}>
-                Forgot password?
-              </Link>
-            </div>
-            <div className="flex py-0 px-1 justify-between">
-              <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Register)}>
-                Not registered yet?
-              </Link>
-            </div>
-          </>
-        );
-      } else if (authState === AuthState.Register) {
-        return (
-          <div className="flex py-2 px-1 justify-between">
-            <Checkbox classNames={{ label: "text-small" }}>Remember me</Checkbox>
-            <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Login)}>
-              Already have an account?
-            </Link>
-          </div>
-        );
-      } else if (authState === AuthState.Recover) {
-        return (
-          <div className="flex py-2 px-1 justify-end">
-            <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Login)}>
-              Back to login
-            </Link>
-          </div>
-        );
-      } else if (authState === AuthState.ChangePassword) {
-        return (
-          <div className="flex py-2 px-1 justify-between">
-            <Checkbox classNames={{ label: "text-small" }}>Remember me</Checkbox>
-            <Link color="primary" href="#" size="sm" onPress={() => setAuthState(AuthState.Login)}>
-              Back to login
-            </Link>
-          </div>
-        );
-      }
-    };
-  
-    // Primary action button handler.
-    // Handles actions based on the current auth state:
-    // - For Login: sends login request.
-    // - For Register: sends registration request (which triggers sending a verification code).
-    // - For Verify: verifies the registration code.
-    // - For Recover: sends recovery code.
-    // - For RecoverVerify: verifies the recovery code.
-    // - For ChangePassword: updates the password.
-    const handleAction = async () => {
-      try {
-        if (authState === AuthState.Login) {
-          // Login: send login request.
-          const res = await fetch(`${apiUrl}/api/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            console.log("Logged in successfully.", data);
-            addToast({ title: "Success", description: "Logged in successfully.", color: "success" });
-            onOpenChange(false);
-          } else {
-            console.error("Login failed:", data);
-            addToast({ title: "Error", description: data.message || "Login failed." });
-          }
-        } else if (authState === AuthState.Register) {
-          // Registration: send registration request.
-          const res = await fetch(`${apiUrl}/api/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nickname, email, password }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            console.log("Registration initiated. Verification code sent.", data);
-            addToast({ title: "Success", description: "Verification code sent.", color: "success" });
-            setAuthState(AuthState.Verify);
-          } else {
-            console.error("Registration failed:", data);
-            addToast({ title: "Error", description: data.message || "Registration failed." });
-          }
-        } else if (authState === AuthState.Verify) {
-          // Verify registration code.
-          const res = await fetch(`${apiUrl}/api/verify-code`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, code: verificationCode }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            console.log("Verification successful. Registration completed.", data);
-            addToast({ title: "Success", description: "Registration completed successfully.", color: "success" });
-            onOpenChange(false);
-          } else {
-            console.error("Verification failed:", data);
-            addToast({ title: "Error", description: data.message || "Invalid verification code." });
-          }
-        } else if (authState === AuthState.Recover) {
-          // Recover: send recovery code.
-          const res = await fetch(`${apiUrl}/api/recover`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            console.log("Recovery code sent.", data);
-            addToast({ title: "Success", description: "Recovery code sent.", color: "success" });
-            setAuthState(AuthState.RecoverVerify);
-          } else {
-            console.error("Recovery failed:", data);
-            addToast({ title: "Error", description: data.message || "Recovery failed." });
-          }
-        } else if (authState === AuthState.RecoverVerify) {
-          // Verify recovery code.
-          const res = await fetch(`${apiUrl}/api/verify-code`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, code: verificationCode }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            console.log("Recovery code verified.", data);
-            setAuthState(AuthState.ChangePassword);
-          } else {
-            console.error("Recovery verification failed:", data);
-            addToast({ title: "Error", description: data.message || "Invalid recovery code." });
-          }
-        } else if (authState === AuthState.ChangePassword) {
-          // Change password.
-          if (!newPassword || !confirmNewPassword || newPassword !== confirmNewPassword || !validatePassword(newPassword)) {
-            if (!validatePassword(newPassword))
-              setNewPasswordError("Password must be 8-64 characters, only Latin letters and digits.");
-            if (newPassword !== confirmNewPassword)
-              setConfirmNewPasswordError("Passwords do not match.");
-          } else {
-            const res = await fetch(`${apiUrl}/api/change-password`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, newPassword }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-              console.log("Password changed successfully.", data);
-              addToast({ title: "Success", description: "Password changed successfully. Logged in.", color: "success" });
-              onOpenChange(false);
-            } else {
-              console.error("Password change failed:", data);
-              addToast({ title: "Error", description: data.message || "Password change failed." });
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error in auth flow:", error);
-        addToast({ title: "Error", description: "An unexpected error occurred." });
+          return t("auth.actions.signIn");
       }
     };
   
     return (
-      <Modal isOpen={isOpen} placement="top-center" onOpenChange={onOpenChange}>
+      <Modal 
+        isOpen={isOpen} 
+        placement="center" 
+        onOpenChange={onOpenChange}
+        backdrop="blur"
+        classNames={{
+          base: "max-w-md",
+          wrapper: "items-center",
+        }}
+      >
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">{getHeaderText()}</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1 text-xl font-semibold">
+                {getHeaderText()}
+              </ModalHeader>
               <ModalBody>
-                {authState === AuthState.Register && renderNicknameInput()}
-                {renderEmailInput()}
-                {authState === AuthState.Login && renderPasswordInput()}
-                {authState === AuthState.Register && renderPasswordInput()}
-                {authState === AuthState.Register && renderConfirmPasswordInput()}
-                {authState === AuthState.Verify && renderVerificationCodeInput()}
-                {authState === AuthState.RecoverVerify && renderVerificationCodeInput()}
-                {authState === AuthState.ChangePassword && renderChangePasswordInputs()}
-                {renderFooterLinks()}
+                {renderCurrentForm()}
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="flat" onPress={onClose}>
-                  Close
+                <Button 
+                  color="default" 
+                  variant="light" 
+                  onPress={onClose}
+                  isDisabled={isLoading}
+                >
+                  {t("auth.actions.close")}
                 </Button>
-                <Button {...(isActionDisabled && { isDisabled: true })} color="primary" onPress={handleAction}>
-                  {getActionButtonText()}
+                <Button 
+                    color="primary" 
+                    onPress={() => handleSubmit()} // Без передачи события
+                    isDisabled={!isFormValid || isLoading}
+                    >
+                    {isLoading ? <Spinner color="white" size="sm" /> : getSubmitButtonText()}
                 </Button>
               </ModalFooter>
             </>
