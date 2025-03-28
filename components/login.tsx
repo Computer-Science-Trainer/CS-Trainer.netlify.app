@@ -172,21 +172,15 @@ export default function AuthWindow({
     }
   }, [password, confirmPassword, isConfirmPasswordDirty]);
 
-    // const resetForm = () => {
-    //   setAuthState(AuthState.Login);
-    //   setNickname("");
-    //   setEmail("");
-    //   setPassword("");
-    //   setConfirmPassword("");
-    //   setNewPassword("");
-    //   setConfirmNewPassword("");
-    //   setVerificationCode("");
-    //   setTermsAccepted(false);
-    //   setErrors({});
-    //   setShowPassword(false);
-    //   setShowNewPassword(false);
-    //   setIsLoading(false);
-    // };
+  const resetForm = () => {
+    setShowPassword(false)
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
 
   /**
    * Validation Functions
