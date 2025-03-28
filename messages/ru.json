@@ -17,6 +17,106 @@
     "theme": {
         "light": "Светлая тема",
         "dark": "Тёмная тема"
+    },
+    "auth": {
+        "header": {
+            "login": "Вход",
+            "register": "Регистрация",
+            "verifyEmail": "Подтверждение Email",
+            "recoverAccount": "Восстановление аккаунта",
+            "recoverVerify": "Подтверждение кода",
+            "changePassword": "Смена пароля"
+        },
+        "labels": {
+            "nickname": "Имя пользователя",
+            "email": "Email",
+            "password": "Пароль",
+            "confirmPassword": "Подтверждение пароля"
+        },
+        "placeholders": {
+            "nickname": "Введите имя пользователя",
+            "email": "Введите ваш email",
+            "password": "Введите пароль",
+            "confirmPassword": "Подтвердите пароль"
+        },
+        "rules": {
+            "nickname": "3-20 символов, только буквы, цифры и подчёркивания",
+            "email": "Введите корректный email",
+            "password": "Минимум 8 символов",
+            "confirmPassword": "Пароли должны совпадать"
+        },
+        "errors": {
+            "title": {
+                "loginFailed": "Ошибка входа",
+                "registerFailed": "Ошибка регистрации",
+                "verifyFailed": "Ошибка подтверждения",
+                "recoverFailed": "Ошибка восстановления",
+                "recoverVerifyFailed": "Ошибка подтверждения",
+                "changePasswordFailed": "Ошибка смены пароля",
+                "accountNotVerified": "Аккаунт не подтверждён"
+            },
+            "detail": {
+                "user_not_found": "Пользователь с таким email не найден",
+                "invalid_credentials": "Неверный email или пароль",
+                "user_exists": "Пользователь с таким email уже существует",
+                "invalid_verification_code": "Неверный или просроченный код подтверждения",
+                "accountNotVerified": "Ваш аккаунт требует подтверждения. Пожалуйста, проверьте вашу почту для получения кода подтверждения.",
+                "password_change_success": "Пароль успешно изменён",
+                "verification_code_sent": "Код подтверждения отправлен на ваш email",
+                "registration_success": "Регистрация прошла успешно. Проверьте ваш email для получения кода подтверждения",
+                "verification_success": "Email успешно подтверждён"
+            },
+            "general": "Произошла ошибка. Пожалуйста, попробуйте ещё раз.",
+            "emailMissing": "Email обязателен",
+            "emailInvalid": "Неверный формат email",
+            "nicknameMissing": "Имя пользователя обязательно",
+            "nicknameShort": "Имя пользователя должно быть не менее 3 символов",
+            "nicknameLong": "Имя пользователя должно быть не более 20 символов",
+            "nicknameInvalid": "Допустимы только буквы, цифры и подчёркивания",
+            "passwordMissing": "Пароль обязателен",
+            "passwordShort": "Пароль должен быть не менее 8 символов",
+            "confirmPasswordMissing": "Подтвердите пароль",
+            "passwordMismatch": "Пароли не совпадают",
+            "codeMissing": "Код подтверждения обязателен",
+            "codeInvalid": "Код должен содержать 6 цифр",
+            "loginFailed": "Неверный email или пароль",
+            "registerFailed": "Ошибка регистрации. Попробуйте ещё раз.",
+            "verifyFailed": "Неверный код подтверждения",
+            "recoverFailed": "Ошибка отправки письма для восстановления",
+            "recoverVerifyFailed": "Неверный код восстановления",
+            "changePasswordFailed": "Ошибка смены пароля",
+            "terms": "Вы должны принять условия обслуживания"
+        },
+        "success": {
+            "title": {
+                "loginSuccess": "Успешно",
+                "verifySuccess": "Email подтверждён",
+                "changePasswordSuccess": "Пароль изменён"
+            },
+            "loginSuccess": "Вы успешно вошли в систему",
+            "verifySuccess": "Ваш email успешно подтверждён",
+            "changePasswordSuccess": "Ваш пароль был успешно изменён"
+        },
+        "actions": {
+            "signIn": "Войти",
+            "register": "Зарегистрироваться",
+            "verify": "Подтвердить",
+            "recover": "Восстановить",
+            "changePassword": "Изменить пароль",
+            "close": "Закрыть",
+            "resendCode": "Отправить код повторно"
+        },
+        "footer": {
+            "rememberMe": "Запомнить меня",
+            "forgotPassword": "Забыли пароль?",
+            "notRegistered": "Нет аккаунта? Зарегистрироваться",
+            "alreadyRegistered": "Уже есть аккаунт? Войти",
+            "backToLogin": "Вернуться к входу",
+            "backToRegistration": "Вернуться к регистрации",
+            "backToRecover": "Вернуться к восстановлению",
+            "acceptTerms": "Я согласен с",
+            "termsLink": "Условиями обслуживания"
+        }
     }
 }
   

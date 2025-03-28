@@ -17,6 +17,105 @@
     "theme": {
         "light": "Light theme",
         "dark": "Dark theme"
+    },
+    "auth": {
+        "header": {
+            "login": "Sign In",
+            "register": "Create Account",
+            "verifyEmail": "Verify Email",
+            "recoverAccount": "Recover Account",
+            "recoverVerify": "Verify Recovery Code",
+            "changePassword": "Change Password"
+        },
+        "labels": {
+            "nickname": "Username",
+            "email": "Email",
+            "password": "Password",
+            "confirmPassword": "Confirm Password"
+        },
+        "placeholders": {
+            "nickname": "Enter your username",
+            "email": "Enter your email",
+            "password": "Enter your password",
+            "confirmPassword": "Confirm your password"
+        },
+        "rules": {
+            "nickname": "3-20 characters, letters, numbers and underscores only",
+            "email": "Enter a valid email address",
+            "password": "At least 8 characters",
+            "confirmPassword": "Passwords must match"
+        },
+        "errors": {
+            "title": {
+                "loginFailed": "Login Failed",
+                "registerFailed": "Registration Failed",
+                "verifyFailed": "Verification Failed",
+                "recoverFailed": "Recovery Failed",
+                "recoverVerifyFailed": "Verification Failed",
+                "changePasswordFailed": "Password Change Failed",
+                "accountNotVerified": "Account Not Verified"
+            },
+            "detail": {
+                "user_not_found": "User with this email was not found",
+                "invalid_credentials": "Invalid email or password",
+                "user_exists": "User with this email already exists",
+                "invalid_verification_code": "The verification code is invalid or expired",
+                "accountNotVerified": "Your account needs verification. Please check your email for the verification code.",
+                "password_change_success": "Password has been changed successfully",
+                "verification_code_sent": "Verification code has been sent to your email",
+                "registration_success": "Registration successful. Please check your email for verification code",
+                "verification_success": "Email verified successfully"
+            },
+            "general": "An error occurred. Please try again.",
+            "emailMissing": "Email is required",
+            "emailInvalid": "Invalid email format",
+            "nicknameMissing": "Username is required",
+            "nicknameShort": "Username must be at least 3 characters",
+            "nicknameLong": "Username must be no more than 20 characters",
+            "nicknameInvalid": "Only letters, numbers and underscores are allowed",
+            "passwordMissing": "Password is required",
+            "passwordShort": "Password must be at least 8 characters",
+            "confirmPasswordMissing": "Please confirm your password",
+            "passwordMismatch": "Passwords don't match",
+            "codeMissing": "Verification code is required",
+            "codeInvalid": "Code must be 6 digits",
+            "loginFailed": "Invalid email or password",
+            "registerFailed": "Registration failed. Please try again.",
+            "verifyFailed": "Invalid verification code",
+            "recoverFailed": "Failed to send recovery email",
+            "recoverVerifyFailed": "Invalid recovery code",
+            "changePasswordFailed": "Failed to change password",
+            "terms": "You must accept the terms and conditions"
+        },
+        "success": {
+            "title": {
+                "loginSuccess": "Success",
+                "verifySuccess": "Email Verified",
+                "changePasswordSuccess": "Password Changed"
+            },
+            "loginSuccess": "You have successfully logged in",
+            "verifySuccess": "Your email has been verified",
+            "changePasswordSuccess": "Your password has been changed successfully"
+        },
+        "actions": {
+            "signIn": "Sign In",
+            "register": "Register",
+            "verify": "Verify",
+            "recover": "Recover",
+            "changePassword": "Change Password",
+            "close": "Close",
+            "resendCode": "Resend code"
+        },
+        "footer": {
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot password?",
+            "notRegistered": "Don't have an account? Sign Up",
+            "alreadyRegistered": "Already have an account? Sign In",
+            "backToLogin": "Back to Sign In",
+            "backToRegistration": "Back to Registration",
+            "backToRecover": "Back to Recovery",
+            "acceptTerms": "I agree to the",
+            "termsLink": "Terms of Service"
+        }
     }
 }
-  
