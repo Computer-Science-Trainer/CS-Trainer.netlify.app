@@ -712,86 +712,94 @@ export default function AuthWindow({
 
   // Form renderers
   const renderLoginForm = () => (
-    <Form onSubmit={handleSubmit} className="space-y-4">
-      {renderEmailInput()}
-      {renderPasswordInput()}
-      <div className="flex justify-between items-center">
-        <Checkbox classNames={{ label: "text-small" }}>
-          {t("auth.footer.rememberMe")}
-        </Checkbox>
-        <Link 
-          color="primary" 
-          size="sm" 
-          onPress={() => setAuthState(AuthState.Recover)}
-        >
-          {t("auth.footer.forgotPassword")}
-        </Link>
-      </div>
-      <div className="flex justify-end pt-2">
-        <Link 
-          color="primary" 
-          size="sm" 
-          onPress={() => setAuthState(AuthState.Register)}
-        >
-          {t("auth.footer.notRegistered")}
-        </Link>
+    <Form onSubmit={handleSubmit}>
+      <div className="w-full justify-between space-y-4">
+        {renderEmailInput()}
+        {renderPasswordInput()}
+        <div className="flex justify-between items-center">
+          <Checkbox classNames={{ label: "text-small" }}>
+            {t("auth.footer.rememberMe")}
+          </Checkbox>
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Recover)}
+          >
+            {t("auth.footer.forgotPassword")}
+          </Link>
+        </div>
+        <div className="flex justify-end pt-2">
+          <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Register)}
+          >
+            {t("auth.footer.notRegistered")}
+          </Link>
+        </div>
       </div>
     </Form>
-  );
+  );  
 
   const renderRegisterForm = () => (
-    <Form onSubmit={handleSubmit} className="space-y-4">
-      {renderNicknameInput()}
-      {renderEmailInput()}
-      {renderPasswordInput()}
-      {renderConfirmPasswordInput()}
-      {renderTermsCheckbox()}
-      <div className="flex justify-between items-center pt-2">
-        <Checkbox classNames={{ label: "text-small" }}>
-          {t("auth.footer.rememberMe")}
-        </Checkbox>
-        <Link 
-          color="primary" 
-          size="sm" 
-          onPress={() => setAuthState(AuthState.Login)}
-        >
-          {t("auth.footer.alreadyRegistered")}
-        </Link>
+    <Form onSubmit={handleSubmit}>
+      <div className="w-full justify-between space-y-4">
+        {renderNicknameInput()}
+        {renderEmailInput()}
+        {renderPasswordInput()}
+        {renderConfirmPasswordInput()}
+        {renderTermsCheckbox()}
+        <div className="flex justify-between items-center pt-2">
+            <Checkbox classNames={{ label: "text-small" }}>
+            {t("auth.footer.rememberMe")}
+            </Checkbox>
+            <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Login)}
+            >
+            {t("auth.footer.alreadyRegistered")}
+            </Link>
+        </div>
       </div>
     </Form>
   );
 
   const renderRecoverForm = () => (
-    <Form onSubmit={handleSubmit} className="space-y-4">
-      {renderEmailInput()}
-      <div className="flex justify-end pt-2">
-        <Link 
-          color="primary" 
-          size="sm" 
-          onPress={() => setAuthState(AuthState.Login)}
-        >
-          {t("auth.footer.backToLogin")}
-        </Link>
+    <Form onSubmit={handleSubmit}>
+      <div className="w-full justify-between space-y-4">
+        {renderEmailInput()}
+        <div className="flex justify-end pt-2">
+            <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Login)}
+            >
+            {t("auth.footer.backToLogin")}
+            </Link>
+        </div>
       </div>
     </Form>
   );
 
   const renderChangePasswordForm = () => (
-    <Form onSubmit={handleSubmit} className="space-y-4">
-      {renderEmailInput(true)}
-      {renderPasswordInput()}
-      {renderConfirmPasswordInput()}
-      <div className="flex justify-between items-center pt-2">
-        <Checkbox classNames={{ label: "text-small" }}>
-          {t("auth.footer.rememberMe")}
-        </Checkbox>
-        <Link 
-          color="primary" 
-          size="sm" 
-          onPress={() => setAuthState(AuthState.Login)}
-        >
-          {t("auth.footer.backToLogin")}
-        </Link>
+    <Form onSubmit={handleSubmit}>
+      <div className="w-full justify-between space-y-4">
+        {renderEmailInput(true)}
+        {renderPasswordInput()}
+        {renderConfirmPasswordInput()}
+        <div className="flex justify-between items-center pt-2">
+            <Checkbox classNames={{ label: "text-small" }}>
+            {t("auth.footer.rememberMe")}
+            </Checkbox>
+            <Link 
+            color="primary" 
+            size="sm" 
+            onPress={() => setAuthState(AuthState.Login)}
+            >
+            {t("auth.footer.backToLogin")}
+            </Link>
+        </div>
       </div>
     </Form>
   );
