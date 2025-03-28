@@ -28,6 +28,7 @@ import {
   Tooltip,
   Spinner,
   addToast,
+  Form,
 } from "@heroui/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -717,7 +718,7 @@ export default function AuthWindow({
 
   // Form renderers
   const renderLoginForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Form onSubmit={handleSubmit} className="space-y-4">
       {renderEmailInput()}
       {renderPasswordInput()}
       <div className="flex justify-between items-center">
@@ -741,11 +742,11 @@ export default function AuthWindow({
           {t("auth.footer.notRegistered")}
         </Link>
       </div>
-    </form>
+    </Form>
   );
 
   const renderRegisterForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Form onSubmit={handleSubmit} className="space-y-4">
       {renderNicknameInput()}
       {renderEmailInput()}
       {renderPasswordInput()}
@@ -763,11 +764,11 @@ export default function AuthWindow({
           {t("auth.footer.alreadyRegistered")}
         </Link>
       </div>
-    </form>
+    </Form>
   );
 
   const renderRecoverForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Form onSubmit={handleSubmit} className="space-y-4">
       {renderEmailInput()}
       <div className="flex justify-end pt-2">
         <Link 
@@ -778,11 +779,11 @@ export default function AuthWindow({
           {t("auth.footer.backToLogin")}
         </Link>
       </div>
-    </form>
+    </Form>
   );
 
   const renderChangePasswordForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Form onSubmit={handleSubmit} className="space-y-4">
       {renderEmailInput(true)}
       {renderPasswordInput()}
       {renderConfirmPasswordInput()}
@@ -798,7 +799,7 @@ export default function AuthWindow({
           {t("auth.footer.backToLogin")}
         </Link>
       </div>
-    </form>
+    </Form>
   );
 
   const renderVerificationCodeInput = () => {
