@@ -805,28 +805,92 @@ export default function AuthWindow({
   );
 
   const renderVerificationCodeInput = () => {
+    const getValue = (index: number) =>
+      verificationCode[index] && verificationCode[index] !== " " 
+        ? verificationCode[index] 
+        : "";
+  
     const handleCodeChange = (index: number, value: string) => {
       if (/^[0-9]?$/.test(value)) {
-        const codeArr = Array.from(verificationCode.padEnd(6, ' '));
+        const codeArr = Array.from(verificationCode.padEnd(6, " "));
         codeArr[index] = value;
-        const newCode = codeArr.join('').trim();
+        const newCode = codeArr.join("");
         setVerificationCode(newCode);
-        
+  
         if (value && index < 5) {
-          const nextInput = document.getElementById(`code-${index + 1}`);
-          if (nextInput) (nextInput as HTMLInputElement).focus();
+          const nextInput = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+          if (nextInput) {
+            nextInput.focus();
+            const length = getValue(index + 1).length;
+            nextInput.setSelectionRange(length, length);
+          }
         }
       }
     };
   
     const handlePaste = (e: React.ClipboardEvent) => {
       e.preventDefault();
-      const pasteData = e.clipboardData.getData('text/plain').replace(/\D/g, '').substring(0, 6);
+      const pasteData = e.clipboardData
+        .getData("text/plain")
+        .replace(/\D/g, "")
+        .substring(0, 6);
       if (pasteData.length === 6) {
         setVerificationCode(pasteData);
       }
     };
-
+  
+    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+      const input = e.target as HTMLInputElement;
+  
+      if (/^\d$/.test(e.key)) {
+        if (input.value !== "" && input.selectionStart === input.selectionEnd) {
+          e.preventDefault();
+          const codeArr = Array.from(verificationCode.padEnd(6, " "));
+          codeArr[index] = e.key;
+          setVerificationCode(codeArr.join(""));
+          if (index < 5) {
+            const nextInput = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+            if (nextInput) {
+              nextInput.focus();
+              const length = getValue(index + 1).length;
+              nextInput.setSelectionRange(length, length);
+            }
+          }
+          return;
+        }
+      }
+  
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        const codeArr = Array.from(verificationCode.padEnd(6, " "));
+        if (codeArr[index].trim() !== "") {
+          codeArr[index] = " ";
+          setVerificationCode(codeArr.join(""));
+        } else if (index > 0) {
+          const prevInput = document.getElementById(`code-${index - 1}`) as HTMLInputElement;
+          if (prevInput) {
+            prevInput.focus();
+            const length = getValue(index - 1).length;
+            prevInput.setSelectionRange(length, length);
+          }
+        }
+      } else if (e.key === "ArrowLeft" && index > 0) {
+        const prevInput = document.getElementById(`code-${index - 1}`) as HTMLInputElement;
+        if (prevInput) {
+          prevInput.focus();
+          const length = getValue(index - 1).length;
+          prevInput.setSelectionRange(length, length);
+        }
+      } else if (e.key === "ArrowRight" && index < 5) {
+        const nextInput = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+        if (nextInput) {
+          nextInput.focus();
+          const length = getValue(index + 1).length;
+          nextInput.setSelectionRange(length, length);
+        }
+      }
+    };
+  
     return (
       <div className="space-y-6">
         {renderEmailInput(true)}
@@ -837,9 +901,10 @@ export default function AuthWindow({
               id={`code-${index}`}
               type="text"
               maxLength={1}
-              value={verificationCode[index] || ""}
+              value={getValue(index)}
               onChange={(e) => handleCodeChange(index, e.target.value)}
               onPaste={handlePaste}
+              onKeyDown={(e) => handleKeyDown(index, e)}
               className="w-12 h-12 text-center text-xl border-2 rounded-lg focus:border-primary focus:outline-none"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -847,18 +912,22 @@ export default function AuthWindow({
           ))}
         </div>
         {errors.verificationCode && (
-          <p className="text-danger text-sm text-center">{errors.verificationCode}</p>
+          <p className="text-danger text-sm text-center">
+            {errors.verificationCode}
+          </p>
         )}
         <div className="flex justify-center pt-4">
-          <Link 
-            color="primary" 
-            size="sm" 
-            onPress={() => setAuthState(
-              authState === AuthState.Verify ? AuthState.Register : AuthState.Recover
-            )}
+          <Link
+            color="primary"
+            size="sm"
+            onPress={() =>
+              setAuthState(
+                authState === AuthState.Verify ? AuthState.Register : AuthState.Recover
+              )
+            }
           >
-            {authState === AuthState.Verify 
-              ? t("auth.footer.backToRegistration") 
+            {authState === AuthState.Verify
+              ? t("auth.footer.backToRegistration")
               : t("auth.footer.backToRecover")}
           </Link>
         </div>
