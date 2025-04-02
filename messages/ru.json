@@ -4,14 +4,14 @@
     "telegramBot": "Telegram-бот",
     "nav": {
         "problems": "Задачи",
-        "news": "Новости",
+        "leaderboard": "Таблица лидеров",
         "about": "О нас",
-        "search_placeholder": "Искать...",
+        "search_placeholder": "Поиск...",
         "login": "Войти"
-      },
+    },
     "menu": {
         "profile": "Профиль",
-        "rating": "Рейтинг",
+        "leaderboard": "Таблица лидеров",
         "logout": "Выйти"
     },
     "theme": {
@@ -20,27 +20,27 @@
     },
     "auth": {
         "header": {
-            "login": "Вход",
-            "register": "Регистрация",
-            "verifyEmail": "Подтверждение Email",
-            "recoverAccount": "Восстановление аккаунта",
-            "recoverVerify": "Подтверждение кода",
-            "changePassword": "Смена пароля"
+            "login": "Войти",
+            "register": "Создать аккаунт",
+            "verifyEmail": "Подтвердите Email",
+            "recoverAccount": "Восстановить аккаунт",
+            "recoverVerify": "Проверить код восстановления",
+            "changePassword": "Сменить пароль"
         },
         "labels": {
             "nickname": "Имя пользователя",
             "email": "Email",
             "password": "Пароль",
-            "confirmPassword": "Подтверждение пароля"
+            "confirmPassword": "Подтвердите пароль"
         },
         "placeholders": {
             "nickname": "Введите имя пользователя",
-            "email": "Введите ваш email",
+            "email": "Введите Email",
             "password": "Введите пароль",
             "confirmPassword": "Подтвердите пароль"
         },
         "rules": {
-            "nickname": "3-20 символов, только буквы, цифры и подчёркивания",
+            "nickname": "От 3 до 20 символов: буквы, цифры и только нижнее подчеркивание",
             "email": "Введите корректный email",
             "password": "Минимум 8 символов",
             "confirmPassword": "Пароли должны совпадать"
@@ -51,9 +51,9 @@
                 "registerFailed": "Ошибка регистрации",
                 "verifyFailed": "Ошибка подтверждения",
                 "recoverFailed": "Ошибка восстановления",
-                "recoverVerifyFailed": "Ошибка подтверждения",
+                "recoverVerifyFailed": "Ошибка проверки",
                 "changePasswordFailed": "Ошибка смены пароля",
-                "accountNotVerified": "Аккаунт не подтверждён"
+                "accountNotVerified": "Аккаунт не подтвержден"
             },
             "detail": {
                 "user_not_found": "Пользователь с таким email не найден",
@@ -63,39 +63,39 @@
                 "accountNotVerified": "Ваш аккаунт требует подтверждения. Пожалуйста, проверьте вашу почту для получения кода подтверждения.",
                 "password_change_success": "Пароль успешно изменён",
                 "verification_code_sent": "Код подтверждения отправлен на ваш email",
-                "registration_success": "Регистрация прошла успешно. Проверьте ваш email для получения кода подтверждения",
-                "verification_success": "Email успешно подтверждён"
+                "registration_success": "Регистрация успешна. Проверьте почту для подтверждения",
+                "verification_success": "Email успешно подтвержден"
             },
-            "general": "Произошла ошибка. Пожалуйста, попробуйте ещё раз.",
+            "general": "Произошла ошибка. Попробуйте ещё раз.",
             "emailMissing": "Email обязателен",
-            "emailInvalid": "Неверный формат email",
+            "emailInvalid": "Некорректный формат email",
             "nicknameMissing": "Имя пользователя обязательно",
             "nicknameShort": "Имя пользователя должно быть не менее 3 символов",
             "nicknameLong": "Имя пользователя должно быть не более 20 символов",
-            "nicknameInvalid": "Допустимы только буквы, цифры и подчёркивания",
+            "nicknameInvalid": "Допускаются только буквы, цифры и нижнее подчеркивание",
             "passwordMissing": "Пароль обязателен",
             "passwordShort": "Пароль должен быть не менее 8 символов",
             "confirmPasswordMissing": "Подтвердите пароль",
             "passwordMismatch": "Пароли не совпадают",
             "codeMissing": "Код подтверждения обязателен",
-            "codeInvalid": "Код должен содержать 6 цифр",
+            "codeInvalid": "Код должен состоять из 6 цифр",
             "loginFailed": "Неверный email или пароль",
-            "registerFailed": "Ошибка регистрации. Попробуйте ещё раз.",
+            "registerFailed": "Регистрация не удалась. Попробуйте ещё раз.",
             "verifyFailed": "Неверный код подтверждения",
             "recoverFailed": "Ошибка отправки письма для восстановления",
             "recoverVerifyFailed": "Неверный код восстановления",
-            "changePasswordFailed": "Ошибка смены пароля",
-            "terms": "Вы должны принять условия обслуживания"
+            "changePasswordFailed": "Не удалось изменить пароль",
+            "terms": "Вы должны принять условия использования"
         },
         "success": {
             "title": {
                 "loginSuccess": "Успешно",
-                "verifySuccess": "Email подтверждён",
-                "changePasswordSuccess": "Пароль изменён"
+                "verifySuccess": "Email подтвержден",
+                "changePasswordSuccess": "Пароль изменен"
             },
             "loginSuccess": "Вы успешно вошли в систему",
-            "verifySuccess": "Ваш email успешно подтверждён",
-            "changePasswordSuccess": "Ваш пароль был успешно изменён"
+            "verifySuccess": "Ваш email успешно подтвержден",
+            "changePasswordSuccess": "Ваш пароль был успешно изменен"
         },
         "actions": {
             "signIn": "Войти",
@@ -117,6 +117,27 @@
             "acceptTerms": "Я согласен с",
             "termsLink": "Условиями обслуживания"
         }
+    },
+    "leaderboard": {
+        "title": "Рейтинг",
+        "ariaLabel": "Рейтинг тренера по компьютерным наукам",
+        "searchPlaceholder": "Поиск участников...",
+        "totalParticipants": "Всего {count} участников",
+        "showingParticipants": "Показано {shown} из {total} участников",
+        "points": "очков",
+        "table": {
+            "rank": "Место",
+            "user": "Пользователь",
+            "score": "Очки",
+            "testsPassed": "Пройдено тестов",
+            "accuracy": "Точность",
+            "lastActivity": "Последняя активность"
+        },
+        "topics": {
+            "fundamentals": "Фундаментальная информатика",
+            "algorithms": "Алгоритмы и структуры данных"
+        },
+        "fetchErrorTitle": "Ошибка получения данных",
+        "fetchError": "Не удалось загрузить данные таблицы лидеров с сервера"
     }
 }
-  
