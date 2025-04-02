@@ -9,8 +9,8 @@ export const siteConfig = {
       href: "/problems",
     },
     {
-      label: "nav.news",
-      href: "/news",
+      label: "nav.leaderboard",
+      href: "/leaderboard",
     },
     {
       label: "nav.about",
@@ -23,17 +23,13 @@ export const siteConfig = {
       href: "/profile",
     },
     {
-      label: "menu.rating",
-      href: "/rating",
-    },
-    {
       label: "nav.problems",
       href: "/problems",
     },
     {
-      label: "nav.news",
-      href: "/news",
-    },
+        label: "menu.leaderboard",
+        href: "/leaderboard",
+      },
     {
       label: "nav.about",
       href: "/about",
