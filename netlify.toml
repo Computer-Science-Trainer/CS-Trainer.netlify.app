@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/login"
+  to = "https://95.165.11.97:8000/:splat"
+  status = 200
+  force = true

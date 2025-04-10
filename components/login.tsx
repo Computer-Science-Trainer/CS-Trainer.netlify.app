@@ -107,7 +107,7 @@ async function makeApiRequest(endpoint: string, method: string, body?: any) {
     "Content-Type": "application/json",
   };
 
-  const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}/api/${endpoint}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
