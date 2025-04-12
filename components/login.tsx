@@ -172,6 +172,13 @@ export default function AuthWindow({
     }
   }, [password, confirmPassword, isConfirmPasswordDirty]);
 
+  // Reset verification code when auth state changes
+  useEffect(() => {
+    if (authState !== AuthState.Verify && authState !== AuthState.RecoverVerify) {
+      setVerificationCode("");
+    }
+  }, [authState]);
+
   const resetForm = () => {
     setShowPassword(false)
   };
