@@ -41,6 +41,7 @@ import {
   ViewOffSlashIcon,
 } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/context/auth";
 
 /**
  * Authentication State Enum
@@ -140,7 +141,9 @@ export default function AuthWindow({
   onAuthSuccess,
 }: AuthWindowProps) {
   const t = useTranslations(); // Hook for translations
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false); // Loading state for API requests
+  const [rememberMe, setRememberMe] = useState(false); // Remember me
 
   // Form state management
   const [authState, setAuthState] = useState<AuthState>(AuthState.Login); // Current authentication state
@@ -212,7 +215,7 @@ export default function AuthWindow({
     (value: string): string | null => {
       if (!value) return t("auth.errors.nicknameMissing");
       if (value.length < 3) return t("auth.errors.nicknameShort");
-      if (value.length > 20) return t("auth.errors.nicknameLong");
+      if (value.length > 15) return t("auth.errors.nicknameLong");
       if (!/^[a-zA-Z0-9_]+$/.test(value))
         return t("auth.errors.nicknameInvalid");
       return null;
@@ -393,7 +396,7 @@ export default function AuthWindow({
         color: 'success'
       });
       
-      if (onAuthSuccess) onAuthSuccess(data.token);
+      login(data.token, rememberMe);
       onOpenChange(false);
     } catch (error: any) {
       if (error.message === "account_not_verified") {
@@ -429,12 +432,12 @@ export default function AuthWindow({
   const handleVerify = async () => {
     try {
       const data = await makeApiRequest('auth/verify', 'POST', { email, code: verificationCode });
+      login(data.token, rememberMe);
       addToast({
         title: t("auth.success.title.verifySuccess"),
         description: t("auth.success.verifySuccess"),
         color: 'success'
       });
-      if (onAuthSuccess) onAuthSuccess(data.token);
       onOpenChange(false);
     } catch (error: any) {
       addToast({
@@ -501,6 +504,7 @@ export default function AuthWindow({
         code: verificationCode, 
         password 
       });
+      login(data.token, rememberMe);
       addToast({
         title: t("auth.success.title.changePasswordSuccess"),
         description: t("auth.success.changePasswordSuccess"),
@@ -558,6 +562,7 @@ export default function AuthWindow({
     confirmPassword,
     verificationCode,
     termsAccepted,
+    rememberMe,
     validateCurrentForm,
     t
   ]);
@@ -724,7 +729,11 @@ export default function AuthWindow({
         {renderEmailInput()}
         {renderPasswordInput()}
         <div className="flex justify-between items-center">
-          <Checkbox classNames={{ label: "text-small" }}>
+          <Checkbox
+            isSelected={rememberMe}
+            onValueChange={setRememberMe}
+            classNames={{ label: "text-small" }}
+          >
             {t("auth.footer.rememberMe")}
           </Checkbox>
           <Link 
@@ -757,8 +766,12 @@ export default function AuthWindow({
         {renderConfirmPasswordInput()}
         {renderTermsCheckbox()}
         <div className="flex justify-between items-center pt-2">
-            <Checkbox classNames={{ label: "text-small" }}>
-            {t("auth.footer.rememberMe")}
+            <Checkbox 
+              classNames={{ label: "text-small" }}
+              isSelected={rememberMe}
+              onValueChange={setRememberMe}
+            >
+              {t("auth.footer.rememberMe")}
             </Checkbox>
             <Link 
             color="primary" 
@@ -796,7 +809,11 @@ export default function AuthWindow({
         {renderPasswordInput()}
         {renderConfirmPasswordInput()}
         <div className="flex justify-between items-center pt-2">
-            <Checkbox classNames={{ label: "text-small" }}>
+            <Checkbox
+              isSelected={rememberMe}
+              onValueChange={setRememberMe}
+              classNames={{ label: "text-small" }}
+            >
             {t("auth.footer.rememberMe")}
             </Checkbox>
             <Link 
@@ -1031,7 +1048,7 @@ export default function AuthWindow({
               </Button>
               <Button 
                   color="primary" 
-                  onPress={() => handleSubmit()} // Без передачи события
+                  onPress={() => handleSubmit()}
                   isDisabled={!isFormValid || isLoading}
                   >
                   {isLoading ? <Spinner color="white" size="sm" /> : getSubmitButtonText()}

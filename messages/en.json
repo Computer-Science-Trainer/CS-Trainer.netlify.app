@@ -139,5 +139,53 @@
         },
         "fetchErrorTitle": "Error Fetching Data",
         "fetchError": "Unable to retrieve leaderboard data from the server"
+    },
+    "settings": {
+        "profileTitle": "Profile Settings",
+        "infoHeading": "Information",
+        "bioLabel": "Biography",
+        "nicknameLabel": "Nickname",
+        "emailLabel": "Email",
+        "telegramLabel": "Telegram Username",
+        "githubLabel": "GitHub Username",
+        "websiteLabel": "Website",
+        "saveButton": "Save",
+        "changePasswordHeading": "Change Password",
+        "currentPasswordLabel": "Current Password",
+        "newPasswordLabel": "New Password",
+        "confirmNewPasswordLabel": "Confirm New Password",
+        "changePasswordButton": "Change Password",
+        "logoutButton": "Log Out",
+        "placeholders": {
+            "nickname": "Enter your nickname",
+            "email": "Enter your email",
+            "telegram": "Enter your Telegram username",
+            "github": "Enter your GitHub username",
+            "website": "For example, your website URL",
+            "currentPassword": "Enter your current password",
+            "newPassword": "Enter your new password",
+            "confirmNewPassword": "Repeat your new password"
+        },
+        "profileUpdated": "Profile updated",
+        "updateError": "Profile update failed",
+        "passwordMismatch": "New passwords do not match",
+        "passwordChangeSuccess": "Password changed",
+        "passwordChangeError": "Password change failed"
+    },
+    "profile": {
+        "achievementsTab": "Achievements",
+        "statsTab": "Statistics",
+        "achievementsHeading": "Achievements",
+        "statsHeading": "Statistics",
+        "testsTakenLabel": "Tests Passed:",
+        "avgScoreLabel": "Average Score:",
+        "activityHeading": "Activity",
+        "testResultsHeading": "Test Results",
+        "clearFilterTooltip": "Clear filters",
+        "showMoreButton": "Show More",
+        "noTestsMessage": "No results for the selected date",
+        "selectDateMessage": "Select a date to view results",
+        "editProfileButton": "Edit Profile",
+        "logoutButton": "Log Out"
     }
 }

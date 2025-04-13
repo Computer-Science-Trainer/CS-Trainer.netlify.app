@@ -139,5 +139,53 @@
         },
         "fetchErrorTitle": "Ошибка получения данных",
         "fetchError": "Не удалось загрузить данные таблицы лидеров с сервера"
+    },
+    "settings": {
+        "profileTitle": "Настройки профиля",
+        "infoHeading": "Информация",
+        "bioLabel": "Биография",
+        "nicknameLabel": "Никнейм",
+        "emailLabel": "Email",
+        "telegramLabel": "Telegram username",
+        "githubLabel": "GitHub username",
+        "websiteLabel": "Доп. ссылка",
+        "saveButton": "Сохранить",
+        "changePasswordHeading": "Сменить пароль",
+        "currentPasswordLabel": "Текущий пароль",
+        "newPasswordLabel": "Новый пароль",
+        "confirmNewPasswordLabel": "Повтор нового пароля",
+        "changePasswordButton": "Поменять пароль",
+        "logoutButton": "Выйти из аккаунта",
+        "placeholders": {
+            "nickname": "Введите никнейм",
+            "email": "Введите email",
+            "telegram": "Введите ник в Telegram",
+            "github": "Введите ник на GitHub",
+            "website": "Например, ваш сайт",
+            "currentPassword": "Введите текущий пароль",
+            "newPassword": "Введите новый пароль",
+            "confirmNewPassword": "Повторите новый пароль"
+        },
+        "profileUpdated": "Профиль обновлен",
+        "updateError": "Ошибка обновления",
+        "passwordMismatch": "Новые пароли не совпадают",
+        "passwordChangeSuccess": "Пароль изменен",
+        "passwordChangeError": "Ошибка смены пароля"
+    },
+    "profile": {
+        "achievementsTab": "Достижения",
+        "statsTab": "Статистика",
+        "achievementsHeading": "Достижения",
+        "statsHeading": "Статистика",
+        "testsTakenLabel": "Пройдено тестов:",
+        "avgScoreLabel": "Средний результат:",
+        "activityHeading": "Активность",
+        "testResultsHeading": "Результаты тестов",
+        "clearFilterTooltip": "Сбросить фильтры",
+        "showMoreButton": "Показать ещё",
+        "noTestsMessage": "Нет результатов за выбранную дату",
+        "selectDateMessage": "Выберите дату для просмотра результатов",
+        "editProfileButton": "Редактировать профиль",
+        "logoutButton": "Выйти"
     }
 }
