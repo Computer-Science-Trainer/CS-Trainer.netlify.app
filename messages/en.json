@@ -4,14 +4,14 @@
     "telegramBot": "Telegram-bot",
     "nav": {
         "problems": "Problems",
-        "news": "News",
+        "leaderboard": "Leaderboard",
         "about": "About",
         "search_placeholder": "Search...",
         "login": "Log in"
     },
     "menu": {
         "profile": "Profile",
-        "rating": "Rating",
+        "leaderboard": "Leaderboard",
         "logout": "Logout"
     },
     "theme": {
@@ -117,5 +117,27 @@
             "acceptTerms": "I agree to the",
             "termsLink": "Terms of Service"
         }
+    },
+    "leaderboard": {
+        "title": "Leaderboard",
+        "ariaLabel": "Computer Science Trainer Leaderboard",
+        "searchPlaceholder": "Search participants...",
+        "totalParticipants": "Total {count} participants",
+        "showingParticipants": "Showing {shown} of {total} participants",
+        "points": "points",
+        "table": {
+            "rank": "Rank",
+            "user": "User",
+            "score": "Score",
+            "testsPassed": "Tests Passed",
+            "accuracy": "Accuracy",
+            "lastActivity": "Last Activity"
+        },
+        "topics": {
+            "fundamentals": "Fundamental Informatics",
+            "algorithms": "Algorithms and Data Structures"
+        },
+        "fetchErrorTitle": "Error Fetching Data",
+        "fetchError": "Unable to retrieve leaderboard data from the server"
     }
 }
