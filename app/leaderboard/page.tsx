@@ -43,6 +43,9 @@ export default function Leaderboard() {
   // Initialize translations hook.
   const t = useTranslations();
 
+  // Define API base URL from environment variables.
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  
   // Define current user id.
   const currentUserId = 9;
 
@@ -54,7 +57,12 @@ export default function Leaderboard() {
   // Fetch leaderboard data from the backend.
   React.useEffect(() => {
     setLoading(true);
-    fetch("/api/leaderboard")
+    fetch(`${API_BASE_URL}/api/leaderboard`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((res) => {
         if (!res.ok) {
           throw new Error("Server error");
