@@ -47,10 +47,44 @@ export default function Leaderboard() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   
   // Define current user id.
-  const currentUserId = 9;
+  const currentUserId = -1;
+
+  // Component state for search filter, current topic, pagination, and sorting.
+  const [filterValue, setFilterValue] = React.useState("");
+  const [selectedTopic, setSelectedTopic] = React.useState<"fundamentals" | "algorithms">("fundamentals");
+  const [rowsPerPage] = React.useState(7);
+  const [sortDescriptor, setSortDescriptor] = React.useState<{ column: string; direction: "ascending" | "descending" }>({
+      column: "score",
+      direction: "descending",
+  });
+  const [page, setPage] = React.useState(1);
 
   // State for leaderboard data, loading indicator, and error message.
-  const [usersData, setUsersData] = React.useState<User[]>([]);
+  // raw JSON from API
+  const [rawData, setRawData] = React.useState<{ fundamentals: any[]; algorithms: any[] }>({
+    fundamentals: [],
+    algorithms: [],
+  });
+  const emptyTopicProgress: TopicProgress = { score: 0, testsPassed: 0, totalTests: 0, lastActivity: "" };
+
+  // build usersData based on selectedTopic only
+  const usersData = React.useMemo(() => {
+    return (rawData[selectedTopic] || []).map((item: any) => ({
+      id: item.id,
+      username: item.nickname,
+      achievement: item.achievement ?? "",
+      avatar: item.avatar || "",
+      fundamentals:
+        selectedTopic === "fundamentals"
+          ? { score: item.score, testsPassed: item.testPassed, totalTests: item.totalTests, lastActivity: item.lastActivity }
+          : emptyTopicProgress,
+      algorithms:
+        selectedTopic === "algorithms"
+          ? { score: item.score, testsPassed: item.testPassed, totalTests: item.totalTests, lastActivity: item.lastActivity }
+          : emptyTopicProgress,
+    }));
+  }, [rawData, selectedTopic]);
+
   const [loading, setLoading] = React.useState<boolean>(false);
   const [fetchError, setFetchError] = React.useState<string | null>(null);
 
@@ -59,28 +93,30 @@ export default function Leaderboard() {
     setLoading(true);
     fetch(`${API_BASE_URL}/api/leaderboard`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     })
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Server error");
-        }
+        if (!res.ok) throw new Error("Server error");
         return res.json();
       })
-      .then((data) => {
-        setUsersData(data);
+      .then((data: any) => {
+        // normalize backend shape: { fundamentals: [...], algorithms: [...] }
+        if (data && Array.isArray(data.fundamentals) && Array.isArray(data.algorithms)) {
+          // store raw arrays, UI will pick fundamentals or algorithms based on tab
+          setRawData({ fundamentals: data.fundamentals, algorithms: data.algorithms });
+        } else {
+          console.error("Unexpected API response format:", data);
+          setRawData({ fundamentals: [], algorithms: [] });
+        }
         setLoading(false);
       })
       .catch((err: Error) => {
         setFetchError(err.message);
         setLoading(false);
-        // Display toast error if data cannot be fetched.
         addToast({
-            title: t("leaderboard.fetchErrorTitle"),
-            description: t("leaderboard.fetchError"),
-            color: "danger",
+          title: t("leaderboard.fetchErrorTitle"),
+          description: t("leaderboard.fetchError"),
+          color: "danger",
         });
       });
   }, [t]);
@@ -106,16 +142,6 @@ export default function Leaderboard() {
     { name: t("leaderboard.topics.fundamentals"), uid: "fundamentals" },
     { name: t("leaderboard.topics.algorithms"), uid: "algorithms" },
   ];
-
-  // Component state for search filter, current topic, pagination, and sorting.
-  const [filterValue, setFilterValue] = React.useState("");
-  const [selectedTopic, setSelectedTopic] = React.useState<"fundamentals" | "algorithms">("fundamentals");
-  const [rowsPerPage] = React.useState(7);
-  const [sortDescriptor, setSortDescriptor] = React.useState<{ column: string; direction: "ascending" | "descending" }>({
-    column: "score",
-    direction: "descending",
-  });
-  const [page, setPage] = React.useState(1);
 
   // Calculate total pages available.
   const pages = Math.ceil(usersData.length / rowsPerPage);
@@ -167,18 +193,22 @@ export default function Leaderboard() {
   // Build the list of items to display. On page 1 without search,
   // always display 7 rows (either top 7 or 6 plus a special "current user" row).
   const displayItems = React.useMemo(() => {
+    const isMissingInTop = !sortedFilteredItems.slice(0, 7).some(u => u.id === currentUserId);
+
     if (!hasSearchFilter && page === 1) {
       const top7 = sortedFilteredItems.slice(0, 7);
-      const isCurrentInTop = top7.some((user) => user.id === currentUserId);
-      if (isCurrentInTop) {
+      if (!isMissingInTop || !currentUser) {
         return top7;
       } else {
-        // Use 6 top items and append a special row for the current user.
         const top6 = sortedFilteredItems.slice(0, 6);
-        return [...top6, { isMyRank: true } as any];
+        return [...top6, { isMyRank: true, id: -1 } as any];
       }
     }
-    const start = (page - 1) * rowsPerPage;
+
+    let start = (page - 1) * rowsPerPage;
+    if (!hasSearchFilter && page > 1 && (!isMissingInTop || currentUser)) {
+      start = start - 1;
+    }
     return sortedFilteredItems.slice(start, start + rowsPerPage);
   }, [page, sortedFilteredItems, rowsPerPage, hasSearchFilter, currentUserId]);
 
