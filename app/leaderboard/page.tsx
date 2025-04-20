@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useAuth } from "@/context/auth";
 import {
   Table,
   TableHeader,
@@ -42,12 +43,13 @@ interface User {
 export default function Leaderboard() {
   // Initialize translations hook.
   const t = useTranslations();
+  const { user } = useAuth();
 
   // Define API base URL from environment variables.
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   
   // Define current user id.
-  const currentUserId = -1;
+  const currentUserId = user?.id ?? -1;
 
   // Component state for search filter, current topic, pagination, and sorting.
   const [filterValue, setFilterValue] = React.useState("");
