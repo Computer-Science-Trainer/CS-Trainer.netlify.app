@@ -97,7 +97,14 @@ export default function SettingsProfilePage() {
           <div className="flex w-full items-start gap-6 mb-4">
             <div
               className="w-24 h-24 rounded-full overflow-hidden border cursor-pointer"
+              role="button"
+              tabIndex={0}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  fileInputRef.current?.click();
+                }
+              }}
             >
               {avatarPreview ? (
                 <img
