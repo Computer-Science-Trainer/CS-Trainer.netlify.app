@@ -16,7 +16,7 @@ interface AuthContextValue {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue>({} as any);
+const AuthContext = createContext<AuthContextValue>({} as AuthContextValue);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -83,4 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  return ctx;
+};
