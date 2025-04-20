@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth";
 import { Input, Form, Button, addToast, Card, Textarea, Avatar } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import { makeApiRequest } from "@/config/api";
 
 export default function SettingsProfilePage() {
   const { user, logout, login } = useAuth();
@@ -17,7 +18,6 @@ export default function SettingsProfilePage() {
     }
   }, [user, router]);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   const [nickname, setNickname] = useState(user?.username || "");
   const [email, setEmail] = useState(user?.email || "");
   const [telegram, setTelegram] = useState(user?.telegram || "");
@@ -60,14 +60,8 @@ export default function SettingsProfilePage() {
       form.append("website", website);
       form.append("bio", bio);
       if (avatarFile) form.append("avatar", avatarFile);
-      const res = await fetch(`${API_BASE_URL}/api/auth/update-profile`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token") ?? ""}` },
-        body: form,
-      });
-      if (!res.ok) throw new Error("update_failed");
+      const data = await makeApiRequest(`api/auth/update-profile`, "PATCH", form);
       addToast({ title: t("settings.profileUpdated"), color: "success" });
-      const data = await res.json();
       login(data.token, true);
     } catch (e: any) {
       addToast({ title: t("settings.updateError"), description: e.message, color: "danger" });
@@ -80,15 +74,7 @@ export default function SettingsProfilePage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
-        },
-        body: JSON.stringify({ oldPassword, newPassword }),
-      });
-      if (!res.ok) throw new Error("pwd_change_failed");
+      await makeApiRequest(`api/auth/change-password`, "POST", { oldPassword, newPassword });
       addToast({ title: t("settings.passwordChangeSuccess"), color: "success" });
       setOldPassword("");
       setNewPassword("");

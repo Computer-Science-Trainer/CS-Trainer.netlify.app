@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { makeApiRequest } from "@/config/api";
 
 interface User {
   id: number;
@@ -21,13 +22,10 @@ const AuthContext = createContext<AuthContextValue>({} as AuthContextValue);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
   useEffect(() => {
     const token = localStorage.getItem("token") ?? sessionStorage.getItem("token");
     if (token) {
-      fetch(`${API_BASE_URL}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => r.ok ? r.json() : Promise.reject())
+      makeApiRequest(`api/me`, "GET")
         .then(data => setUser({
           id: data.id,
           username: data.username,
@@ -54,8 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem("token");
     }
 
-    fetch(`${API_BASE_URL}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP error! status: ${r.status}`)))
+    makeApiRequest(`api/me`, "GET")
       .then(data => setUser({
         id: data.id,
         username: data.username,

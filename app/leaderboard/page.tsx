@@ -21,6 +21,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { API_BASE_URL, makeApiRequest } from "@/config/api";
 
 // Define TopicProgress type which contains progress data for a topic.
 interface TopicProgress {
@@ -45,9 +46,6 @@ export default function Leaderboard() {
   const t = useTranslations();
   const { user } = useAuth();
 
-  // Define API base URL from environment variables.
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-  
   // Define current user id.
   const currentUserId = user?.id ?? -1;
 
@@ -93,14 +91,7 @@ export default function Leaderboard() {
   // Fetch leaderboard data from the backend.
   React.useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/leaderboard`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Server error");
-        return res.json();
-      })
+    makeApiRequest(`api/leaderboard`, "GET")
       .then((data: any) => {
         // normalize backend shape: { fundamentals: [...], algorithms: [...] }
         if (data && Array.isArray(data.fundamentals) && Array.isArray(data.algorithms)) {
@@ -110,17 +101,16 @@ export default function Leaderboard() {
           console.error("Unexpected API response format:", data);
           setRawData({ fundamentals: [], algorithms: [] });
         }
-        setLoading(false);
       })
       .catch((err: Error) => {
         setFetchError(err.message);
-        setLoading(false);
         addToast({
           title: t("leaderboard.fetchErrorTitle"),
           description: t("leaderboard.fetchError"),
           color: "danger",
         });
-      });
+      })
+      .finally(() => setLoading(false));
   }, [t]);
 
   // Get current user data based on currentUserId.

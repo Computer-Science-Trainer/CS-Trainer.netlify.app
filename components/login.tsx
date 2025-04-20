@@ -43,6 +43,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/auth";
+import { API_BASE_URL, makeApiRequest } from "@/config/api";
 
 /**
  * Authentication State Enum
@@ -77,59 +78,6 @@ interface AuthWindowProps {
   onAuthSuccess?: (token?: string) => void;
 }
 
-// Base API URL from environment variables
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-/**
- * Extended Error Interface for API responses
- *
- * Adds response and detail fields to standard Error for better error handling
- */
-interface ApiError extends Error {
-  response?: Response;
-  detail?: {
-    code?: string;
-  } | string;
-}
-
-/**
- * makeApiRequest - Generic API request helper
- *
- * @param endpoint - API endpoint (relative path)
- * @param method - HTTP method (GET, POST, etc.)
- * @param body - Request body (optional)
- *
- * Backend Requirements:
- * - Must use standard HTTP status codes
- * - Errors should return { detail: { code: string } | string } in response body
- * - Successful responses should include relevant data (e.g., tokens)
- */
-async function makeApiRequest(endpoint: string, method: string, body?: any) {
-  const headers = {
-    "Content-Type": "application/json",
-  };
-
-  const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    const error: ApiError = new Error(
-      typeof errorData.detail === "string"
-        ? errorData.detail
-        : errorData.detail?.code || errorData.message || "Request failed"
-    );
-    error.response = response;
-    error.detail = errorData.detail;
-    throw error;
-  }
-
-  return response.json();
-}
-
 /**
  * Main AuthWindow Component
  *
@@ -141,7 +89,6 @@ export default function AuthWindow({
   onOpenChange,
   onAuthSuccess,
 }: AuthWindowProps) {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
   const t = useTranslations(); // Hook for translations
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false); // Loading state for API requests
@@ -389,7 +336,8 @@ export default function AuthWindow({
       const data = await makeApiRequest(
         'auth/login',
         'POST',
-        { email, password }
+        { email, password },
+        true
       );
       
       addToast({
@@ -420,7 +368,7 @@ export default function AuthWindow({
 
   const handleRegister = async () => {
     try {
-      await makeApiRequest('auth/register', 'POST', { email, password, nickname });
+      await makeApiRequest('auth/register', 'POST', { email, password, nickname }, true);
       setAuthState(AuthState.Verify);
     } catch (error: any) {
       addToast({
@@ -433,7 +381,7 @@ export default function AuthWindow({
 
   const handleVerify = async () => {
     try {
-      const data = await makeApiRequest('auth/verify', 'POST', { email, code: verificationCode });
+      const data = await makeApiRequest('auth/verify', 'POST', { email, code: verificationCode }, true);
       login(data.token, rememberMe);
       addToast({
         title: t("auth.success.title.verifySuccess"),
@@ -452,7 +400,7 @@ export default function AuthWindow({
 
   const handleRecover = async () => {
     try {
-      await makeApiRequest('auth/recover', 'POST', { email });
+      await makeApiRequest('auth/recover', 'POST', { email }, true);
       setAuthState(AuthState.RecoverVerify);
     } catch (error: any) {
       addToast({
@@ -465,11 +413,9 @@ export default function AuthWindow({
 
   const handleResendCode = async () => {
     setIsLoading(true);
+    const code_type = authState === AuthState.Verify ? 'verify' : 'recover';
     try {
-      await makeApiRequest('auth/verify/resend', 'POST', {
-        email,
-        code_type: authState === AuthState.Verify ? 'verification' : 'recovery'
-      });
+      await makeApiRequest('auth/verify/resend', 'POST', { email, code_type }, true);
       addToast({
         title: t("auth.success.title.codeResent"),
         description: t("auth.success.codeResent"),
@@ -488,7 +434,7 @@ export default function AuthWindow({
 
   const handleRecoverVerify = async () => {
     try {
-      await makeApiRequest('auth/recover/verify', 'POST', { email, code: verificationCode });
+      await makeApiRequest('auth/recover/verify', 'POST', { email, code: verificationCode }, true);
       setAuthState(AuthState.ChangePassword);
     } catch (error: any) {
       addToast({
@@ -505,7 +451,7 @@ export default function AuthWindow({
         email, 
         code: verificationCode, 
         password 
-      });
+      }, true);
       login(data.token, rememberMe);
       addToast({
         title: t("auth.success.title.changePasswordSuccess"),
@@ -1042,10 +988,10 @@ export default function AuthWindow({
                 <>
                   <Divider className="mt-4 mb-4" />
                   <div className="flex flex-col gap-2 mb-4">
-                    <Button variant="ghost" onPress={() => window.location.href = `${BACKEND_URL}/api/auth/google/login`} className="w-full">
+                    <Button variant="ghost" onPress={() => window.location.href = `${API_BASE_URL}/api/auth/google/login`} className="w-full">
                       {t("auth.oauth.google")}
                     </Button>
-                    <Button variant="ghost" onPress={() => window.location.href = `${BACKEND_URL}/api/auth/github/login`} className="w-full">
+                    <Button variant="ghost" onPress={() => window.location.href = `${API_BASE_URL}/api/auth/github/login`} className="w-full">
                       {t("auth.oauth.github")}
                     </Button>
                   </div>

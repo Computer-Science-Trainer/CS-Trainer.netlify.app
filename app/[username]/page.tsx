@@ -19,10 +19,10 @@ import { Link as HeroLink } from "@heroui/link";
 import { TelegramIcon, GithubIcon, WebsiteIcon } from "@/components/icons";
 import { useAuth } from "@/context/auth";
 import { useTranslations } from "next-intl";
+import { makeApiRequest } from "@/config/api";
 
 export default function ProfilePage() {
   const t = useTranslations();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   const { username } = useParams() as { username: string };
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -39,19 +39,12 @@ export default function ProfilePage() {
   const [visibleMonths, setVisibleMonths] = useState(3);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/user/${username}/tests`)
-      .then(r => r.json())
-      .then(setTests)
-      .catch(console.error);
-    fetch(`${API_BASE_URL}/api/user/${username}/achievements`)
-      .then(r => r.json())
-      .then(setAchievements)
-      .catch(console.error);
+    makeApiRequest(`api/user/${username}/tests`, "GET").then(setTests).catch(console.error);
+    makeApiRequest(`api/user/${username}/achievements`, "GET").then(setAchievements).catch(console.error);
   }, [username]);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/user/${username}/stats`)
-      .then(r => r.json())
+    makeApiRequest(`api/user/${username}/stats`, "GET")
       .then(data => setStats({ passed: data.passed, total: data.total, avg: data.average }))
       .catch(console.error);
   }, [username]);
