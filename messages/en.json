@@ -186,6 +186,7 @@
         "noTestsMessage": "No results for the selected date",
         "selectDateMessage": "Select a date to view results",
         "editProfileButton": "Edit Profile",
-        "logoutButton": "Log Out"
+        "logoutButton": "Log Out",
+        "testPassed": "Passed"
     }
 }

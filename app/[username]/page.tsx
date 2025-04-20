@@ -254,7 +254,7 @@ export default function ProfilePage() {
                                 variant="flat"
                                 size="sm"
                               >
-                                {test.passed ? 'Пройден' : `${test.progress}%`}
+                                {test.passed ? t("profile.testPassed") : `${test.progress}%`}
                               </Chip>
                             </div>
                             <Progress 

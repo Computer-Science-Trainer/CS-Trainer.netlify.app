@@ -186,6 +186,7 @@
         "noTestsMessage": "Нет результатов за выбранную дату",
         "selectDateMessage": "Выберите дату для просмотра результатов",
         "editProfileButton": "Редактировать профиль",
-        "logoutButton": "Выйти"
+        "logoutButton": "Выйти",
+        "testPassed": "Пройден"
     }
 }
