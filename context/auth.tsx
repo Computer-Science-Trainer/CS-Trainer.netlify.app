@@ -46,8 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (token: string, remember = false) => {
-    console.log("remember", remember);
-    console.log("token", token);
     if (remember) {
       localStorage.setItem("token", token);
       sessionStorage.removeItem("token");
