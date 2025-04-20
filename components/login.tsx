@@ -29,6 +29,7 @@ import {
   Spinner,
   addToast,
   Form,
+  Divider
 } from "@heroui/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -140,6 +141,7 @@ export default function AuthWindow({
   onOpenChange,
   onAuthSuccess,
 }: AuthWindowProps) {
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
   const t = useTranslations(); // Hook for translations
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false); // Loading state for API requests
@@ -1036,6 +1038,19 @@ export default function AuthWindow({
             </ModalHeader>
             <ModalBody>
               {renderCurrentForm()}
+              {authState === AuthState.Login ? (
+                <>
+                  <Divider className="mt-4 mb-4" />
+                  <div className="flex flex-col gap-2 mb-4">
+                    <Button variant="ghost" onPress={() => window.location.href = `${BACKEND_URL}/api/auth/google/login`} className="w-full">
+                      {t("auth.oauth.google")}
+                    </Button>
+                    <Button variant="ghost" onPress={() => window.location.href = `${BACKEND_URL}/api/auth/github/login`} className="w-full">
+                      {t("auth.oauth.github")}
+                    </Button>
+                  </div>
+                </>
+              ) : null}
             </ModalBody>
             <ModalFooter>
               <Button 

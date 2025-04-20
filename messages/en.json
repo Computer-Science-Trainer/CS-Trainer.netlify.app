@@ -116,6 +116,10 @@
             "backToRecover": "Back to Recovery",
             "acceptTerms": "I agree to the",
             "termsLink": "Terms of Service"
+        },
+        "oauth": {
+            "google": "Continue with Google",
+            "github": "Continue with GitHub"
         }
     },
     "leaderboard": {
