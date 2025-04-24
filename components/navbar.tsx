@@ -15,7 +15,7 @@ import { Input } from "@heroui/input";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { User } from "@heroui/user";
+import { User as UserComponent } from "@heroui/user";
 import { ThemeSwitch } from "@/components/theme-switch";
 
 import LoginWindow from "@/components/login";
@@ -38,6 +38,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/context/auth";
 
 export const SettingsDropdown = () => {
     const router = useRouter();
@@ -54,7 +55,7 @@ export const SettingsDropdown = () => {
       };
   
     return (
-      <Dropdown closeOnSelect={false} placement="bottom-end">
+      <Dropdown closeOnSelect={false} placement="bottom-end" shouldBlockScroll={false}>
         <DropdownTrigger>
           <Button isIconOnly variant="light" aria-label="Settings">
             <HugeiconsIcon icon={Settings01Icon} className="text-default-500" strokeWidth={2.5}/>
@@ -74,7 +75,7 @@ export const SettingsDropdown = () => {
             onPress={safeStopPropagation}
             onMouseDown={safeStopPropagation}
           >
-            <Dropdown closeOnSelect={false} placement="right-start">
+            <Dropdown closeOnSelect={false} placement="right-start" shouldBlockScroll={false}>
               <DropdownTrigger
                 onPress={safeStopPropagation}
                 onMouseDown={safeStopPropagation}
@@ -120,6 +121,7 @@ export const SettingsDropdown = () => {
   };
 
 export const Navbar = () => {
+  const { user } = useAuth();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const t = useTranslations();
 
@@ -182,9 +184,26 @@ export const Navbar = () => {
           <SettingsDropdown />
         </NavbarItem>
         <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
-        <Button color="primary" onPress={onOpen}>
-            <h1>{t("nav.login")}</h1>
-        </Button>
+        {user ? (
+          <NextLink
+            href={`/${user.username}`}
+            className="flex items-center gap-2 hover:bg-default-100 rounded-xl p-2 transition-colors duration-200 ease-in-out cursor-pointer"
+          >
+            <UserComponent
+              avatarProps={{
+                radius: "full",
+                size: "sm",
+                src: user.avatar
+              }}
+              name={user.username}
+              description={user.email}
+            />
+          </NextLink>
+        ) : (
+          <Button color="primary" onPress={onOpen}>
+            {t("nav.login")}
+          </Button>
+        )}
       </NavbarContent>
     <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
         <NavbarMenuToggle className="" />
