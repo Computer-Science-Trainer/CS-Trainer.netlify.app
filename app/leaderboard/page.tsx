@@ -17,11 +17,12 @@ import {
   Tab,
   Progress,
   addToast,
+  Spinner,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { API_BASE_URL, makeApiRequest } from "@/config/api";
+import { makeApiRequest } from "@/config/api";
 
 // Define TopicProgress type which contains progress data for a topic.
 interface TopicProgress {
@@ -86,16 +87,13 @@ export default function Leaderboard() {
   }, [rawData, selectedTopic]);
 
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [fetchError, setFetchError] = React.useState<string | null>(null);
 
   // Fetch leaderboard data from the backend.
   React.useEffect(() => {
     setLoading(true);
     makeApiRequest(`api/leaderboard`, "GET")
       .then((data: any) => {
-        // normalize backend shape: { fundamentals: [...], algorithms: [...] }
         if (data && Array.isArray(data.fundamentals) && Array.isArray(data.algorithms)) {
-          // store raw arrays, UI will pick fundamentals or algorithms based on tab
           setRawData({ fundamentals: data.fundamentals, algorithms: data.algorithms });
         } else {
           console.error("Unexpected API response format:", data);
@@ -103,7 +101,6 @@ export default function Leaderboard() {
         }
       })
       .catch((err: Error) => {
-        setFetchError(err.message);
         addToast({
           title: t("leaderboard.fetchErrorTitle"),
           description: t("leaderboard.fetchError"),
@@ -376,7 +373,15 @@ export default function Leaderboard() {
         </TableHeader>
 
         {/* Table body */}
-        <TableBody items={displayItems}>
+        <TableBody
+          items={displayItems}
+          isLoading={loading}
+          loadingContent={
+            <div className="flex justify-center items-center">
+              <Spinner size="lg" />
+            </div>
+          }
+        >
           {(item: any): JSX.Element => {
             // Check if the current row corresponds to the current user.
             const isCurrentRow = item.isMyRank || (item.id === currentUserId);
