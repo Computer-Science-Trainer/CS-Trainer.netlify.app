@@ -9,6 +9,8 @@ import { Navbar } from "@/components/navbar";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { PageTransition } from "@/components/PageTransition";
+import { RouteProgress } from "@/components/RouteProgress";
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
@@ -37,19 +39,14 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning lang={locale}>
       <head />
-      <body
-        className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}
-      >
+      <body className={clsx("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+          <RouteProgress />
           <div className="relative flex flex-col h-screen">
             <NextIntlClientProvider>
               <Navbar />
             </NextIntlClientProvider>
             <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              {/* добавлено обёртывание */}
               <PageTransition>
                 <NextIntlClientProvider>{children}</NextIntlClientProvider>
               </PageTransition>
