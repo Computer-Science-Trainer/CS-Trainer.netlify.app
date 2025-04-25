@@ -41,6 +41,7 @@ import {
   ViewIcon,
   ViewOffSlashIcon,
 } from "@hugeicons/core-free-icons";
+import { GoogleIcon, Github01Icon } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/auth";
 import { API_BASE_URL, makeApiRequest } from "@/config/api";
@@ -988,10 +989,20 @@ export default function AuthWindow({
                 <>
                   <Divider className="mt-4 mb-4" />
                   <div className="flex flex-col gap-2 mb-4">
-                    <Button variant="ghost" onPress={() => window.location.href = `${API_BASE_URL}/api/auth/google/login`} className="w-full">
+                    <Button
+                      variant="ghost"
+                      onPress={() => window.location.href = `${API_BASE_URL}/api/auth/google/login`}
+                      className="w-full flex items-center justify-center"
+                    >
+                      <HugeiconsIcon icon={GoogleIcon} className="text-lg mr-2" />
                       {t("auth.oauth.google")}
                     </Button>
-                    <Button variant="ghost" onPress={() => window.location.href = `${API_BASE_URL}/api/auth/github/login`} className="w-full">
+                    <Button
+                      variant="ghost"
+                      onPress={() => window.location.href = `${API_BASE_URL}/api/auth/github/login`}
+                      className="w-full flex items-center justify-center"
+                    >
+                      <HugeiconsIcon icon={Github01Icon} className="text-lg mr-2" />
                       {t("auth.oauth.github")}
                     </Button>
                   </div>
