@@ -19,14 +19,19 @@ export const RouteProgress: React.FC = () => {
         target &&
         (target as HTMLAnchorElement).href.startsWith(window.location.origin)
       ) {
+        const href = (target as HTMLAnchorElement).href;
+        const url = new URL(href);
+
         setVisible(true);
         clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setVisible(false), MIN_DISPLAY_MS);
+
+        if (url.pathname === window.location.pathname) {
+          timerRef.current = setTimeout(() => setVisible(false), MIN_DISPLAY_MS);
+        }
       }
     };
 
     document.addEventListener("mousedown", onClick);
-
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
