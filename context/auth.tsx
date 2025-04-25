@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+
 import { makeApiRequest } from "@/config/api";
 
 interface User {
@@ -19,23 +20,29 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue>({} as AuthContextValue);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") ?? sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") ?? sessionStorage.getItem("token");
+
     if (token) {
       makeApiRequest(`api/me`, "GET")
-        .then(data => setUser({
-          id: data.id,
-          username: data.username,
-          email: data.email,
-          avatar: data.avatar,
-          telegram: data.telegram,
-          github: data.github,
-          website: data.website,
-          bio: data.bio,
-        }))
+        .then((data) =>
+          setUser({
+            id: data.id,
+            username: data.username,
+            email: data.email,
+            avatar: data.avatar,
+            telegram: data.telegram,
+            github: data.github,
+            website: data.website,
+            bio: data.bio,
+          }),
+        )
         .catch(() => {
           localStorage.removeItem("token");
           sessionStorage.removeItem("token");
@@ -53,18 +60,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     makeApiRequest(`api/me`, "GET")
-      .then(data => setUser({
-        id: data.id,
-        username: data.username,
-        email: data.email,
-        avatar: data.avatar,
-        telegram: data.telegram,
-        github: data.github,
-        website: data.website,
-        bio: data.bio,
-      }))
-      .catch(error => {
-        console.error("Login failed:", error);
+      .then((data) =>
+        setUser({
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          avatar: data.avatar,
+          telegram: data.telegram,
+          github: data.github,
+          website: data.website,
+          bio: data.bio,
+        }),
+      )
+      .catch((_error) => {
         setUser(null);
       });
   };
@@ -75,10 +83,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
+
   return ctx;
 };

@@ -4,7 +4,9 @@ import { usePathname } from "next/navigation";
 import { motion, useAnimation } from "framer-motion";
 import { useEffect } from "react";
 
-export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const PageTransition: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const controls = useAnimation();
   const pathname = usePathname();
 
@@ -15,10 +17,10 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      exit={{ opacity: 0, y: 20, transition: { duration: 0.5 } }}
       animate={controls}
       className="relative w-full h-full"
+      exit={{ opacity: 0, y: 20, transition: { duration: 0.5 } }}
+      initial={{ opacity: 0, y: 20 }}
     >
       {children}
     </motion.div>

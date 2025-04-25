@@ -29,7 +29,7 @@ import {
   Spinner,
   addToast,
   Form,
-  Divider
+  Divider,
 } from "@heroui/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -43,6 +43,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { GoogleIcon, Github01Icon } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
+
 import { useAuth } from "@/context/auth";
 import { API_BASE_URL, makeApiRequest } from "@/config/api";
 
@@ -118,6 +119,7 @@ export default function AuthWindow({
   useEffect(() => {
     if (password && confirmPassword && isConfirmPasswordDirty) {
       const error = validateConfirmPassword(password, confirmPassword);
+
       setErrors((prev) => ({
         ...prev,
         confirmPassword: error || "",
@@ -127,13 +129,16 @@ export default function AuthWindow({
 
   // Reset verification code when auth state changes
   useEffect(() => {
-    if (authState !== AuthState.Verify && authState !== AuthState.RecoverVerify) {
+    if (
+      authState !== AuthState.Verify &&
+      authState !== AuthState.RecoverVerify
+    ) {
       setVerificationCode("");
     }
   }, [authState]);
 
   const resetForm = () => {
-    setShowPassword(false)
+    setShowPassword(false);
   };
 
   useEffect(() => {
@@ -154,10 +159,12 @@ export default function AuthWindow({
     (value: string): string | null => {
       if (!value) return t("auth.errors.emailMissing");
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
       if (!emailRegex.test(value)) return t("auth.errors.emailInvalid");
+
       return null;
     },
-    [t]
+    [t],
   );
 
   // Validates nickname length and allowed characters
@@ -168,9 +175,10 @@ export default function AuthWindow({
       if (value.length > 15) return t("auth.errors.nicknameLong");
       if (!/^[a-zA-Z0-9_]+$/.test(value))
         return t("auth.errors.nicknameInvalid");
+
       return null;
     },
-    [t]
+    [t],
   );
 
   // Validates password meets minimum length requirement
@@ -178,9 +186,10 @@ export default function AuthWindow({
     (value: string): string | null => {
       if (!value) return t("auth.errors.passwordMissing");
       if (value.length < 8) return t("auth.errors.passwordShort");
+
       return null;
     },
-    [t]
+    [t],
   );
 
   // Validates password confirmation matches original password
@@ -188,9 +197,10 @@ export default function AuthWindow({
     (password: string, confirm: string): string | null => {
       if (!confirm) return t("auth.errors.confirmPasswordMissing");
       if (password !== confirm) return t("auth.errors.passwordMismatch");
+
       return null;
     },
-    [t]
+    [t],
   );
 
   // Validates verification code is 6 digits
@@ -198,9 +208,10 @@ export default function AuthWindow({
     (code: string): string | null => {
       if (!code) return t("auth.errors.codeMissing");
       if (code.length !== 6) return t("auth.errors.codeInvalid");
+
       return null;
     },
-    [t]
+    [t],
   );
 
   /**
@@ -217,6 +228,7 @@ export default function AuthWindow({
       case AuthState.Login:
         const emailError = validateEmail(email);
         const passwordError = validatePassword(password);
+
         if (emailError) newErrors.email = emailError;
         if (passwordError) newErrors.password = passwordError;
         break;
@@ -226,6 +238,7 @@ export default function AuthWindow({
         const regEmailError = validateEmail(email);
         const regPasswordError = validatePassword(password);
         const confirmError = validateConfirmPassword(password, confirmPassword);
+
         if (nicknameError) newErrors.nickname = nicknameError;
         if (regEmailError) newErrors.email = regEmailError;
         if (regPasswordError) newErrors.password = regPasswordError;
@@ -236,11 +249,13 @@ export default function AuthWindow({
       case AuthState.Verify:
       case AuthState.RecoverVerify:
         const codeError = validateVerificationCode(verificationCode);
+
         if (codeError) newErrors.verificationCode = codeError;
         break;
 
       case AuthState.Recover:
         const recoverEmailError = validateEmail(email);
+
         if (recoverEmailError) newErrors.email = recoverEmailError;
         break;
 
@@ -248,14 +263,16 @@ export default function AuthWindow({
         const newPasswordError = validatePassword(password);
         const confirmNewError = validateConfirmPassword(
           password,
-          confirmPassword
+          confirmPassword,
         );
+
         if (newPasswordError) newErrors.newPassword = newPasswordError;
         if (confirmNewError) newErrors.confirmNewPassword = confirmNewError;
         break;
     }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   }, [
     authState,
@@ -277,7 +294,12 @@ export default function AuthWindow({
   const isFormValid = useMemo(() => {
     switch (authState) {
       case AuthState.Login:
-        return !!email && !!password && !validateEmail(email) && !validatePassword(password);
+        return (
+          !!email &&
+          !!password &&
+          !validateEmail(email) &&
+          !validatePassword(password)
+        );
 
       case AuthState.Register:
         return (
@@ -321,7 +343,7 @@ export default function AuthWindow({
     validateEmail,
     validateNickname,
     validatePassword,
-    validateConfirmPassword
+    validateConfirmPassword,
   ]);
 
   /**
@@ -335,18 +357,18 @@ export default function AuthWindow({
   const handleLogin = async () => {
     try {
       const data = await makeApiRequest(
-        'auth/login',
-        'POST',
+        "auth/login",
+        "POST",
         { email, password },
-        true
+        true,
       );
-      
+
       addToast({
         title: t("auth.success.title.loginSuccess"),
         description: t("auth.success.loginSuccess"),
-        color: 'success'
+        color: "success",
       });
-      
+
       login(data.token, rememberMe);
       onOpenChange(false);
     } catch (error: any) {
@@ -355,13 +377,13 @@ export default function AuthWindow({
         addToast({
           title: t("auth.errors.title.accountNotVerified"),
           description: t("auth.errors.detail.accountNotVerified"),
-          color: 'warning'
+          color: "warning",
         });
       } else {
         addToast({
           title: t("auth.errors.title.loginFailed"),
           description: t(`auth.errors.detail.${error.message}`),
-          color: 'danger'
+          color: "danger",
         });
       }
     }
@@ -369,64 +391,81 @@ export default function AuthWindow({
 
   const handleRegister = async () => {
     try {
-      await makeApiRequest('auth/register', 'POST', { email, password, nickname }, true);
+      await makeApiRequest(
+        "auth/register",
+        "POST",
+        { email, password, nickname },
+        true,
+      );
       setAuthState(AuthState.Verify);
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.registerFailed"),
         description: t(`auth.errors.detail.${error.message}`),
-        color: 'danger'
+        color: "danger",
       });
     }
   };
 
   const handleVerify = async () => {
     try {
-      const data = await makeApiRequest('auth/verify', 'POST', { email, code: verificationCode }, true);
+      const data = await makeApiRequest(
+        "auth/verify",
+        "POST",
+        { email, code: verificationCode },
+        true,
+      );
+
       login(data.token, rememberMe);
       addToast({
         title: t("auth.success.title.verifySuccess"),
         description: t("auth.success.verifySuccess"),
-        color: 'success'
+        color: "success",
       });
       onOpenChange(false);
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.verifyFailed"),
         description: t(`auth.errors.detail.${error.message}`),
-        color: 'danger'
+        color: "danger",
       });
     }
   };
 
   const handleRecover = async () => {
     try {
-      await makeApiRequest('auth/recover', 'POST', { email }, true);
+      await makeApiRequest("auth/recover", "POST", { email }, true);
       setAuthState(AuthState.RecoverVerify);
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.recoverFailed"),
         description: t(`auth.errors.detail.${error.message}`),
-        color: 'danger'
+        color: "danger",
       });
     }
   };
 
   const handleResendCode = async () => {
     setIsLoading(true);
-    const code_type = authState === AuthState.Verify ? 'verify' : 'recover';
+    const code_type = authState === AuthState.Verify ? "verify" : "recover";
+
     try {
-      await makeApiRequest('auth/verify/resend', 'POST', { email, code_type }, true);
+      await makeApiRequest(
+        "auth/verify/resend",
+        "POST",
+        { email, code_type },
+        true,
+      );
       addToast({
         title: t("auth.success.title.codeResent"),
         description: t("auth.success.codeResent"),
-        color: 'success'
+        color: "success",
       });
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.resendFailed"),
         description: t(`auth.errors.detail.${error.message}`),
-        color: 'danger'
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -435,29 +474,40 @@ export default function AuthWindow({
 
   const handleRecoverVerify = async () => {
     try {
-      await makeApiRequest('auth/recover/verify', 'POST', { email, code: verificationCode }, true);
+      await makeApiRequest(
+        "auth/recover/verify",
+        "POST",
+        { email, code: verificationCode },
+        true,
+      );
       setAuthState(AuthState.ChangePassword);
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.recoverVerifyFailed"),
         description: t(`auth.errors.detail.${error.message}`),
-        color: 'danger'
+        color: "danger",
       });
     }
   };
 
   const handleChangePassword = async () => {
     try {
-      const data = await makeApiRequest('auth/recover/change', 'POST', { 
-        email, 
-        code: verificationCode, 
-        password 
-      }, true);
+      const data = await makeApiRequest(
+        "auth/recover/change",
+        "POST",
+        {
+          email,
+          code: verificationCode,
+          password,
+        },
+        true,
+      );
+
       login(data.token, rememberMe);
       addToast({
         title: t("auth.success.title.changePasswordSuccess"),
         description: t("auth.success.changePasswordSuccess"),
-        color: 'success'
+        color: "success",
       });
       if (onAuthSuccess) onAuthSuccess(data.token);
       onOpenChange(false);
@@ -465,56 +515,59 @@ export default function AuthWindow({
       addToast({
         title: t("auth.errors.changePasswordFailed"),
         description: t(`auth.errors.detail.${error.message}`),
-        color: 'danger'
+        color: "danger",
       });
     }
   };
 
-  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    if (!validateCurrentForm()) return;
-    
-    setIsLoading(true);
-    setErrors({});
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      if (e && typeof e.preventDefault === "function") e.preventDefault();
+      if (!validateCurrentForm()) return;
 
-    try {
-      switch (authState) {
-        case AuthState.Login:
-          await handleLogin();
-          break;
-        case AuthState.Register:
-          await handleRegister();
-          break;
-        case AuthState.Verify:
-          await handleVerify();
-          break;
-        case AuthState.Recover:
-          await handleRecover();
-          break;
-        case AuthState.RecoverVerify:
-          await handleRecoverVerify();
-          break;
-        case AuthState.ChangePassword:
-          await handleChangePassword();
-          break;
+      setIsLoading(true);
+      setErrors({});
+
+      try {
+        switch (authState) {
+          case AuthState.Login:
+            await handleLogin();
+            break;
+          case AuthState.Register:
+            await handleRegister();
+            break;
+          case AuthState.Verify:
+            await handleVerify();
+            break;
+          case AuthState.Recover:
+            await handleRecover();
+            break;
+          case AuthState.RecoverVerify:
+            await handleRecoverVerify();
+            break;
+          case AuthState.ChangePassword:
+            await handleChangePassword();
+            break;
+        }
+      } catch (error: any) {
+        setErrors({ form: error.message || t("auth.errors.general") });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      setErrors({ form: error.message || t("auth.errors.general") });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    authState,
-    email,
-    password,
-    nickname,
-    confirmPassword,
-    verificationCode,
-    termsAccepted,
-    rememberMe,
-    validateCurrentForm,
-    t
-  ]);
+    },
+    [
+      authState,
+      email,
+      password,
+      nickname,
+      confirmPassword,
+      verificationCode,
+      termsAccepted,
+      rememberMe,
+      validateCurrentForm,
+      t,
+    ],
+  );
 
   /**
    * Render Functions
@@ -527,145 +580,158 @@ export default function AuthWindow({
   const renderNicknameInput = () => (
     <Input
       isRequired
-      name="nickname"
-      label={t("auth.labels.nickname")}
-      placeholder={t("auth.placeholders.nickname")}
-      value={nickname}
-      onValueChange={setNickname}
-      onBlur={() => {
-        const error = validateNickname(nickname);
-        setErrors(prev => ({ ...prev, nickname: error || '' }));
-      }}
       endContent={
         <Tooltip content={t("auth.rules.nickname")} placement="top">
-          <HugeiconsIcon icon={User03Icon} className="text-2xl text-default-400" />
+          <HugeiconsIcon
+            className="text-2xl text-default-400"
+            icon={User03Icon}
+          />
         </Tooltip>
       }
       errorMessage={errors.nickname}
       isInvalid={!!errors.nickname}
+      label={t("auth.labels.nickname")}
+      name="nickname"
+      placeholder={t("auth.placeholders.nickname")}
+      value={nickname}
+      onBlur={() => {
+        const error = validateNickname(nickname);
+
+        setErrors((prev) => ({ ...prev, nickname: error || "" }));
+      }}
+      onValueChange={setNickname}
     />
   );
 
   const renderEmailInput = (readOnly = false) => (
     <Input
       isRequired
-      isReadOnly={readOnly}
-      name="email"
-      label={t("auth.labels.email")}
-      placeholder={t("auth.placeholders.email")}
-      type="email"
-      value={email}
-      onValueChange={setEmail}
-      onBlur={() => {
-        const error = validateEmail(email);
-        setErrors(prev => ({ ...prev, email: error || '' }));
-      }}
       endContent={
         readOnly ? (
           <div className="flex items-center gap-1">
             <Button
+              className="text-sm"
+              isDisabled={isLoading}
               size="sm"
               variant="flat"
               onPress={handleResendCode}
-              isDisabled={isLoading}
-              className="text-sm"
             >
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                  t("auth.actions.resendCode")
-              )}
+              {isLoading ? <Spinner size="sm" /> : t("auth.actions.resendCode")}
             </Button>
           </div>
         ) : (
           <Tooltip content={t("auth.rules.email")} placement="top">
-            <HugeiconsIcon icon={Mail02Icon} className="text-2xl text-default-400" />
+            <HugeiconsIcon
+              className="text-2xl text-default-400"
+              icon={Mail02Icon}
+            />
           </Tooltip>
         )
       }
       errorMessage={errors.email}
       isInvalid={!!errors.email}
+      isReadOnly={readOnly}
+      label={t("auth.labels.email")}
+      name="email"
+      placeholder={t("auth.placeholders.email")}
+      type="email"
+      value={email}
+      onBlur={() => {
+        const error = validateEmail(email);
+
+        setErrors((prev) => ({ ...prev, email: error || "" }));
+      }}
+      onValueChange={setEmail}
     />
   );
 
   const renderPasswordInput = () => (
     <Input
       isRequired
-      name='password'
-      label={t("auth.labels.password")}
-      placeholder={t("auth.placeholders.password")}
-      type={showPassword ? "text" : "password"}
-      value={password}
-      onValueChange={setPassword}
-      onBlur={() => {
-        const error = validatePassword(password);
-        setErrors(prev => ({ ...prev, ['password']: error || '' }));
-      }}
       endContent={
         <div className="flex items-center gap-1">
           <Button
             isIconOnly
+            className="focus:outline-none ml-2"
             size="sm"
             type="button"
             variant="bordered"
             onPress={() => setShowPassword(!showPassword)}
-            className="focus:outline-none ml-2"
           >
             <HugeiconsIcon
-              icon={showPassword ? ViewOffSlashIcon : ViewIcon}
               className="text-2xl text-default-400"
+              icon={showPassword ? ViewOffSlashIcon : ViewIcon}
             />
           </Button>
           <Tooltip content={t("auth.rules.password")} placement="top">
-            <HugeiconsIcon icon={LockPasswordIcon} className="text-2xl text-default-400" />
+            <HugeiconsIcon
+              className="text-2xl text-default-400"
+              icon={LockPasswordIcon}
+            />
           </Tooltip>
         </div>
       }
-      errorMessage={errors['password']}
-      isInvalid={!!errors['password']}
+      errorMessage={errors["password"]}
+      isInvalid={!!errors["password"]}
+      label={t("auth.labels.password")}
+      name="password"
+      placeholder={t("auth.placeholders.password")}
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onBlur={() => {
+        const error = validatePassword(password);
+
+        setErrors((prev) => ({ ...prev, ["password"]: error || "" }));
+      }}
+      onValueChange={setPassword}
     />
   );
 
   const renderConfirmPasswordInput = () => {
     const shouldShowError = isConfirmPasswordDirty || !!errors.confirmPassword;
-    const isInvalid = shouldShowError && !!validateConfirmPassword(password, confirmPassword);
+    const isInvalid =
+      shouldShowError && !!validateConfirmPassword(password, confirmPassword);
 
     return (
       <Input
         isRequired
-        name="confirmPassword"
+        endContent={
+          <Tooltip content={t("auth.rules.confirmPassword")} placement="top">
+            <HugeiconsIcon
+              className="text-2xl text-default-400 pointer-events-none"
+              icon={PasswordValidationIcon}
+            />
+          </Tooltip>
+        }
+        errorMessage={
+          isInvalid
+            ? validateConfirmPassword(password, confirmPassword)
+            : undefined
+        }
+        isInvalid={isInvalid}
         label={t("auth.labels.confirmPassword")}
+        name="confirmPassword"
         placeholder={t("auth.placeholders.confirmPassword")}
         type={showPassword ? "text" : "password"}
         value={confirmPassword}
+        onBlur={() => setIsConfirmPasswordDirty(true)}
         onValueChange={(value) => {
           setConfirmPassword(value);
           setIsConfirmPasswordDirty(true);
         }}
-        onBlur={() => setIsConfirmPasswordDirty(true)}
-        endContent={
-          <Tooltip content={t("auth.rules.confirmPassword")} placement="top">
-            <HugeiconsIcon
-              icon={PasswordValidationIcon}
-              className="text-2xl text-default-400 pointer-events-none"
-            />
-          </Tooltip>
-        }
-        errorMessage={isInvalid ? validateConfirmPassword(password, confirmPassword) : undefined}
-        isInvalid={isInvalid}
       />
     );
   };
 
   const renderTermsCheckbox = () => (
     <Checkbox
-      isSelected={termsAccepted}
-      onValueChange={setTermsAccepted}
       classNames={{ label: "text-small" }}
       isInvalid={!!errors.terms}
+      isSelected={termsAccepted}
+      onValueChange={setTermsAccepted}
     >
       {t("auth.footer.acceptTerms")}
-      <Link href="/terms" className="ml-1" size="sm">
+      <Link className="ml-1" href="/terms" size="sm">
         {t("auth.footer.termsLink")}
       </Link>
     </Checkbox>
@@ -679,24 +745,24 @@ export default function AuthWindow({
         {renderPasswordInput()}
         <div className="flex justify-between items-center">
           <Checkbox
+            classNames={{ label: "text-small" }}
             isSelected={rememberMe}
             onValueChange={setRememberMe}
-            classNames={{ label: "text-small" }}
           >
             {t("auth.footer.rememberMe")}
           </Checkbox>
-          <Link 
-            color="primary" 
-            size="sm" 
+          <Link
+            color="primary"
+            size="sm"
             onPress={() => setAuthState(AuthState.Recover)}
           >
             {t("auth.footer.forgotPassword")}
           </Link>
         </div>
         <div className="flex justify-end pt-2">
-          <Link 
-            color="primary" 
-            size="sm" 
+          <Link
+            color="primary"
+            size="sm"
             onPress={() => setAuthState(AuthState.Register)}
           >
             {t("auth.footer.notRegistered")}
@@ -704,7 +770,7 @@ export default function AuthWindow({
         </div>
       </div>
     </Form>
-  );  
+  );
 
   const renderRegisterForm = () => (
     <Form onSubmit={handleSubmit}>
@@ -715,20 +781,20 @@ export default function AuthWindow({
         {renderConfirmPasswordInput()}
         {renderTermsCheckbox()}
         <div className="flex justify-between items-center pt-2">
-            <Checkbox 
-              classNames={{ label: "text-small" }}
-              isSelected={rememberMe}
-              onValueChange={setRememberMe}
-            >
-              {t("auth.footer.rememberMe")}
-            </Checkbox>
-            <Link 
-            color="primary" 
-            size="sm" 
+          <Checkbox
+            classNames={{ label: "text-small" }}
+            isSelected={rememberMe}
+            onValueChange={setRememberMe}
+          >
+            {t("auth.footer.rememberMe")}
+          </Checkbox>
+          <Link
+            color="primary"
+            size="sm"
             onPress={() => setAuthState(AuthState.Login)}
-            >
+          >
             {t("auth.footer.alreadyRegistered")}
-            </Link>
+          </Link>
         </div>
       </div>
     </Form>
@@ -739,13 +805,13 @@ export default function AuthWindow({
       <div className="w-full justify-between space-y-4">
         {renderEmailInput()}
         <div className="flex justify-end pt-2">
-            <Link 
-            color="primary" 
-            size="sm" 
+          <Link
+            color="primary"
+            size="sm"
             onPress={() => setAuthState(AuthState.Login)}
-            >
+          >
             {t("auth.footer.backToLogin")}
-            </Link>
+          </Link>
         </div>
       </div>
     </Form>
@@ -758,20 +824,20 @@ export default function AuthWindow({
         {renderPasswordInput()}
         {renderConfirmPasswordInput()}
         <div className="flex justify-between items-center pt-2">
-            <Checkbox
-              isSelected={rememberMe}
-              onValueChange={setRememberMe}
-              classNames={{ label: "text-small" }}
-            >
+          <Checkbox
+            classNames={{ label: "text-small" }}
+            isSelected={rememberMe}
+            onValueChange={setRememberMe}
+          >
             {t("auth.footer.rememberMe")}
-            </Checkbox>
-            <Link 
-            color="primary" 
-            size="sm" 
+          </Checkbox>
+          <Link
+            color="primary"
+            size="sm"
             onPress={() => setAuthState(AuthState.Login)}
-            >
+          >
             {t("auth.footer.backToLogin")}
-            </Link>
+          </Link>
         </div>
       </div>
     </Form>
@@ -779,91 +845,120 @@ export default function AuthWindow({
 
   const renderVerificationCodeInput = () => {
     const getValue = (index: number) =>
-      verificationCode[index] && verificationCode[index] !== " " 
-        ? verificationCode[index] 
+      verificationCode[index] && verificationCode[index] !== " "
+        ? verificationCode[index]
         : "";
-  
+
     const handleCodeChange = (index: number, value: string) => {
       if (/^[0-9]?$/.test(value)) {
         const codeArr = Array.from(verificationCode.padEnd(6, " "));
+
         codeArr[index] = value;
         const newCode = codeArr.join("");
+
         setVerificationCode(newCode);
-  
+
         if (value && index < 5) {
-          const nextInput = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+          const nextInput = document.getElementById(
+            `code-${index + 1}`,
+          ) as HTMLInputElement;
+
           if (nextInput) {
             nextInput.focus();
             const length = getValue(index + 1).length;
+
             nextInput.setSelectionRange(length, length);
           }
         }
       }
     };
-  
+
     const handlePaste = (e: React.ClipboardEvent) => {
       e.preventDefault();
       const pasteData = e.clipboardData
         .getData("text/plain")
         .replace(/\D/g, "")
         .substring(0, 6);
+
       if (pasteData.length === 6) {
         setVerificationCode(pasteData);
       }
     };
-  
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+
+    const handleKeyDown = (
+      index: number,
+      e: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
       const input = e.target as HTMLInputElement;
-  
+
       if (/^\d$/.test(e.key)) {
         if (input.value !== "" && input.selectionStart === input.selectionEnd) {
           e.preventDefault();
           const codeArr = Array.from(verificationCode.padEnd(6, " "));
+
           codeArr[index] = e.key;
           setVerificationCode(codeArr.join(""));
           if (index < 5) {
-            const nextInput = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+            const nextInput = document.getElementById(
+              `code-${index + 1}`,
+            ) as HTMLInputElement;
+
             if (nextInput) {
               nextInput.focus();
               const length = getValue(index + 1).length;
+
               nextInput.setSelectionRange(length, length);
             }
           }
+
           return;
         }
       }
-  
+
       if (e.key === "Backspace") {
         e.preventDefault();
         const codeArr = Array.from(verificationCode.padEnd(6, " "));
+
         if (codeArr[index].trim() !== "") {
           codeArr[index] = " ";
           setVerificationCode(codeArr.join(""));
         } else if (index > 0) {
-          const prevInput = document.getElementById(`code-${index - 1}`) as HTMLInputElement;
+          const prevInput = document.getElementById(
+            `code-${index - 1}`,
+          ) as HTMLInputElement;
+
           if (prevInput) {
             prevInput.focus();
             const length = getValue(index - 1).length;
+
             prevInput.setSelectionRange(length, length);
           }
         }
       } else if (e.key === "ArrowLeft" && index > 0) {
-        const prevInput = document.getElementById(`code-${index - 1}`) as HTMLInputElement;
+        const prevInput = document.getElementById(
+          `code-${index - 1}`,
+        ) as HTMLInputElement;
+
         if (prevInput) {
           prevInput.focus();
           const length = getValue(index - 1).length;
+
           prevInput.setSelectionRange(length, length);
         }
       } else if (e.key === "ArrowRight" && index < 5) {
-        const nextInput = document.getElementById(`code-${index + 1}`) as HTMLInputElement;
+        const nextInput = document.getElementById(
+          `code-${index + 1}`,
+        ) as HTMLInputElement;
+
         if (nextInput) {
           nextInput.focus();
           const length = getValue(index + 1).length;
+
           nextInput.setSelectionRange(length, length);
         }
       }
     };
-  
+
     return (
       <div className="space-y-6">
         {renderEmailInput(true)}
@@ -871,16 +966,16 @@ export default function AuthWindow({
           {Array.from({ length: 6 }).map((_, index) => (
             <input
               key={index}
+              className="w-12 h-12 text-center text-xl border-2 rounded-lg focus:border-primary focus:outline-none"
               id={`code-${index}`}
-              type="text"
+              inputMode="numeric"
               maxLength={1}
+              pattern="[0-9]*"
+              type="text"
               value={getValue(index)}
               onChange={(e) => handleCodeChange(index, e.target.value)}
-              onPaste={handlePaste}
               onKeyDown={(e) => handleKeyDown(index, e)}
-              className="w-12 h-12 text-center text-xl border-2 rounded-lg focus:border-primary focus:outline-none"
-              inputMode="numeric"
-              pattern="[0-9]*"
+              onPaste={handlePaste}
             />
           ))}
         </div>
@@ -895,7 +990,9 @@ export default function AuthWindow({
             size="sm"
             onPress={() =>
               setAuthState(
-                authState === AuthState.Verify ? AuthState.Register : AuthState.Recover
+                authState === AuthState.Verify
+                  ? AuthState.Register
+                  : AuthState.Recover,
               )
             }
           >
@@ -967,15 +1064,15 @@ export default function AuthWindow({
    * Returns modal with dynamic content based on current auth state
    */
   return (
-    <Modal 
-      isOpen={isOpen} 
-      placement="center" 
-      onOpenChange={onOpenChange}
+    <Modal
       backdrop="blur"
       classNames={{
         base: "max-w-md",
         wrapper: "items-center",
       }}
+      isOpen={isOpen}
+      placement="center"
+      onOpenChange={onOpenChange}
     >
       <ModalContent>
         {(onClose) => (
@@ -990,19 +1087,29 @@ export default function AuthWindow({
                   <Divider className="mt-4 mb-4" />
                   <div className="flex flex-col gap-2 mb-4">
                     <Button
-                      variant="ghost"
-                      onPress={() => window.location.href = `${API_BASE_URL}/api/auth/google/login`}
                       className="w-full flex items-center justify-center"
+                      variant="ghost"
+                      onPress={() =>
+                        (window.location.href = `${API_BASE_URL}/api/auth/google/login`)
+                      }
                     >
-                      <HugeiconsIcon icon={GoogleIcon} className="text-lg mr-2" />
+                      <HugeiconsIcon
+                        className="text-lg mr-2"
+                        icon={GoogleIcon}
+                      />
                       {t("auth.oauth.google")}
                     </Button>
                     <Button
-                      variant="ghost"
-                      onPress={() => window.location.href = `${API_BASE_URL}/api/auth/github/login`}
                       className="w-full flex items-center justify-center"
+                      variant="ghost"
+                      onPress={() =>
+                        (window.location.href = `${API_BASE_URL}/api/auth/github/login`)
+                      }
                     >
-                      <HugeiconsIcon icon={Github01Icon} className="text-lg mr-2" />
+                      <HugeiconsIcon
+                        className="text-lg mr-2"
+                        icon={Github01Icon}
+                      />
                       {t("auth.oauth.github")}
                     </Button>
                   </div>
@@ -1010,20 +1117,24 @@ export default function AuthWindow({
               ) : null}
             </ModalBody>
             <ModalFooter>
-              <Button 
-                color="default" 
-                variant="light" 
-                onPress={onClose}
+              <Button
+                color="default"
                 isDisabled={isLoading}
+                variant="light"
+                onPress={onClose}
               >
                 {t("auth.actions.close")}
               </Button>
-              <Button 
-                  color="primary" 
-                  onPress={() => handleSubmit()}
-                  isDisabled={!isFormValid || isLoading}
-                  >
-                  {isLoading ? <Spinner color="white" size="sm" /> : getSubmitButtonText()}
+              <Button
+                color="primary"
+                isDisabled={!isFormValid || isLoading}
+                onPress={() => handleSubmit()}
+              >
+                {isLoading ? (
+                  <Spinner color="white" size="sm" />
+                ) : (
+                  getSubmitButtonText()
+                )}
               </Button>
             </ModalFooter>
           </>

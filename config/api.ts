@@ -4,11 +4,16 @@ export async function makeApiRequest(
   endpoint: string,
   method: string,
   body?: any,
-  skipAuth = false
+  skipAuth = false,
 ) {
-  const headers: Record<string,string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
   if (!skipAuth) {
-    const token = localStorage.getItem("token") ?? sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") ?? sessionStorage.getItem("token");
+
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
@@ -17,14 +22,17 @@ export async function makeApiRequest(
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+
   if (!res.ok) {
     const err = await res.json();
     const e: any = new Error(
       typeof err.detail === "string"
         ? err.detail
-        : err.detail?.code || err.message || "Request failed"
+        : err.detail?.code || err.message || "Request failed",
     );
+
     throw e;
   }
+
   return res.json();
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "@/context/auth";
 import {
   Table,
   TableHeader,
@@ -22,6 +21,8 @@ import {
 import { useTranslations } from "next-intl";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+
+import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 
 // Define TopicProgress type which contains progress data for a topic.
@@ -52,21 +53,34 @@ export default function Leaderboard() {
 
   // Component state for search filter, current topic, pagination, and sorting.
   const [filterValue, setFilterValue] = React.useState("");
-  const [selectedTopic, setSelectedTopic] = React.useState<"fundamentals" | "algorithms">("fundamentals");
+  const [selectedTopic, setSelectedTopic] = React.useState<
+    "fundamentals" | "algorithms"
+  >("fundamentals");
   const [rowsPerPage] = React.useState(7);
-  const [sortDescriptor, setSortDescriptor] = React.useState<{ column: string; direction: "ascending" | "descending" }>({
-      column: "score",
-      direction: "descending",
+  const [sortDescriptor, setSortDescriptor] = React.useState<{
+    column: string;
+    direction: "ascending" | "descending";
+  }>({
+    column: "score",
+    direction: "descending",
   });
   const [page, setPage] = React.useState(1);
 
   // State for leaderboard data, loading indicator, and error message.
   // raw JSON from API
-  const [rawData, setRawData] = React.useState<{ fundamentals: any[]; algorithms: any[] }>({
+  const [rawData, setRawData] = React.useState<{
+    fundamentals: any[];
+    algorithms: any[];
+  }>({
     fundamentals: [],
     algorithms: [],
   });
-  const emptyTopicProgress: TopicProgress = { score: 0, testsPassed: 0, totalTests: 0, lastActivity: "" };
+  const emptyTopicProgress: TopicProgress = {
+    score: 0,
+    testsPassed: 0,
+    totalTests: 0,
+    lastActivity: "",
+  };
 
   // build usersData based on selectedTopic only
   const usersData = React.useMemo(() => {
@@ -77,11 +91,21 @@ export default function Leaderboard() {
       avatar: item.avatar || "",
       fundamentals:
         selectedTopic === "fundamentals"
-          ? { score: item.score, testsPassed: item.testPassed, totalTests: item.totalTests, lastActivity: item.lastActivity }
+          ? {
+              score: item.score,
+              testsPassed: item.testPassed,
+              totalTests: item.totalTests,
+              lastActivity: item.lastActivity,
+            }
           : emptyTopicProgress,
       algorithms:
         selectedTopic === "algorithms"
-          ? { score: item.score, testsPassed: item.testPassed, totalTests: item.totalTests, lastActivity: item.lastActivity }
+          ? {
+              score: item.score,
+              testsPassed: item.testPassed,
+              totalTests: item.totalTests,
+              lastActivity: item.lastActivity,
+            }
           : emptyTopicProgress,
     }));
   }, [rawData, selectedTopic]);
@@ -93,14 +117,20 @@ export default function Leaderboard() {
     setLoading(true);
     makeApiRequest(`api/leaderboard`, "GET")
       .then((data: any) => {
-        if (data && Array.isArray(data.fundamentals) && Array.isArray(data.algorithms)) {
-          setRawData({ fundamentals: data.fundamentals, algorithms: data.algorithms });
+        if (
+          data &&
+          Array.isArray(data.fundamentals) &&
+          Array.isArray(data.algorithms)
+        ) {
+          setRawData({
+            fundamentals: data.fundamentals,
+            algorithms: data.algorithms,
+          });
         } else {
-          console.error("Unexpected API response format:", data);
           setRawData({ fundamentals: [], algorithms: [] });
         }
       })
-      .catch((err: Error) => {
+      .catch((_err: Error) => {
         addToast({
           title: t("leaderboard.fetchErrorTitle"),
           description: t("leaderboard.fetchError"),
@@ -113,7 +143,7 @@ export default function Leaderboard() {
   // Get current user data based on currentUserId.
   const currentUser = React.useMemo(
     () => usersData.find((user) => user.id === currentUserId),
-    [usersData, currentUserId]
+    [usersData, currentUserId],
   );
 
   // Define table columns with their names and sortability.
@@ -121,9 +151,17 @@ export default function Leaderboard() {
     { name: t("leaderboard.table.rank"), uid: "rank", sortable: false },
     { name: t("leaderboard.table.user"), uid: "user" },
     { name: t("leaderboard.table.score"), uid: "score", sortable: true },
-    { name: t("leaderboard.table.testsPassed"), uid: "testsPassed", sortable: true },
+    {
+      name: t("leaderboard.table.testsPassed"),
+      uid: "testsPassed",
+      sortable: true,
+    },
     { name: t("leaderboard.table.accuracy"), uid: "accuracy", sortable: false },
-    { name: t("leaderboard.table.lastActivity"), uid: "lastActivity", sortable: true },
+    {
+      name: t("leaderboard.table.lastActivity"),
+      uid: "lastActivity",
+      sortable: true,
+    },
   ];
 
   // Define topics available for leaderboard filtering.
@@ -139,7 +177,9 @@ export default function Leaderboard() {
 
   // Compute fixed ranking based solely on fundamentals.score (the higher the score, the higher the rank).
   const fixedRanking = React.useMemo(() => {
-    return [...usersData].sort((a, b) => b.fundamentals.score - a.fundamentals.score);
+    return [...usersData].sort(
+      (a, b) => b.fundamentals.score - a.fundamentals.score,
+    );
   }, [usersData]);
 
   // Compute fixed rank for the current user based on the fixedRanking.
@@ -150,25 +190,34 @@ export default function Leaderboard() {
   // Dynamically filter users based on the search input.
   const filteredItems = React.useMemo(() => {
     let filtered = [...usersData];
+
     if (hasSearchFilter) {
       filtered = filtered.filter((user) =>
-        user.username.toLowerCase().includes(filterValue.toLowerCase())
+        user.username.toLowerCase().includes(filterValue.toLowerCase()),
       );
     }
+
     return filtered;
   }, [filterValue, usersData, hasSearchFilter]);
 
   // Dynamically sort the filtered list based on the selected topic and sort descriptor.
   const sortedFilteredItems = React.useMemo(() => {
     return [...filteredItems].sort((a, b) => {
-      const first = a[selectedTopic][sortDescriptor.column as keyof TopicProgress];
-      const second = b[selectedTopic][sortDescriptor.column as keyof TopicProgress];
+      const first =
+        a[selectedTopic][sortDescriptor.column as keyof TopicProgress];
+      const second =
+        b[selectedTopic][sortDescriptor.column as keyof TopicProgress];
+
       if (sortDescriptor.column === "lastActivity") {
         const dateA = new Date(first as string).getTime();
         const dateB = new Date(second as string).getTime();
-        return sortDescriptor.direction === "descending" ? dateB - dateA : dateA - dateB;
+
+        return sortDescriptor.direction === "descending"
+          ? dateB - dateA
+          : dateA - dateB;
       }
       const cmp = Number(first) - Number(second);
+
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [filteredItems, sortDescriptor, selectedTopic]);
@@ -176,28 +225,34 @@ export default function Leaderboard() {
   // Utility function: Get a user's fixed rank from the fixedRanking.
   const getFixedRank = React.useCallback(
     (user: User) => fixedRanking.findIndex((u) => u.id === user.id) + 1,
-    [fixedRanking]
+    [fixedRanking],
   );
 
   // Build the list of items to display. On page 1 without search,
   // always display 7 rows (either top 7 or 6 plus a special "current user" row).
   const displayItems = React.useMemo(() => {
-    const isMissingInTop = !sortedFilteredItems.slice(0, 7).some(u => u.id === currentUserId);
+    const isMissingInTop = !sortedFilteredItems
+      .slice(0, 7)
+      .some((u) => u.id === currentUserId);
 
     if (!hasSearchFilter && page === 1) {
       const top7 = sortedFilteredItems.slice(0, 7);
+
       if (!isMissingInTop || !currentUser) {
         return top7;
       } else {
         const top6 = sortedFilteredItems.slice(0, 6);
+
         return [...top6, { isMyRank: true, id: -1 } as any];
       }
     }
 
     let start = (page - 1) * rowsPerPage;
+
     if (!hasSearchFilter && page > 1 && (!isMissingInTop || currentUser)) {
       start = start - 1;
     }
+
     return sortedFilteredItems.slice(start, start + rowsPerPage);
   }, [page, sortedFilteredItems, rowsPerPage, hasSearchFilter, currentUserId]);
 
@@ -207,13 +262,14 @@ export default function Leaderboard() {
       (() => {
         // If the row is a special current user row, use currentUser data; otherwise use the row data.
         const cellData = user.isMyRank ? currentUser : user;
+
         if (!cellData) return null;
 
         switch (columnKey) {
           case "rank":
             return (
               <div className="flex items-center justify-center">
-                <Chip variant="flat" color="primary">
+                <Chip color="primary" variant="flat">
                   #{rank}
                 </Chip>
               </div>
@@ -221,16 +277,24 @@ export default function Leaderboard() {
           case "user":
             return (
               <UserComponent
-                avatarProps={{ radius: "full", size: "md", src: cellData.avatar }}
-                name={cellData.username}
+                avatarProps={{
+                  radius: "full",
+                  size: "md",
+                  src: cellData.avatar,
+                }}
                 description={`${cellData.achievement}`}
+                name={cellData.username}
               />
             );
           case "score":
             return (
               <div className="flex flex-col">
-                <span className="font-bold text-lg">{cellData[selectedTopic].score}</span>
-                <span className="text-default-500 text-sm">{t("leaderboard.points")}</span>
+                <span className="font-bold text-lg">
+                  {cellData[selectedTopic].score}
+                </span>
+                <span className="text-default-500 text-sm">
+                  {t("leaderboard.points")}
+                </span>
               </div>
             );
           case "testsPassed":
@@ -238,14 +302,15 @@ export default function Leaderboard() {
             return (
               <div className="flex items-center gap-2">
                 <Progress
-                  value={cellData[selectedTopic].testsPassed}
-                  maxValue={cellData[selectedTopic].totalTests}
-                  color="primary"
-                  showValueLabel={false}
                   className="w-24"
+                  color="primary"
+                  maxValue={cellData[selectedTopic].totalTests}
+                  showValueLabel={false}
+                  value={cellData[selectedTopic].testsPassed}
                 />
                 <span>
-                  {cellData[selectedTopic].testsPassed}/{cellData[selectedTopic].totalTests}
+                  {cellData[selectedTopic].testsPassed}/
+                  {cellData[selectedTopic].totalTests}
                 </span>
               </div>
             );
@@ -253,8 +318,12 @@ export default function Leaderboard() {
             // Calculate accuracy as the percentage of correctly passed tests.
             const testsPassed = cellData[selectedTopic].testsPassed;
             const totalTests = cellData[selectedTopic].totalTests;
-            const percent = totalTests ? Math.round((testsPassed / totalTests) * 100) : 0;
-            const chipColor = percent < 25 ? "danger" : percent < 50 ? "warning" : "success";
+            const percent = totalTests
+              ? Math.round((testsPassed / totalTests) * 100)
+              : 0;
+            const chipColor =
+              percent < 25 ? "danger" : percent < 50 ? "warning" : "success";
+
             return (
               <Chip color={chipColor} variant="flat">
                 {percent}%
@@ -265,10 +334,14 @@ export default function Leaderboard() {
             return (
               <div className="flex flex-col">
                 <span className="text-sm">
-                  {new Date(cellData[selectedTopic].lastActivity).toLocaleDateString()}
+                  {new Date(
+                    cellData[selectedTopic].lastActivity,
+                  ).toLocaleDateString()}
                 </span>
                 <span className="text-default-500 text-xs">
-                  {new Date(cellData[selectedTopic].lastActivity).toLocaleTimeString()}
+                  {new Date(
+                    cellData[selectedTopic].lastActivity,
+                  ).toLocaleTimeString()}
                 </span>
               </div>
             );
@@ -276,7 +349,7 @@ export default function Leaderboard() {
             return null;
         }
       })(),
-    [selectedTopic, t, currentUser]
+    [selectedTopic, t, currentUser],
   );
 
   // Top content: contains search input and topic tabs.
@@ -292,20 +365,22 @@ export default function Leaderboard() {
             }}
             placeholder={t("leaderboard.searchPlaceholder")}
             size="sm"
-            startContent={<HugeiconsIcon icon={Search01Icon} className="text-default-300" />}
+            startContent={
+              <HugeiconsIcon className="text-default-300" icon={Search01Icon} />
+            }
             value={filterValue}
             variant="bordered"
             onClear={() => setFilterValue("")}
             onValueChange={setFilterValue}
           />
           <Tabs
+            color="primary"
             selectedKey={selectedTopic}
+            variant="solid"
             onSelectionChange={(key) => {
               setSelectedTopic(key as "fundamentals" | "algorithms");
               setPage(1);
             }}
-            variant="solid"
-            color="primary"
           >
             {topics.map((topic) => (
               <Tab key={topic.uid} title={topic.name} />
@@ -338,7 +413,10 @@ export default function Leaderboard() {
           onChange={setPage}
         />
         <span className="text-small text-default-400">
-          {t("leaderboard.showingParticipants", { shown: displayItems.length, total: usersData.length })}
+          {t("leaderboard.showingParticipants", {
+            shown: displayItems.length,
+            total: usersData.length,
+          })}
         </span>
       </div>
     );
@@ -346,7 +424,7 @@ export default function Leaderboard() {
 
   // Render the Leaderboard component.
   return (
-    <div className="max-w-6xl mx-auto p-6" key={selectedTopic}>
+    <div key={selectedTopic} className="max-w-6xl mx-auto p-6">
       <h1 className="mb-4 text-2xl font-bold">{t("leaderboard.title")}</h1>
       <Table
         aria-label={t("leaderboard.ariaLabel")}
@@ -356,7 +434,10 @@ export default function Leaderboard() {
         topContent={topContent}
         topContentPlacement="outside"
         onSortChange={(descriptor) =>
-          setSortDescriptor({ column: String(descriptor.column), direction: descriptor.direction })
+          setSortDescriptor({
+            column: String(descriptor.column),
+            direction: descriptor.direction,
+          })
         }
       >
         {/* Table header */}
@@ -364,8 +445,8 @@ export default function Leaderboard() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              allowsSorting={column.sortable}
               align={column.uid === "rank" ? "center" : "start"}
+              allowsSorting={column.sortable}
             >
               {column.name}
             </TableColumn>
@@ -374,8 +455,8 @@ export default function Leaderboard() {
 
         {/* Table body */}
         <TableBody
-          items={displayItems}
           isLoading={loading}
+          items={displayItems}
           loadingContent={
             <div className="flex justify-center items-center">
               <Spinner size="lg" />
@@ -384,7 +465,7 @@ export default function Leaderboard() {
         >
           {(item: any): JSX.Element => {
             // Check if the current row corresponds to the current user.
-            const isCurrentRow = item.isMyRank || (item.id === currentUserId);
+            const isCurrentRow = item.isMyRank || item.id === currentUserId;
             // Compute rank: use fixed rank if it's a special current-user row.
             const rank = item.isMyRank ? fixedMyRank : getFixedRank(item);
             // Apply border styles: If the current user row is special, use a top border;
@@ -394,8 +475,12 @@ export default function Leaderboard() {
                 ? "bg-gray-100 dark:bg-zinc-800 border-t border-t-2 border-blue-600"
                 : "bg-gray-100 dark:bg-zinc-800 border-l-4 border-blue-600"
               : "";
+
             return (
-              <TableRow key={item.isMyRank ? "myRank" : item.id} className={`${borderClass}`}>
+              <TableRow
+                key={item.isMyRank ? "myRank" : item.id}
+                className={`${borderClass}`}
+              >
                 {(columnKey: string | number): JSX.Element => (
                   <TableCell>{renderCell(item, columnKey, rank)}</TableCell>
                 )}
@@ -407,4 +492,3 @@ export default function Leaderboard() {
     </div>
   );
 }
-

@@ -27,9 +27,9 @@ export const siteConfig = {
       href: "/problems",
     },
     {
-        label: "menu.leaderboard",
-        href: "/leaderboard",
-      },
+      label: "menu.leaderboard",
+      href: "/leaderboard",
+    },
     {
       label: "nav.about",
       href: "/about",

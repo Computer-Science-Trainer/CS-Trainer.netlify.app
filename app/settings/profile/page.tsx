@@ -1,10 +1,20 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth";
-import { Input, Form, Button, addToast, Card, Textarea, Avatar } from "@heroui/react";
+import {
+  Input,
+  Form,
+  Button,
+  addToast,
+  Card,
+  Textarea,
+  Avatar,
+} from "@heroui/react";
 import { useTranslations } from "next-intl";
+
+import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 
 export default function SettingsProfilePage() {
@@ -41,6 +51,7 @@ export default function SettingsProfilePage() {
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (file) {
       if (avatarPreview && avatarPreview.startsWith("blob:")) {
         URL.revokeObjectURL(avatarPreview);
@@ -53,6 +64,7 @@ export default function SettingsProfilePage() {
   const handleProfileUpdate = async () => {
     try {
       const form = new FormData();
+
       form.append("username", nickname);
       form.append("email", email);
       form.append("telegram", telegram);
@@ -60,40 +72,69 @@ export default function SettingsProfilePage() {
       form.append("website", website);
       form.append("bio", bio);
       if (avatarFile) form.append("avatar", avatarFile);
-      const data = await makeApiRequest(`api/auth/update-profile`, "PATCH", form);
+      const data = await makeApiRequest(
+        `api/auth/update-profile`,
+        "PATCH",
+        form,
+      );
+
       addToast({ title: t("settings.profileUpdated"), color: "success" });
       login(data.token, true);
     } catch (e: any) {
-      addToast({ title: t("settings.updateError"), description: e.message, color: "danger" });
+      addToast({
+        title: t("settings.updateError"),
+        description: e.message,
+        color: "danger",
+      });
     }
   };
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmNew) {
       addToast({ title: t("settings.passwordMismatch"), color: "warning" });
+
       return;
     }
     try {
-      await makeApiRequest(`api/auth/change-password`, "POST", { oldPassword, newPassword });
-      addToast({ title: t("settings.passwordChangeSuccess"), color: "success" });
+      await makeApiRequest(`api/auth/change-password`, "POST", {
+        oldPassword,
+        newPassword,
+      });
+      addToast({
+        title: t("settings.passwordChangeSuccess"),
+        color: "success",
+      });
       setOldPassword("");
       setNewPassword("");
       setConfirmNew("");
     } catch (e: any) {
-      addToast({ title: t("settings.passwordChangeError"), description: e.message, color: "danger" });
+      addToast({
+        title: t("settings.passwordChangeError"),
+        description: e.message,
+        color: "danger",
+      });
     }
   };
 
   return (
     <div className="max-w-xl mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-center">{t("settings.profileTitle")}</h1>
+      <h1 className="text-3xl font-bold text-center">
+        {t("settings.profileTitle")}
+      </h1>
 
       <Card className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 space-y-6">
-        <h2 className="text-xl font-semibold border-b pb-2">{t("settings.infoHeading")}</h2>
-        <Form onSubmit={(e) => { e.preventDefault(); handleProfileUpdate(); }}>
+        <h2 className="text-xl font-semibold border-b pb-2">
+          {t("settings.infoHeading")}
+        </h2>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleProfileUpdate();
+          }}
+        >
           <div className="flex w-full items-start gap-6 mb-4">
             <div
-              className="w-24 h-24 rounded-full overflow-hidden border cursor-pointer"
+              className="w-24 h-24 rounded-full overflow-hidden border cursor-pointer relative"
               role="button"
               tabIndex={0}
               onClick={() => fileInputRef.current?.click()}
@@ -104,34 +145,35 @@ export default function SettingsProfilePage() {
               }}
             >
               {avatarPreview ? (
-                <img
-                  src={avatarPreview}
+                <Image
+                  fill
                   alt="avatar preview"
-                  className="w-full h-full object-cover object-center"
+                  className="object-cover object-center"
+                  src={avatarPreview}
                 />
               ) : (
                 <Avatar
                   showFallback
+                  className="w-full h-full object-cover object-center"
                   radius="full"
                   size="lg"
-                  className="w-full h-full object-cover object-center"
                 />
               )}
             </div>
             <div className="flex-1 w-full">
               <Textarea
-                label={t("settings.bioLabel")}
-                value={bio}
-                onValueChange={setBio}
-                placeholder={t("settings.bioLabel")}
                 className="w-full"
+                label={t("settings.bioLabel")}
+                placeholder={t("settings.bioLabel")}
+                value={bio}
                 variant="bordered"
+                onValueChange={setBio}
               />
               <input
-                type="file"
+                ref={fileInputRef}
                 accept="image/*"
                 className="hidden"
-                ref={fileInputRef}
+                type="file"
                 onChange={handleAvatarChange}
               />
             </div>
@@ -139,100 +181,109 @@ export default function SettingsProfilePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
             <Input
-              label={t("settings.nicknameLabel")}
               defaultValue={user?.username}
-              value={nickname}
-              onValueChange={setNickname}
+              label={t("settings.nicknameLabel")}
               placeholder={t("settings.placeholders.nickname")}
+              value={nickname}
               variant="bordered"
+              onValueChange={setNickname}
             />
             <Input
-              label={t("settings.emailLabel")}
-              type="email"
               defaultValue={user?.email}
-              value={email}
-              onValueChange={setEmail}
+              label={t("settings.emailLabel")}
               placeholder={t("settings.placeholders.email")}
+              type="email"
+              value={email}
               variant="bordered"
+              onValueChange={setEmail}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
             <Input
-              label={t("settings.telegramLabel")}
               defaultValue={user?.telegram}
-              value={telegram}
-              onValueChange={setTelegram}
+              label={t("settings.telegramLabel")}
               placeholder={t("settings.placeholders.telegram")}
+              value={telegram}
               variant="bordered"
+              onValueChange={setTelegram}
             />
             <Input
-              label={t("settings.githubLabel")}
               defaultValue={user?.github}
-              value={github}
-              onValueChange={setGithub}
+              label={t("settings.githubLabel")}
               placeholder={t("settings.placeholders.github")}
+              value={github}
               variant="bordered"
+              onValueChange={setGithub}
             />
           </div>
 
           <Input
-            label={t("settings.websiteLabel")}
-            type="url"
-            defaultValue={user?.website}
-            value={website}
-            onValueChange={setWebsite}
-            placeholder={t("settings.placeholders.website")}
-            variant="bordered"
             className="mb-4"
+            defaultValue={user?.website}
+            label={t("settings.websiteLabel")}
+            placeholder={t("settings.placeholders.website")}
+            type="url"
+            value={website}
+            variant="bordered"
+            onValueChange={setWebsite}
           />
 
-          <Button color="primary" className="w-full">
+          <Button className="w-full" color="primary">
             {t("settings.saveButton")}
           </Button>
         </Form>
       </Card>
 
       <Card className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 space-y-6">
-        <h2 className="text-xl font-semibold border-b pb-2">{t("settings.changePasswordHeading")}</h2>
-        <Form onSubmit={(e) => { e.preventDefault(); handleChangePassword(); }}>
+        <h2 className="text-xl font-semibold border-b pb-2">
+          {t("settings.changePasswordHeading")}
+        </h2>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleChangePassword();
+          }}
+        >
           <div className="w-full space-y-4">
             <Input
               label={t("settings.currentPasswordLabel")}
+              placeholder={t("settings.currentPasswordLabel")}
               type="password"
               value={oldPassword}
-              onValueChange={setOldPassword}
-              placeholder={t("settings.currentPasswordLabel")}
               variant="bordered"
+              onValueChange={setOldPassword}
             />
             <Input
               label={t("settings.newPasswordLabel")}
+              placeholder={t("settings.newPasswordLabel")}
               type="password"
               value={newPassword}
-              onValueChange={setNewPassword}
-              placeholder={t("settings.newPasswordLabel")}
               variant="bordered"
+              onValueChange={setNewPassword}
             />
             <Input
               label={t("settings.confirmNewPasswordLabel")}
+              placeholder={t("settings.confirmNewPasswordLabel")}
               type="password"
               value={confirmNew}
-              onValueChange={setConfirmNew}
-              placeholder={t("settings.confirmNewPasswordLabel")}
               variant="bordered"
+              onValueChange={setConfirmNew}
             />
           </div>
-          <Button color="primary" className="mt-4 w-full">
+          <Button className="mt-4 w-full" color="primary">
             {t("settings.changePasswordButton")}
           </Button>
         </Form>
       </Card>
 
       <Button
+        className="w-full"
         color="danger"
         variant="flat"
-        className="w-full"
-        onPress={() => { logout(); }}
+        onPress={() => {
+          logout();
+        }}
       >
         {t("settings.logoutButton")}
       </Button>
