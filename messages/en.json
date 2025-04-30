@@ -53,7 +53,8 @@
                 "recoverFailed": "Recovery Failed",
                 "recoverVerifyFailed": "Verification Failed",
                 "changePasswordFailed": "Password Change Failed",
-                "accountNotVerified": "Account Not Verified"
+                "accountNotVerified": "Account Not Verified",
+                "authError": "Authorization Error"
             },
             "detail": {
                 "user_not_found": "User with this email was not found",
@@ -64,7 +65,8 @@
                 "password_change_success": "Password has been changed successfully",
                 "verification_code_sent": "Verification code has been sent to your email",
                 "registration_success": "Registration successful. Please check your email for verification code",
-                "verification_success": "Email verified successfully"
+                "verification_success": "Email verified successfully",
+                "accessDenied": "Access Denied"
             },
             "general": "An error occurred. Please try again.",
             "emailMissing": "Email is required",

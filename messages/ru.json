@@ -53,7 +53,8 @@
                 "recoverFailed": "Ошибка восстановления",
                 "recoverVerifyFailed": "Ошибка проверки",
                 "changePasswordFailed": "Ошибка смены пароля",
-                "accountNotVerified": "Аккаунт не подтвержден"
+                "accountNotVerified": "Аккаунт не подтвержден",
+                "authError": "Ошибка авторизации"
             },
             "detail": {
                 "user_not_found": "Пользователь с таким email не найден",
