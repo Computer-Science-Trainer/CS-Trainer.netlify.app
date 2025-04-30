@@ -369,7 +369,7 @@ export default function AuthWindow({
         color: "success",
       });
 
-      login(data.token, rememberMe);
+      login(data.access_token, rememberMe);
       onOpenChange(false);
     } catch (error: any) {
       if (error.message === "account_not_verified") {
@@ -416,7 +416,7 @@ export default function AuthWindow({
         true,
       );
 
-      login(data.token, rememberMe);
+      login(data.access_token, rememberMe);
       addToast({
         title: t("auth.success.title.verifySuccess"),
         description: t("auth.success.verifySuccess"),
@@ -503,13 +503,13 @@ export default function AuthWindow({
         true,
       );
 
-      login(data.token, rememberMe);
+      login(data.access_token, rememberMe);
       addToast({
         title: t("auth.success.title.changePasswordSuccess"),
         description: t("auth.success.changePasswordSuccess"),
         color: "success",
       });
-      if (onAuthSuccess) onAuthSuccess(data.token);
+      if (onAuthSuccess) onAuthSuccess(data.access_token);
       onOpenChange(false);
     } catch (error: any) {
       addToast({

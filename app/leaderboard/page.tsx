@@ -86,14 +86,14 @@ export default function Leaderboard() {
   const usersData = React.useMemo(() => {
     return (rawData[selectedTopic] || []).map((item: any) => ({
       id: item.id,
-      username: item.nickname,
+      username: item.username,
       achievement: item.achievement ?? "",
       avatar: item.avatar || "",
       fundamentals:
         selectedTopic === "fundamentals"
           ? {
               score: item.score,
-              testsPassed: item.testPassed,
+              testsPassed: item.testsPassed,
               totalTests: item.totalTests,
               lastActivity: item.lastActivity,
             }
@@ -102,7 +102,7 @@ export default function Leaderboard() {
         selectedTopic === "algorithms"
           ? {
               score: item.score,
-              testsPassed: item.testPassed,
+              testsPassed: item.testsPassed,
               totalTests: item.totalTests,
               lastActivity: item.lastActivity,
             }
