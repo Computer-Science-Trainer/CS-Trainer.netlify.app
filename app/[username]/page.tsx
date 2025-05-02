@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { TelegramIcon, GithubIcon, WebsiteIcon } from "@/components/icons";
 import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
+import { TestDetailsModal } from "@/components/TestDetailsModal";
 
 export default function ProfilePage() {
   const t = useTranslations();
@@ -32,10 +33,13 @@ export default function ProfilePage() {
 
   interface Test {
     id: number;
-    date: string;
-    title: string;
-    passed: boolean;
-    progress: number;
+    type: string;
+    section: string;
+    passed: number;
+    total: number;
+    average: number;
+    topics: string[];
+    created_at: string;
   }
   interface Achievement {
     code: string;
@@ -49,6 +53,9 @@ export default function ProfilePage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [visibleTests, setVisibleTests] = useState(4);
   const [visibleMonths, setVisibleMonths] = useState(3);
+
+  const [testModalOpen, setTestModalOpen] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<Test | null>(null);
 
   useEffect(() => {
     makeApiRequest(`api/user/${username}/tests`, "GET").then(setTests);
@@ -75,12 +82,11 @@ export default function ProfilePage() {
 
   let isDateUnavailable = (date: any): boolean => {
     const formatted = date.toString().slice(0, 10);
-
-    return tests.filter((test: Test) => test.date === formatted).length === 0;
+    return tests.filter((test: Test) => test.created_at.slice(0, 10) === formatted).length === 0;
   };
 
   const testsOnDate = selectedDate
-    ? tests.filter((test) => test.date === selectedDate)
+    ? tests.filter((test) => test.created_at.slice(0, 10) === selectedDate)
     : [];
 
   return (
@@ -219,7 +225,10 @@ export default function ProfilePage() {
                       {stats.passed}/{stats.total}
                     </span>
                   </div>
-                  <Progress color="primary" value={stats.avg} />
+                  <Progress
+                    color={(stats.passed / stats.total) * 100 >= 80 ? "success" : (stats.passed / stats.total) * 100 >= 50 ? "warning" : "danger"}
+                    value={stats.avg * 100}
+                  />
                   <div className="flex justify-between text-default-500">
                     <span>{t("profile.avgScoreLabel")}</span>
                     <span className="text-primary">{stats.avg}%</span>
@@ -276,36 +285,43 @@ export default function ProfilePage() {
                   key="tests-list"
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
-                  {testsOnDate.slice(0, visibleTests).map((test) => (
+                  {testsOnDate.slice(0, visibleTests).map((test, idx) => (
                     <Card
-                      key={test.id}
-                      className="transition-transform duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl rounded-xl border border-default-200 p-4"
+                      isPressable
+                      key={test.id || test.created_at || idx}
+                      className="transition-transform duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl rounded-xl border border-default-200 p-4 h-44 cursor-pointer"
+                      onPress={() => {
+                        setSelectedTest(test);
+                        setTestModalOpen(true);
+                      }}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-medium text-primary text-lg">
-                            {test.title}
-                          </p>
-                          <p className="text-sm text-default-500">
-                            {test.date}
-                          </p>
+                          <div className="flex text-left items-center gap-2">
+                           <p className="font-medium text-primary text-lg">
+                            {t(`tests.testTypes.${test.type}`)}
+                           </p>
+                            <Chip variant="bordered" className="mt-1" color="default">
+                                {t(`tests.sections.${test.section}`)}
+                            </Chip>
+                            <div className="text-right flex-1 mr-2">
+                                <p>{`${Math.round(test.average * 100)}%`}</p>
+                            </div>
+                          </div>
+                          <div className="text-default-500 text-left mt-2">
+                            {test.topics.slice(0, 2).map((topic, idx) => (
+                              <p key={idx} className="truncate">{t(`tests.topics.${topic}`)}</p>
+                            ))}
+                            {test.topics.length > 2 && <p>...</p>}
+                          </div>
                         </div>
-                        <Chip
-                          color={test.passed ? "success" : "warning"}
-                          size="sm"
-                          variant="flat"
-                        >
-                          {test.passed
-                            ? t("profile.testPassed")
-                            : `${test.progress}%`}
-                        </Chip>
                       </div>
                       <Progress
                         className="mt-2"
-                        color={test.passed ? "success" : "warning"}
+                        color={test.average >= 0.8 ? "success" : test.average >= 0.5 ? "warning" : "danger"}
                         size="sm"
-                        value={test.progress}
-                      />
+                        value={test.average * 100}
+                        />
                     </Card>
                   ))}
                 </div>
@@ -334,6 +350,11 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
+      <TestDetailsModal
+        open={testModalOpen}
+        onClose={() => setTestModalOpen(false)}
+        test={selectedTest}
+      />
     </div>
   );
 }
