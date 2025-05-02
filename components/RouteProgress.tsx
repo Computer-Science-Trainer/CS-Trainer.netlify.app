@@ -26,12 +26,16 @@ export const RouteProgress: React.FC = () => {
         clearTimeout(timerRef.current);
 
         if (url.pathname === window.location.pathname) {
-          timerRef.current = setTimeout(() => setVisible(false), MIN_DISPLAY_MS);
+          timerRef.current = setTimeout(
+            () => setVisible(false),
+            MIN_DISPLAY_MS,
+          );
         }
       }
     };
 
     document.addEventListener("mousedown", onClick);
+
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 

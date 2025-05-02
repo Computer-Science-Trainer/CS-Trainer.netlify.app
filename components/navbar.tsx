@@ -31,7 +31,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
 
-import { TelegramIcon, SearchIcon, Logo } from "@/components/icons";
+import { TelegramIcon, Logo } from "@/components/icons";
 import LoginWindow from "@/components/login";
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";

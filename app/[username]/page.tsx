@@ -8,12 +8,12 @@ import {
   Progress,
   Button,
   Chip,
-  Badge,
   Tab,
   Tabs,
   Divider,
   Spacer,
   Tooltip,
+  addToast,
 } from "@heroui/react";
 import { Link as HeroLink } from "@heroui/link";
 import { useTranslations } from "next-intl";
@@ -38,10 +38,10 @@ export default function ProfilePage() {
     progress: number;
   }
   interface Achievement {
-    code: number;
-    title: string;
-    description: string;
-    icon: string;
+    code: string;
+    emoji: string;
+    unlocked: boolean;
+    unlocked_at: string;
   }
   const [tests, setTests] = useState<Test[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -53,11 +53,11 @@ export default function ProfilePage() {
   useEffect(() => {
     makeApiRequest(`api/user/${username}/tests`, "GET").then(setTests);
     makeApiRequest(`api/user/${username}/achievements`, "GET").then(
-      setAchievements,
+      (data: Achievement[]) => setAchievements(data),
     );
     makeApiRequest(`api/user/${username}/stats`, "GET").then((data) =>
-        setStats({ passed: data.passed, total: data.total, avg: data.average }),
-      );
+      setStats({ passed: data.passed, total: data.total, avg: data.average }),
+    );
   }, [username]);
 
   useEffect(() => {
@@ -174,22 +174,36 @@ export default function ProfilePage() {
                   {achievements.map((achievement) => (
                     <Card
                       key={achievement.code}
-                      className="bg-default-100 hover:bg-default-200 transition-colors"
+                      isPressable
+                      className="text-left w-full bg-default-100 hover:bg-default-200 transition-colors cursor-pointer"
+                      onPress={() => {
+                        const unlockedDate = new Date(
+                          achievement.unlocked_at,
+                        ).toLocaleDateString();
+                        const titleStr = t(
+                          `profile.achievements.${achievement.code}.title`,
+                        );
+
+                        addToast({
+                          description: t("profile.achievementUnlocked", {
+                            title: titleStr,
+                            date: unlockedDate,
+                          }),
+                        });
+                      }}
                     >
-                      <div className="flex items-center gap-3 p-2">
-                        <Badge
-                          color={achievement.code === 1 ? "warning" : "secondary"}
-                          size="lg"
-                          variant="shadow"
-                        >
-                          {achievement.icon === "star" ? "★" : "🛡️"}
-                        </Badge>
+                      <div className="flex items-center gap-3 p-2 ml-1">
+                        <span className="text-3xl">{achievement.emoji}</span>
                         <div>
                           <p className="font-semibold text-primary">
-                            {achievement.title}
+                            {t(
+                              `profile.achievements.${achievement.code}.title`,
+                            )}
                           </p>
                           <p className="text-sm text-default-500">
-                            {achievement.description}
+                            {t(
+                              `profile.achievements.${achievement.code}.description`,
+                            )}
                           </p>
                         </div>
                       </div>

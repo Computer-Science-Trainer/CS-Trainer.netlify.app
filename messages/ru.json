@@ -192,6 +192,17 @@
         "selectDateMessage": "Выберите дату для просмотра результатов",
         "editProfileButton": "Редактировать профиль",
         "logoutButton": "Выйти",
-        "testPassed": "Пройден"
+        "achievementUnlocked": "Достижение \"{title}\" получено {date}",
+        "testPassed": "Пройден",
+        "achievements": {
+            "first_login": {
+                "title": "Первый вход",
+                "description": "Поздравляем с первым входом в систему!"
+            },
+            "leaderboard_top3": {
+                "title": "Топ-3",
+                "description": "Вы в тройке лучших!"
+            }
+        }
     }
 }

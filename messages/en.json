@@ -193,6 +193,17 @@
         "selectDateMessage": "Select a date to view results",
         "editProfileButton": "Edit Profile",
         "logoutButton": "Log Out",
-        "testPassed": "Passed"
+        "achievementUnlocked": "Achievement \"{title}\" unlocked on {date}",
+        "testPassed": "Passed",
+        "achievements": {
+            "first_login": {
+                "title": "First Login",
+                "description": "Congratulations on your first login!"
+            },
+            "leaderboard_top3": {
+                "title": "Top 3 Leaderboard",
+                "description": "You are in the top three!"
+            }
+        }
     }
 }
