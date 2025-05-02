@@ -38,7 +38,7 @@ export default function ProfilePage() {
     progress: number;
   }
   interface Achievement {
-    id: number;
+    code: number;
     title: string;
     description: string;
     icon: string;
@@ -55,12 +55,9 @@ export default function ProfilePage() {
     makeApiRequest(`api/user/${username}/achievements`, "GET").then(
       setAchievements,
     );
-  }, [username]);
-
-  useEffect(() => {
     makeApiRequest(`api/user/${username}/stats`, "GET").then((data) =>
-      setStats({ passed: data.passed, total: data.total, avg: data.average }),
-    );
+        setStats({ passed: data.passed, total: data.total, avg: data.average }),
+      );
   }, [username]);
 
   useEffect(() => {
@@ -176,12 +173,12 @@ export default function ProfilePage() {
                 <div className="space-y-4 mt-4">
                   {achievements.map((achievement) => (
                     <Card
-                      key={achievement.id}
+                      key={achievement.code}
                       className="bg-default-100 hover:bg-default-200 transition-colors"
                     >
                       <div className="flex items-center gap-3 p-2">
                         <Badge
-                          color={achievement.id === 1 ? "warning" : "secondary"}
+                          color={achievement.code === 1 ? "warning" : "secondary"}
                           size="lg"
                           variant="shadow"
                         >
