@@ -14,6 +14,7 @@ import {
   Spacer,
   Tooltip,
   addToast,
+  Spinner
 } from "@heroui/react";
 import { Link as HeroLink } from "@heroui/link";
 import { useTranslations } from "next-intl";
@@ -22,6 +23,7 @@ import { TelegramIcon, GithubIcon, WebsiteIcon } from "@/components/icons";
 import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 import { TestDetailsModal } from "@/components/TestDetailsModal";
+import { DateValue } from "@internationalized/date";
 
 export default function ProfilePage() {
   const t = useTranslations();
@@ -29,7 +31,7 @@ export default function ProfilePage() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const [stats, setStats] = useState({ passed: 0, total: 0, avg: 0 });
+  const [stats, setStats] = useState({ passed: 0, total: 0, avg: 0, fundamentals: 0, algorithms: 0 });
 
   interface Test {
     id: number;
@@ -40,6 +42,7 @@ export default function ProfilePage() {
     average: number;
     topics: string[];
     created_at: string;
+    earned_score: number;
   }
   interface Achievement {
     code: string;
@@ -50,21 +53,38 @@ export default function ProfilePage() {
   const [tests, setTests] = useState<Test[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<DateValue | null>(null);
   const [visibleTests, setVisibleTests] = useState(4);
   const [visibleMonths, setVisibleMonths] = useState(3);
 
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<Test | null>(null);
 
+  const [loadingTests, setLoadingTests] = useState(true);
+  const [loadingAchievements, setLoadingAchievements] = useState(true);
+  const [loadingStats, setLoadingStats] = useState(true);
+
   useEffect(() => {
-    makeApiRequest(`api/user/${username}/tests`, "GET").then(setTests);
-    makeApiRequest(`api/user/${username}/achievements`, "GET").then(
-      (data: Achievement[]) => setAchievements(data),
-    );
-    makeApiRequest(`api/user/${username}/stats`, "GET").then((data) =>
-      setStats({ passed: data.passed, total: data.total, avg: data.average }),
-    );
+    setLoadingTests(true);
+    makeApiRequest(`api/user/${username}/tests`, "GET")
+      .then(setTests)
+      .finally(() => setLoadingTests(false));
+    setLoadingAchievements(true);
+    makeApiRequest(`api/user/${username}/achievements`, "GET")
+      .then((data: Achievement[]) => setAchievements(data))
+      .finally(() => setLoadingAchievements(false));
+    setLoadingStats(true);
+    makeApiRequest(`api/user/${username}/stats`, "GET")
+      .then((data) =>
+        setStats({
+          passed: data.passed,
+          total: data.total,
+          avg: data.average,
+          fundamentals: data.fundamentals,
+          algorithms: data.algorithms
+        })
+      )
+      .finally(() => setLoadingStats(false));
   }, [username]);
 
   useEffect(() => {
@@ -86,7 +106,7 @@ export default function ProfilePage() {
   };
 
   const testsOnDate = selectedDate
-    ? tests.filter((test) => test.created_at.slice(0, 10) === selectedDate)
+    ? tests.filter((test) => test.created_at.slice(0, 10) === selectedDate.toString().slice(0, 10))
     : [];
 
   return (
@@ -177,62 +197,84 @@ export default function ProfilePage() {
             <Tabs color="secondary" variant="underlined">
               <Tab key="achievements" title={t("profile.achievementsTab")}>
                 <div className="space-y-4 mt-4">
-                  {achievements.map((achievement) => (
-                    <Card
-                      key={achievement.code}
-                      isPressable
-                      className="text-left w-full bg-default-100 hover:bg-default-200 transition-colors cursor-pointer"
-                      onPress={() => {
-                        const unlockedDate = new Date(
-                          achievement.unlocked_at,
-                        ).toLocaleDateString();
-                        const titleStr = t(
-                          `profile.achievements.${achievement.code}.title`,
-                        );
+                  {loadingAchievements ? (
+                    <div className="flex justify-center py-8">
+                      <Spinner size="lg" color="primary" />
+                    </div>
+                  ) : (
+                    achievements.map((achievement) => (
+                      <Card
+                        key={achievement.code}
+                        isPressable
+                        className="text-left w-full bg-default-100 hover:bg-default-200 transition-colors cursor-pointer"
+                        onPress={() => {
+                          const unlockedDate = new Date(
+                            achievement.unlocked_at,
+                          ).toLocaleDateString();
+                          const titleStr = t(
+                            `profile.achievements.${achievement.code}.title`,
+                          );
 
-                        addToast({
-                          description: t("profile.achievementUnlocked", {
-                            title: titleStr,
-                            date: unlockedDate,
-                          }),
-                        });
-                      }}
-                    >
-                      <div className="flex items-center gap-3 p-2 ml-1">
-                        <span className="text-3xl">{achievement.emoji}</span>
-                        <div>
-                          <p className="font-semibold text-primary">
-                            {t(
-                              `profile.achievements.${achievement.code}.title`,
-                            )}
-                          </p>
-                          <p className="text-sm text-default-500">
-                            {t(
-                              `profile.achievements.${achievement.code}.description`,
-                            )}
-                          </p>
+                          addToast({
+                            description: t("profile.achievementUnlocked", {
+                              title: titleStr,
+                              date: unlockedDate,
+                            }),
+                          });
+                        }}
+                      >
+                        <div className="flex items-center gap-3 p-2 ml-1">
+                          <span className="text-3xl">{achievement.emoji}</span>
+                          <div>
+                            <p className="font-semibold text-primary">
+                              {t(
+                                `profile.achievements.${achievement.code}.title`,
+                              )}
+                            </p>
+                            <p className="text-sm text-default-500">
+                              {t(
+                                `profile.achievements.${achievement.code}.description`,
+                              )}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    ))
+                  )}
                 </div>
               </Tab>
               <Tab key="stats" title={t("profile.statsTab")}>
                 <div className="mt-4 space-y-3">
-                  <div className="flex justify-between text-default-500">
-                    <span>{t("profile.testsTakenLabel")}</span>
-                    <span className="text-primary">
-                      {stats.passed}/{stats.total}
-                    </span>
-                  </div>
-                  <Progress
-                    color={(stats.passed / stats.total) * 100 >= 80 ? "success" : (stats.passed / stats.total) * 100 >= 50 ? "warning" : "danger"}
-                    value={stats.avg * 100}
-                  />
-                  <div className="flex justify-between text-default-500">
-                    <span>{t("profile.avgScoreLabel")}</span>
-                    <span className="text-primary">{stats.avg}%</span>
-                  </div>
+                  {loadingStats ? (
+                    <div className="flex justify-center py-8">
+                      <Spinner size="lg" color="primary" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-default-500">
+                        <span>{t("profile.testsTakenLabel")}</span>
+                        <span className="text-primary">
+                          {stats.passed}/{stats.total}
+                        </span>
+                      </div>
+                      <Progress
+                        color={(stats.passed / stats.total) * 100 >= 80 ? "success" : (stats.passed / stats.total) * 100 >= 50 ? "warning" : "danger"}
+                        value={stats.avg * 100}
+                      />
+                      <div className="flex justify-between text-default-500">
+                        <span>{t("profile.avgResultLabel")}</span>
+                        <span className="text-primary">{stats.avg}%</span>
+                      </div>
+                      <div className="flex justify-between text-default-500">
+                        <span>{t("profile.fundamentalsScoreLabel")}</span>
+                        <span className="text-primary">{stats.fundamentals}</span>
+                      </div>
+                      <div className="flex justify-between text-default-500">
+                        <span>{t("profile.algorithmsScoreLabel")}</span>
+                        <span className="text-primary">{stats.algorithms}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </Tab>
             </Tabs>
@@ -253,7 +295,8 @@ export default function ProfilePage() {
               color="primary"
               isDateUnavailable={isDateUnavailable}
               visibleMonths={visibleMonths}
-              onChange={(date) => setSelectedDate(date.toString().slice(0, 10))}
+              value={selectedDate}
+              onChange={setSelectedDate}
             />
           </Card>
 
@@ -279,7 +322,11 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {testsOnDate.length > 0 ? (
+            {loadingTests ? (
+              <div className="flex justify-center py-8">
+                <Spinner size="lg" color="primary" />
+              </div>
+            ) : testsOnDate.length > 0 ? (
               <>
                 <div
                   key="tests-list"
@@ -295,16 +342,16 @@ export default function ProfilePage() {
                         setTestModalOpen(true);
                       }}
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="flex text-left items-center gap-2">
+                      <div className="flex justify-between items-start w-full p-1">
+                        <div className="w-full">
+                          <div className="flex items-center gap-2 w-full">
                            <p className="font-medium text-primary text-lg">
                             {t(`tests.testTypes.${test.type}`)}
                            </p>
                             <Chip variant="bordered" className="mt-1" color="default">
                                 {t(`tests.sections.${test.section}`)}
                             </Chip>
-                            <div className="text-right flex-1 mr-2">
+                            <div className="flex-1 text-right ml-auto font-bold">
                                 <p>{`${Math.round(test.average * 100)}%`}</p>
                             </div>
                           </div>

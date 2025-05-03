@@ -14,6 +14,7 @@ interface TestDetailsModalProps {
     average: number;
     topics: string[];
     created_at: string;
+    earned_score: number;
   } | null;
 }
 
@@ -27,9 +28,14 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({ open, onClos
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1 text-xl font-semibold">
           {t(`tests.testTypes.${test.type}`)}
-          <span className="text-base font-normal text-default-500">
-            {test.section == "fundamentals" ? t("leaderboard.topics.fundamentals") : t("leaderboard.topics.algorithms")} 
-          </span>
+          <div className="flex gap-2 w-full">
+            <span className="text-base font-normal text-default-500">
+                {test.section == "fundamentals" ? t("leaderboard.topics.fundamentals") : t("leaderboard.topics.algorithms")} 
+            </span>
+            <span className="text-base font-normal text-default-500 text-right ml-auto">
+                {t("tests.testIdLabel")}: {test.id}
+            </span>
+          </div>
         </ModalHeader>
         <Divider />
         <ModalBody>
@@ -47,19 +53,22 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({ open, onClos
                   isIndeterminate={false}
                 />
               </div>
-              <div className="flex gap-2 mt-2">
-                <Chip color="success" variant="flat" className="text-base px-3 py-1">
-                  {t("tests.correctAnswersLabel")}: {test.passed}
+              <div className="w-full mt-2 flex flex-wrap gap-2 justify-center">
+                <Chip color="success" variant="flat" className="text-base px-3 py-1 font-bold">
+                  {t("tests.correctAnswersLabel")} : {test.passed}
                 </Chip>
-                <Chip color="danger" variant="flat" className="text-base px-3 py-1">
-                  {t("tests.incorrectAnswersLabel")}: {test.total - test.passed}
+                <Chip color="danger" variant="flat" className="text-base px-3 py-1 font-bold">
+                  {t("tests.incorrectAnswersLabel")} : {test.total - test.passed}
                 </Chip>
-                <Chip color="default" variant="bordered" className="text-sm">
-                  {t("tests.totalLabel")}: {test.total}
+                <Chip color="primary" variant="flat" className="text-base px-3 py-1 font-bold">
+                  {t("tests.earnedScoreLabel")} : {test.earned_score}
+                </Chip>
+                <Chip color="default" variant="bordered" className="text-sm font-bold">
+                  {t("tests.totalLabel")} : {test.total}
                 </Chip>
               </div>
             </div>
-            <div className="flex-1 space-y-4 text-base rounded-2xl p-6 shadow-sm">
+            <div className="flex-1 space-y-4 text-base rounded-2xl p-6 shadow-sm w-full">
               <div className="flex flex-col gap-1">
                 <span className="font-semibold text-default-700">{t("tests.dateLabel")}:</span>
                 <span className="text-default-600">{new Date(test.created_at).toLocaleString()}</span>

@@ -183,7 +183,9 @@
         "achievementsHeading": "Достижения",
         "statsHeading": "Статистика",
         "testsTakenLabel": "Отвечено верно:",
-        "avgScoreLabel": "Средний результат:",
+        "avgResultLabel": "Средний результат:",
+        "fundamentalsScoreLabel": "Баллы за ФИ",
+        "algorithmsScoreLabel": "Баллы за АиСД",
         "activityHeading": "Активность",
         "testResultsHeading": "Результаты тестов",
         "clearFilterTooltip": "Сбросить фильтры",
@@ -212,7 +214,7 @@
         },
         "sections": {
             "fundamentals": "ФИ",
-            "algorithms": "АИСД"
+            "algorithms": "АиСД"
         },
         "topics": {
             "fundamental_concepts_of_informatics": "1. Основные понятия информатики",
@@ -385,11 +387,13 @@
         },
         "correctAnswersLabel": "Правильных ответов",
         "incorrectAnswersLabel": "Ошибок",
+        "earnedScoreLabel": "Заработанные баллы",
         "dateLabel": "Дата",
         "topicsLabel": "Темы",
         "scoreLabel": "Результат",
         "rawDataLabel": "Данные теста",
         "closeButton": "Закрыть",
-        "totalLabel": "Всего"
+        "totalLabel": "Всего",
+        "testIdLabel": "ID теста"
     }
 }

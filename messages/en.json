@@ -184,7 +184,9 @@
         "achievementsHeading": "Achievements",
         "statsHeading": "Statistics",
         "testsTakenLabel": "Answered correctly:",
-        "avgScoreLabel": "Average Score:",
+        "avgResultLabel": "Average Result:",
+        "fundamentalsScoreLabel": "Fundamentals score",
+        "algorithmsScoreLabel": "Algorithms score",
         "activityHeading": "Activity",
         "testResultsHeading": "Test Results",
         "clearFilterTooltip": "Clear filters",
@@ -213,7 +215,7 @@
         },
         "sections": {
             "fundamentals": "FI",
-            "algorithms": "AADS"
+            "algorithms": "AaDS"
         },
         "topics": {
             "fundamental_concepts_of_informatics": "1. Fundamental concepts of informatics",
@@ -268,7 +270,7 @@
             "algorithm_of_universal_turing_machine": "2.8.2 Algorithm of universal Turing machine",
             "representation_of_utm_program": "2.8.3 Representation of UTM program",
             "interpretation_of_modeled_turing_machine": "2.8.4 Interpretation of modeled Turing machine",
-            "termination_of_modeled_turing_machine": "2.8.5 Termination of modeled Turing machine",
+            "termination_of_modeled_turing_machine": "2.8.5 Termination of modeled turing machine",
             "linear_encoding_of_turing_machine_schemes": "2.8.6 Linear encoding of Turing machine schemes",
             "language_for_description_of_turing_machine_schemes": "2.8.7 Language for description of Turing machine schemes",
             "von_neumann_model": "2.9 Von Neumann model",
@@ -386,12 +388,14 @@
         },
         "correctAnswersLabel": "Correct answers",
         "incorrectAnswersLabel": "Incorrect answers",
+        "earnedScoreLabel": "Earned score",
         "dateLabel": "Date",
         "topicsLabel": "Topics",
         "scoreLabel": "Score",
         "rawDataLabel": "Raw data",
         "closeButton": "Close",
-        "totalLabel": "Total"
+        "totalLabel": "Total",
+        "testIdLabel": "Test ID"
     }
 
 }
