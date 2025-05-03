@@ -146,7 +146,11 @@ export const Navbar = () => {
   const t = useTranslations();
 
   return (
-    <HeroUINavbar maxWidth="xl" position="sticky">
+    <HeroUINavbar
+      className="fixed top-0 left-0 right-0 z-[100] bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      maxWidth="xl"
+      style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100 }}
+    >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
