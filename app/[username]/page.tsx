@@ -185,9 +185,9 @@ export default function ProfilePage() {
                 }
               />
               <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                {username}
+                {profileUser.username}
               </h1>
-              {profileUser?.bio && user?.username === username && (
+              {profileUser?.bio && (
                 <>
                   <p className="text-center text-default-500 px-4">
                     {profileUser.bio}
@@ -229,7 +229,8 @@ export default function ProfilePage() {
                   )}
                 </div>
               )}
-              {user?.username === username && (
+              {user?.username.toLocaleLowerCase() ===
+                username.toLocaleLowerCase() && (
                 <>
                   <Divider />
                   <Button
