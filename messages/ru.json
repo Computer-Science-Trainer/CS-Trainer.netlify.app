@@ -154,6 +154,7 @@
         "telegramLabel": "Telegram username",
         "githubLabel": "GitHub username",
         "websiteLabel": "Доп. ссылка",
+        "removeAvatarButton": "Удалить аватар",
         "saveButton": "Сохранить",
         "changePasswordHeading": "Сменить пароль",
         "currentPasswordLabel": "Текущий пароль",

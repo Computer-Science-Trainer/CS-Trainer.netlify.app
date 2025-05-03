@@ -6,9 +6,13 @@ export async function makeApiRequest(
   body?: any,
   skipAuth = false,
 ) {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const isFormData = body instanceof FormData;
+  const headers: Record<string, string> = {};
+
+  // For JSON body, set JSON header; for FormData let browser set multipart boundary
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (!skipAuth) {
     const token =
@@ -20,7 +24,8 @@ export async function makeApiRequest(
   const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    // Use raw FormData if needed, otherwise stringify
+    body: body != null ? (isFormData ? body : JSON.stringify(body)) : undefined,
   });
 
   if (!res.ok) {

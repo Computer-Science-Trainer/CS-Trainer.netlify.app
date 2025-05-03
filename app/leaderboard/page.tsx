@@ -23,7 +23,7 @@ import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { useAuth } from "@/context/auth";
-import { makeApiRequest } from "@/config/api";
+import { makeApiRequest, API_BASE_URL } from "@/config/api";
 
 // Define TopicProgress type which contains progress data for a topic.
 interface TopicProgress {
@@ -280,7 +280,10 @@ export default function Leaderboard() {
                 avatarProps={{
                   radius: "full",
                   size: "md",
-                  src: cellData.avatar,
+                  src: cellData.avatar
+                    ? `${API_BASE_URL}${cellData.avatar}`
+                    : undefined,
+                  showFallback: true,
                 }}
                 description={`${cellData.achievement}`}
                 name={cellData.username}

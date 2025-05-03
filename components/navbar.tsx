@@ -36,6 +36,7 @@ import LoginWindow from "@/components/login";
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuth } from "@/context/auth";
+import { API_BASE_URL } from "@/config/api";
 
 export const SettingsDropdown = () => {
   const router = useRouter();
@@ -184,7 +185,8 @@ export const Navbar = () => {
               avatarProps={{
                 radius: "full",
                 size: "sm",
-                src: user.avatar,
+                src: user.avatar ? `${API_BASE_URL}${user.avatar}` : undefined,
+                showFallback: true,
               }}
               description={user.email}
               name={user.username}

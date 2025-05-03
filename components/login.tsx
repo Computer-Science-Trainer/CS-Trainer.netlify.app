@@ -185,7 +185,7 @@ export default function AuthWindow({
   const validatePassword = useCallback(
     (value: string): string | null => {
       if (!value) return t("auth.errors.passwordMissing");
-      if (value.length < 8) return t("auth.errors.passwordShort");
+      if (value.length < 8) return t("auth.errors.passwordLengthError");
 
       return null;
     },
@@ -357,7 +357,7 @@ export default function AuthWindow({
   const handleLogin = async () => {
     try {
       const data = await makeApiRequest(
-        "auth/login",
+        "api/auth/login",
         "POST",
         { email, password },
         true,
@@ -392,7 +392,7 @@ export default function AuthWindow({
   const handleRegister = async () => {
     try {
       await makeApiRequest(
-        "auth/register",
+        "api/auth/register",
         "POST",
         { email, password, nickname },
         true,
@@ -410,7 +410,7 @@ export default function AuthWindow({
   const handleVerify = async () => {
     try {
       const data = await makeApiRequest(
-        "auth/verify",
+        "api/auth/verify",
         "POST",
         { email, code: verificationCode },
         true,
@@ -434,7 +434,7 @@ export default function AuthWindow({
 
   const handleRecover = async () => {
     try {
-      await makeApiRequest("auth/recover", "POST", { email }, true);
+      await makeApiRequest("api/auth/recover", "POST", { email }, true);
       setAuthState(AuthState.RecoverVerify);
     } catch (error: any) {
       addToast({
@@ -451,7 +451,7 @@ export default function AuthWindow({
 
     try {
       await makeApiRequest(
-        "auth/verify/resend",
+        "api/auth/verify/resend",
         "POST",
         { email, code_type },
         true,
@@ -475,7 +475,7 @@ export default function AuthWindow({
   const handleRecoverVerify = async () => {
     try {
       await makeApiRequest(
-        "auth/recover/verify",
+        "api/auth/recover/verify",
         "POST",
         { email, code: verificationCode },
         true,
@@ -493,7 +493,7 @@ export default function AuthWindow({
   const handleChangePassword = async () => {
     try {
       const data = await makeApiRequest(
-        "auth/recover/change",
+        "api/auth/recover/change",
         "POST",
         {
           email,

@@ -14,16 +14,16 @@ import {
   Spacer,
   Tooltip,
   addToast,
-  Spinner
+  Spinner,
 } from "@heroui/react";
 import { Link as HeroLink } from "@heroui/link";
 import { useTranslations } from "next-intl";
+import { DateValue } from "@internationalized/date";
 
 import { TelegramIcon, GithubIcon, WebsiteIcon } from "@/components/icons";
 import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 import { TestDetailsModal } from "@/components/TestDetailsModal";
-import { DateValue } from "@internationalized/date";
 
 export default function ProfilePage() {
   const t = useTranslations();
@@ -31,7 +31,13 @@ export default function ProfilePage() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const [stats, setStats] = useState({ passed: 0, total: 0, avg: 0, fundamentals: 0, algorithms: 0 });
+  const [stats, setStats] = useState({
+    passed: 0,
+    total: 0,
+    avg: 0,
+    fundamentals: 0,
+    algorithms: 0,
+  });
 
   interface Test {
     id: number;
@@ -81,8 +87,8 @@ export default function ProfilePage() {
           total: data.total,
           avg: data.average,
           fundamentals: data.fundamentals,
-          algorithms: data.algorithms
-        })
+          algorithms: data.algorithms,
+        }),
       )
       .finally(() => setLoadingStats(false));
   }, [username]);
@@ -102,12 +108,21 @@ export default function ProfilePage() {
 
   let isDateUnavailable = (date: any): boolean => {
     const formatted = date.toString().slice(0, 10);
-    return tests.filter((test: Test) => test.created_at.slice(0, 10) === formatted).length === 0;
+
+    return (
+      tests.filter((test: Test) => test.created_at.slice(0, 10) === formatted)
+        .length === 0
+    );
   };
 
   const testsOnDate = selectedDate
-    ? tests.filter((test) => test.created_at.slice(0, 10) === selectedDate.toString().slice(0, 10))
+    ? tests.filter(
+        (test) =>
+          test.created_at.slice(0, 10) === selectedDate.toString().slice(0, 10),
+      )
     : [];
+
+  const base = process.env.NEXT_PUBLIC_API_URL;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -120,7 +135,7 @@ export default function ProfilePage() {
                 className="w-60 h-60 border-4 border-primary"
                 radius="full"
                 size="lg"
-                src={user?.avatar}
+                src={user?.avatar ? `${base}${user.avatar}` : undefined}
               />
               <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 {username}
@@ -134,7 +149,7 @@ export default function ProfilePage() {
                 </>
               )}
               {user?.username === username && (
-                <div className="flex items-center gap-4 pt-2">
+                <div className="flex items-center gap-4">
                   {user.telegram && (
                     <HeroLink
                       isExternal
@@ -199,7 +214,7 @@ export default function ProfilePage() {
                 <div className="space-y-4 mt-4">
                   {loadingAchievements ? (
                     <div className="flex justify-center py-8">
-                      <Spinner size="lg" color="primary" />
+                      <Spinner color="primary" size="lg" />
                     </div>
                   ) : (
                     achievements.map((achievement) => (
@@ -247,7 +262,7 @@ export default function ProfilePage() {
                 <div className="mt-4 space-y-3">
                   {loadingStats ? (
                     <div className="flex justify-center py-8">
-                      <Spinner size="lg" color="primary" />
+                      <Spinner color="primary" size="lg" />
                     </div>
                   ) : (
                     <>
@@ -258,7 +273,13 @@ export default function ProfilePage() {
                         </span>
                       </div>
                       <Progress
-                        color={(stats.passed / stats.total) * 100 >= 80 ? "success" : (stats.passed / stats.total) * 100 >= 50 ? "warning" : "danger"}
+                        color={
+                          (stats.passed / stats.total) * 100 >= 80
+                            ? "success"
+                            : (stats.passed / stats.total) * 100 >= 50
+                              ? "warning"
+                              : "danger"
+                        }
                         value={stats.avg * 100}
                       />
                       <div className="flex justify-between text-default-500">
@@ -267,7 +288,9 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex justify-between text-default-500">
                         <span>{t("profile.fundamentalsScoreLabel")}</span>
-                        <span className="text-primary">{stats.fundamentals}</span>
+                        <span className="text-primary">
+                          {stats.fundamentals}
+                        </span>
                       </div>
                       <div className="flex justify-between text-default-500">
                         <span>{t("profile.algorithmsScoreLabel")}</span>
@@ -294,8 +317,8 @@ export default function ProfilePage() {
               className="[&_button]:text-default-600 [&_button:hover]:bg-default-100"
               color="primary"
               isDateUnavailable={isDateUnavailable}
-              visibleMonths={visibleMonths}
               value={selectedDate}
+              visibleMonths={visibleMonths}
               onChange={setSelectedDate}
             />
           </Card>
@@ -324,7 +347,7 @@ export default function ProfilePage() {
 
             {loadingTests ? (
               <div className="flex justify-center py-8">
-                <Spinner size="lg" color="primary" />
+                <Spinner color="primary" size="lg" />
               </div>
             ) : testsOnDate.length > 0 ? (
               <>
@@ -334,8 +357,8 @@ export default function ProfilePage() {
                 >
                   {testsOnDate.slice(0, visibleTests).map((test, idx) => (
                     <Card
-                      isPressable
                       key={test.id || test.created_at || idx}
+                      isPressable
                       className="transition-transform duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl rounded-xl border border-default-200 p-4 h-44 cursor-pointer"
                       onPress={() => {
                         setSelectedTest(test);
@@ -345,19 +368,25 @@ export default function ProfilePage() {
                       <div className="flex justify-between items-start w-full p-1">
                         <div className="w-full">
                           <div className="flex items-center gap-2 w-full">
-                           <p className="font-medium text-primary text-lg">
-                            {t(`tests.testTypes.${test.type}`)}
-                           </p>
-                            <Chip variant="bordered" className="mt-1" color="default">
-                                {t(`tests.sections.${test.section}`)}
+                            <p className="font-medium text-primary text-lg">
+                              {t(`tests.testTypes.${test.type}`)}
+                            </p>
+                            <Chip
+                              className="mt-1"
+                              color="default"
+                              variant="bordered"
+                            >
+                              {t(`tests.sections.${test.section}`)}
                             </Chip>
                             <div className="flex-1 text-right ml-auto font-bold">
-                                <p>{`${Math.round(test.average * 100)}%`}</p>
+                              <p>{`${Math.round(test.average * 100)}%`}</p>
                             </div>
                           </div>
                           <div className="text-default-500 text-left mt-2">
                             {test.topics.slice(0, 2).map((topic, idx) => (
-                              <p key={idx} className="truncate">{t(`tests.topics.${topic}`)}</p>
+                              <p key={idx} className="truncate">
+                                {t(`tests.topics.${topic}`)}
+                              </p>
                             ))}
                             {test.topics.length > 2 && <p>...</p>}
                           </div>
@@ -365,10 +394,16 @@ export default function ProfilePage() {
                       </div>
                       <Progress
                         className="mt-2"
-                        color={test.average >= 0.8 ? "success" : test.average >= 0.5 ? "warning" : "danger"}
+                        color={
+                          test.average >= 0.8
+                            ? "success"
+                            : test.average >= 0.5
+                              ? "warning"
+                              : "danger"
+                        }
                         size="sm"
                         value={test.average * 100}
-                        />
+                      />
                     </Card>
                   ))}
                 </div>
@@ -399,8 +434,8 @@ export default function ProfilePage() {
       </div>
       <TestDetailsModal
         open={testModalOpen}
-        onClose={() => setTestModalOpen(false)}
         test={selectedTest}
+        onClose={() => setTestModalOpen(false)}
       />
     </div>
   );
