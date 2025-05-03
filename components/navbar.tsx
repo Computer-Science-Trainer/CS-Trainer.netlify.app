@@ -204,23 +204,32 @@ export const Navbar = () => {
 
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
+          {siteConfig.navMenuItems.map((item, index) => {
+            const href = item.href === "/profile" && user ? `/${user.username}` : item.href;
+            return (
+              <NavbarMenuItem key={`${item.label}-${index}`}>  
+                <Link
+                  color="foreground"
+                  href={href}
+                  size="lg"
+                >
+                  {t(item.label)}
+                </Link>
+              </NavbarMenuItem>
+            );
+          })}
+          {!user && (
+            <NavbarMenuItem>
               <Link
-                color={
-                  index === 2
-                    ? "primary"
-                    : index === siteConfig.navMenuItems.length - 1
-                      ? "danger"
-                      : "foreground"
-                }
-                href={item.href}
+                color="primary"
+                href="#"
                 size="lg"
+                onPress={onOpen}
               >
-                {t(item.label)}
+                {t("nav.login")}
               </Link>
             </NavbarMenuItem>
-          ))}
+          )}
         </div>
       </NavbarMenu>
       <LoginWindow isOpen={isOpen} onOpenChange={onOpenChange} />

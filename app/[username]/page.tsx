@@ -25,11 +25,30 @@ import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 import { TestDetailsModal } from "@/components/TestDetailsModal";
 
+// Type for other user's profile data
+interface ProfileUser {
+  id: number;
+  username: string;
+  email: string;
+  avatar?: string;
+  telegram?: string;
+  github?: string;
+  website?: string;
+  bio?: string;
+}
+
 export default function ProfilePage() {
   const t = useTranslations();
   const { username } = useParams() as { username: string };
   const { user, logout } = useAuth();
   const router = useRouter();
+
+  const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
+  useEffect(() => {
+    makeApiRequest(`api/user/${username}`, "GET")
+      .then((data) => setProfileUser(data))
+      .catch(() => setProfileUser(null));
+  }, [username]);
 
   const [stats, setStats] = useState({
     passed: 0,
@@ -135,15 +154,21 @@ export default function ProfilePage() {
                 className="w-60 h-60 border-4 border-primary"
                 radius="full"
                 size="lg"
-                src={user?.avatar ? `${base}${user.avatar}` : undefined}
+                src={
+                  profileUser?.avatar
+                    ? `${base}${profileUser.avatar}`
+                    : user?.username === username && user?.avatar
+                    ? `${base}${user.avatar}`
+                    : undefined
+                }
               />
               <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 {username}
               </h1>
-              {user?.bio && user.username === username && (
+              {profileUser?.bio && user?.username === username && (
                 <>
                   <p className="text-center text-default-500 px-4">
-                    {user.bio}
+                    {profileUser.bio}
                   </p>
                   <Divider />
                 </>

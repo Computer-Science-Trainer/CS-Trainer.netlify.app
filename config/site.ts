@@ -34,10 +34,6 @@ export const siteConfig = {
       label: "nav.about",
       href: "/about",
     },
-    {
-      label: "menu.logout",
-      href: "/logout",
-    },
   ],
   links: {
     telegram_bot: "https://t.me/CS_Trainer_bot",
