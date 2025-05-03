@@ -15,84 +15,18 @@ import {
   Tab,
 } from "@heroui/react";
 
+import ProblemsLayout from "./ProblemsLayout"; // Заменили локальную функцию ProblemsLayout на импорт
+import { initialFiTopics, initialAsTopics } from "./topicsState";
+import QuestionForm from "./QuestionForm"; // Импорт нового компонента формы
+
 // Константы
-const topics = [
-  "Introduction",
-  "Getting Started",
-  "Advanced Techniques",
-  "Best Practices",
-  "Summary",
+const sections = [
+  "Рекомендованное Вам",
+  "Создание собственного варианта",
+  "Предложить вопрос",
 ];
 
 // Функции
-function ProblemsLayout({
-  leftPanel,
-  rightPanel,
-  centralPanel,
-}: {
-  leftPanel?: React.ReactNode;
-  rightPanel?: React.ReactNode;
-  centralPanel?: React.ReactNode;
-}) {
-  return (
-    <section className="max-w-7xl mx-auto p-4 flex gap-4 flex-col lg:flex-row lg:gap-4">
-      {leftPanel && (
-        <aside className="hidden lg:block w-[150px] flex-shrink-0 sticky top-20 h-fit">
-          <div>{leftPanel}</div>
-        </aside>
-      )}
-
-      {/* Центральная панель */}
-      {centralPanel && (
-        <aside className="flex-grow bg-white dark:bg-zinc-900 p-4 rounded-lg shadow">
-          <div>{centralPanel}</div>
-        </aside>
-      )}
-
-      {/* Правая панель (только на больших экранах) */}
-      {rightPanel && (
-        <aside className="hidden lg:block w-[200px] flex-shrink-0 sticky top-20 h-fit">
-          <div>{rightPanel}</div>
-        </aside>
-      )}
-    </section>
-  );
-}
-
-function createCustomAccordion(
-  key: number,
-  title: string,
-  selectedOptions: string[],
-  onValueChange: (selected: string[]) => void,
-) {
-  const options = [
-    { value: "short-answer", label: "Краткий ответ" },
-    { value: "detailed-answer", label: "Развернутый ответ" },
-  ];
-
-  return (
-    <AccordionItem
-      key={key}
-      aria-label={`Accordion ${key}`}
-      title={<span>{title}</span>}
-    >
-      <div className="flex flex-col gap-2">
-        <CheckboxGroup
-          label={`Выберите тип ответа для "${title}"`}
-          value={selectedOptions}
-          onValueChange={onValueChange}
-        >
-          {options.map((option) => (
-            <Checkbox key={option.value} value={option.value}>
-              {option.label}
-            </Checkbox>
-          ))}
-        </CheckboxGroup>
-      </div>
-    </AccordionItem>
-  );
-}
-
 function createAccordion(
   key: number,
   title: string,
@@ -102,6 +36,15 @@ function createAccordion(
   isSelected: boolean,
   onAccordionChange: (isSelected: boolean) => void,
 ) {
+  if (options.length === 0) {
+    return (
+      <div key={key}>
+        <Checkbox isSelected={isSelected} onValueChange={onAccordionChange} />
+        <span>{title}</span>
+      </div>
+    );
+  }
+
   return (
     <AccordionItem
       key={key}
@@ -130,360 +73,655 @@ function createAccordion(
   );
 }
 
-function createCard(
-  key: number,
-  title: string,
-  description: string,
-  onAdd: () => void,
-) {
-  return (
-    <Card key={key} className="p-4" shadow="sm">
-      <CardHeader>
-        <h3 className="text-md font-bold ">{title}</h3>
-      </CardHeader>
-      <CardBody>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {description}
-        </p>
-      </CardBody>
-      <CardFooter>
-        <Button color="primary" size="sm" onClick={onAdd}>
-          Добавить
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-}
-
 // Основной компонент
 export default function ProblemsPage() {
-  const [accordionStates, setAccordionStates] = useState<
-    {
-      label: string;
-      isSelected: boolean;
-      selectedOptions: string[];
-      options: { value: string; label: string }[];
-      description?: string;
-    }[]
-  >([
-    {
-      label: "Основы программирования",
-      isSelected: false,
-      selectedOptions: [],
-      options: [
-        { value: "variables", label: "Переменные" },
-        { value: "loops", label: "Циклы" },
-        { value: "functions", label: "Функции" },
-      ],
-      description:
-        "Изучение основ программирования, включая переменные, циклы и функции.",
-    },
-    {
-      label: "Алгоритмы",
-      isSelected: false,
-      selectedOptions: [],
-      options: [
-        { value: "sorting", label: "Сортировка" },
-        { value: "searching", label: "Поиск" },
-        { value: "graphs", label: "Графы" },
-      ],
-      description:
-        "Основные алгоритмы, такие как сортировка, поиск и работа с графами.",
-    },
-    {
-      label: "Структуры данных",
-      isSelected: false,
-      selectedOptions: [],
-      options: [
-        { value: "arrays", label: "Массивы" },
-        { value: "linked-lists", label: "Связные списки" },
-        { value: "trees", label: "Деревья" },
-      ],
-      description:
-        "Изучение структур данных, включая массивы, списки и деревья.",
-    },
-    {
-      label: "Базы данных",
-      isSelected: false,
-      selectedOptions: [],
-      options: [
-        { value: "sql", label: "SQL" },
-        { value: "normalization", label: "Нормализация" },
-        { value: "transactions", label: "Транзакции" },
-      ],
-      description: "Основы работы с базами данных, включая SQL и нормализацию.",
-    },
-  ]);
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsCompact(window.innerWidth < 640);
+
+    check();
+    window.addEventListener("resize", check);
+
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Используем импортированные начальные значения для состояний тем
+  const [topicStates, setTopicStates] = useState(initialFiTopics);
+  const [asTopicStates, setAsTopicStates] = useState(initialAsTopics);
+
+  const handleTopicCheckboxGroupChange = (
+    topicIndex: number,
+    accordionIndex: number,
+    selected: string[],
+  ) => {
+    setTopicStates((prev) =>
+      prev.map((topic, tIdx) =>
+        tIdx === topicIndex
+          ? {
+              ...topic,
+              accordions: topic.accordions.map((acc, aIdx) =>
+                aIdx === accordionIndex
+                  ? {
+                      ...acc,
+                      selectedOptions: selected,
+                      isSelected: selected.length === acc.options.length,
+                    }
+                  : acc,
+              ),
+            }
+          : topic,
+      ),
+    );
+  };
+
+  const handleTopicAccordionChange = (
+    topicIndex: number,
+    accordionIndex: number,
+    isSelected: boolean,
+  ) => {
+    setTopicStates((prev) =>
+      prev.map((topic, tIdx) =>
+        tIdx === topicIndex
+          ? {
+              ...topic,
+              accordions: topic.accordions.map((acc, aIdx) =>
+                aIdx === accordionIndex
+                  ? {
+                      ...acc,
+                      isSelected,
+                      selectedOptions: isSelected ? acc.options : [],
+                    }
+                  : acc,
+              ),
+            }
+          : topic,
+      ),
+    );
+  };
+
+  const handleAstopicCheckboxGroupChange = (
+    topicIndex: number,
+    accordionIndex: number,
+    selected: string[],
+  ) => {
+    setAsTopicStates((prev) =>
+      prev.map((topic, tIdx) =>
+        tIdx === topicIndex
+          ? {
+              ...topic,
+              accordions: topic.accordions.map((acc, aIdx) =>
+                aIdx === accordionIndex
+                  ? {
+                      ...acc,
+                      selectedOptions: selected,
+                      isSelected: selected.length === acc.options.length,
+                    }
+                  : acc,
+              ),
+            }
+          : topic,
+      ),
+    );
+  };
+
+  const handleAstopicAccordionChange = (
+    topicIndex: number,
+    accordionIndex: number,
+    isSelected: boolean,
+  ) => {
+    setAsTopicStates((prev) =>
+      prev.map((topic, tIdx) =>
+        tIdx === topicIndex
+          ? {
+              ...topic,
+              accordions: topic.accordions.map((acc, aIdx) =>
+                aIdx === accordionIndex
+                  ? {
+                      ...acc,
+                      isSelected,
+                      selectedOptions: isSelected ? acc.options : [],
+                    }
+                  : acc,
+              ),
+            }
+          : topic,
+      ),
+    );
+  };
+
+  const handleResetSelections = () => {
+    setTopicStates((prev) =>
+      prev.map((topic) => ({
+        ...topic,
+        accordions: topic.accordions.map((acc) => ({
+          ...acc,
+          isSelected: false,
+          selectedOptions: [],
+        })),
+      })),
+    );
+    setAsTopicStates((prev) =>
+      prev.map((topic) => ({
+        ...topic,
+        accordions: topic.accordions.map((acc) => ({
+          ...acc,
+          isSelected: false,
+          selectedOptions: [],
+        })),
+      })),
+    );
+  };
 
   const sectionRefs = useRef<HTMLDivElement[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const scrollToSection = (index: number) => {
-    sectionRefs.current[index]?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
+    const target = sectionRefs.current[index];
 
-  const handleCheckboxGroupChange = (index: number, selected: string[]) => {
-    setAccordionStates((prev) =>
-      prev.map((state, i) =>
-        i === index
-          ? {
-              ...state,
-              selectedOptions: selected,
-              isSelected: selected.length === state.options.length, // Галочка аккордеона включается, если все опции выбраны
-            }
-          : state,
-      ),
-    );
-  };
+    if (target) {
+      const start = window.scrollY;
+      const end = target.offsetTop;
+      const duration = 400; // миллисекунд, увеличьте для более медленной прокрутки
+      const startTime = performance.now();
+      const animateScroll = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = progress < 1 ? 1 - Math.pow(1 - progress, 3) : 1; // easeOutCubic
 
-  const handleAccordionChange = (index: number, isSelected: boolean) => {
-    setAccordionStates((prev) =>
-      prev.map((state, i) =>
-        i === index
-          ? {
-              ...state,
-              isSelected,
-              selectedOptions: isSelected
-                ? state.options.map((option) => option.value) // Если аккордеон включен, выбираем все опции
-                : [], // Если аккордеон выключен, очищаем все опции
-            }
-          : state,
-      ),
-    );
+        window.scrollTo(0, start + (end - start) * ease);
+        if (progress < 1) requestAnimationFrame(animateScroll);
+      };
+
+      requestAnimationFrame(animateScroll);
+    }
   };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = sectionRefs.current.findIndex(
-              (ref) => ref === entry.target,
-            );
+    const onScroll = () => {
+      const center = window.scrollY + window.innerHeight / 2;
+      const newIndex = sectionRefs.current.findIndex((sec) => {
+        const top = sec.offsetTop;
+        const bottom = top + sec.offsetHeight;
 
-            if (index !== -1) {
-              setCurrentIndex(index);
-            }
-          }
-        });
-      },
-      { root: null, rootMargin: "0px", threshold: 0.5 },
-    );
-
-    sectionRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => {
-      sectionRefs.current.forEach((ref) => {
-        if (ref) observer.unobserve(ref);
+        return center >= top && center < bottom;
       });
+
+      if (newIndex !== -1 && newIndex !== currentIndex) {
+        setCurrentIndex(newIndex);
+      }
     };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [currentIndex]);
+
+  // Обновлённый расчёт суммы выбранных подтем с учётом подтем без опций:
+  const totalFI = topicStates.reduce(
+    (acc, topic) =>
+      acc +
+      topic.accordions.reduce(
+        (sum, accItem) =>
+          sum +
+          (accItem.options.length === 0
+            ? accItem.isSelected
+              ? 1
+              : 0
+            : accItem.selectedOptions.length),
+        0,
+      ),
+    0,
+  );
+  const totalAS = asTopicStates.reduce(
+    (acc, topic) =>
+      acc +
+      topic.accordions.reduce(
+        (sum, accItem) =>
+          sum +
+          (accItem.options.length === 0
+            ? accItem.isSelected
+              ? 1
+              : 0
+            : accItem.selectedOptions.length),
+        0,
+      ),
+    0,
+  );
+  const totalSelected = totalFI + totalAS;
+
+  // получаем первые 6 подтем из всех тем, теперь с description
+  const recommendedSubsAll = topicStates.flatMap((topic, tIdx) =>
+    topic.accordions.map((acc, aIdx) => ({
+      label: acc.label,
+      description: acc.description,
+      topicIndex: tIdx,
+      accIndex: aIdx,
+    })),
+  );
+  // Показываем 4 карточки на маленьких экранах, 6 на >=sm
+  const [windowWidth, setWindowWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const recommendedSubs =
+    windowWidth !== null && windowWidth < 640
+      ? recommendedSubsAll.slice(0, 3)
+      : recommendedSubsAll.slice(0, 6);
 
   return (
     <ProblemsLayout
       centralPanel={
         <div>
-          <Card className="mb-4">
-            <CardBody className="flex flex-col items-center justify-center gap-8">
-              {/* Первая строка карточек */}
-              <h1 className="text-2xl font-bold mt-4">Рекомендованное Вам</h1>
-              <div className="grid grid-cols-3 gap-4">
-                {/* Особенная карточка */}
-                <Card key="special" className="p-4" shadow="sm">
-                  <CardHeader>
-                    <h3 className="text-xl font-bold">
-                      Генерация личного варианта
-                    </h3>
-                  </CardHeader>
-                  <CardBody>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Создайте свой вариант с выбором вопросов.
-                    </p>
-                  </CardBody>
-                  <CardFooter>
-                    <Button
-                      color="primary"
-                      size="lg" // Увеличиваем размер кнопки "Создать"
+          {/* Рекомендованное Вам */}
+          <div
+            ref={(el) => {
+              if (el) sectionRefs.current[0] = el;
+            }}
+            className="mb-8 scroll-mt-24"
+          >
+            <h1 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
+              Рекомендованные тесты
+            </h1>
+            <Card className="mb-4 mt-4">
+              <CardBody className="flex flex-col items-center justify-center gap-11">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                  {recommendedSubs.map((sub, idx) => (
+                    <Card
+                      key={idx}
+                      isPressable
+                      className={`
+                        group relative overflow-hidden cursor-pointer
+                        p-0 bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800
+                        transition-shadow duration-200 hover:shadow-lg
+                        min-h-[220px] w-full max-w-[340px] mx-auto
+                        rounded-b-2xl
+                      `}
+                      shadow="sm"
+                      style={{
+                        minHeight: 220,
+                        width: "100%",
+                        maxWidth: 340,
+                        borderBottomLeftRadius: 12,
+                        borderBottomRightRadius: 12,
+                      }}
+                      onPress={() =>
+                        handleTopicAccordionChange(
+                          sub.topicIndex,
+                          sub.accIndex,
+                          true,
+                        )
+                      }
                     >
-                      Создать
-                    </Button>
-                  </CardFooter>
-                </Card>
-                {/* Остальные карточки */}
-                {accordionStates.slice(0, 5).map((state, index) => (
-                  <Card
-                    key={index}
-                    className="p-4" // Убираем кликабельность карточек
-                    shadow="sm"
-                  >
-                    <CardHeader>
-                      <h3 className="text-md font-bold">{state.label}</h3>
-                    </CardHeader>
-                    <CardBody>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {state.description || ""}
-                      </p>
-                    </CardBody>
-                    <CardFooter>
-                      <Button
-                        color="primary"
-                        size="md" // Увеличиваем размер кнопки "Добавить"
-                        onClick={() => handleAccordionChange(index, true)}
+                      <CardFooter
+                        className={`
+                          absolute left-0 right-0 bottom-0 top-0
+                          px-4 py-3
+                          flex flex-col
+                          bg-white/60 dark:bg-gray-900/60
+                          backdrop-blur
+                          transition-all duration-300
+                          z-10
+                          pointer-events-none
+                          h-full
+                          rounded-b-2xl
+                          translate-y-[60%] group-hover:translate-y-0
+                        `}
+                        style={{ borderRadius: 12 }}
                       >
-                        Добавить
-                      </Button>
-                    </CardFooter>
+                        <div className="w-full flex flex-col h-full">
+                          {/* Название темы: изначально сверху справа, при ховере — плавно смещается вниз */}
+                          <div
+                            className={`
+                              w-full flex flex-col items-end
+                              absolute right-0
+                              px-4
+                              transition-all duration-300
+                              z-20
+                              ${/* top-3 в обычном состоянии, top-8 при ховере */ ""}
+                              top-3 group-hover:top-9
+                            `}
+                          >
+                            <span className="text-base font-bold text-right text-gray-900 dark:text-white transition-colors">
+                              {sub.label}
+                            </span>
+                            {/* Описание всегда под названием, появляется при ховере */}
+                            <span
+                              className={`
+                                text-xs text-gray-700 dark:text-gray-300 text-right
+                                mt-1
+                                opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32
+                                transition-all duration-300
+                              `}
+                            >
+                              {sub.description}
+                            </span>
+                          </div>
+                          {/* "Начать тест" появляется снизу при ховере */}
+                          <div
+                            className={`
+                              w-full flex justify-center absolute left-0 right-0 bottom-4 px-4
+                              opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                              z-20
+                            `}
+                          >
+                            <span className="text-primary text-sm font-semibold">
+                              Начать тест
+                            </span>
+                          </div>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+          <div
+            ref={(el) => {
+              if (el) sectionRefs.current[1] = el;
+            }}
+            className="mb-8 scroll-mt-24"
+          >
+            <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">
+              Создание собственного варианта
+            </h1>
+            <Tabs fullWidth size="md">
+              <Tab
+                key="FI"
+                title={
+                  <>
+                    <span className="block sm:hidden">ФИ</span>
+                    <span className="hidden sm:block">
+                      Фундаментальная информатика
+                    </span>
+                  </>
+                }
+              >
+                {topicStates.map((topic, topicIndex) => (
+                  <Card key={topicIndex} className="mb-4" shadow="sm">
+                    <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+                      <h2 className="text-lg font-semibold mb-4 mt-3">
+                        {topic.label}
+                      </h2>
+                      <div className="w-full flex flex-col gap-2">
+                        {/* простые чекбоксы для подтем без опций */}
+                        {topic.accordions.map((acc, accIndex) =>
+                          acc.options.length === 0 ? (
+                            <div key={accIndex} className="px-2">
+                              <Card
+                                isPressable
+                                className="shadow-md w-full cursor-pointer select-none transition-none"
+                                shadow="sm"
+                                style={{ transform: "none" }}
+                                onPress={(e) => {
+                                  // Не срабатывает, если клик по чекбоксу
+                                  if (
+                                    e.target instanceof HTMLElement &&
+                                    (e.target.closest("label") ||
+                                      e.target.tagName === "INPUT")
+                                  ) {
+                                    return;
+                                  }
+                                  handleTopicAccordionChange(
+                                    topicIndex,
+                                    accIndex,
+                                    !acc.isSelected,
+                                  );
+                                }}
+                              >
+                                <CardBody className="p-0">
+                                  <div className="flex w-full h-full gap-2 items-center px-4 py-3">
+                                    <Checkbox
+                                      className="pointer-events-auto"
+                                      color="primary"
+                                      isSelected={acc.isSelected}
+                                      onValueChange={(isSelected) =>
+                                        handleTopicAccordionChange(
+                                          topicIndex,
+                                          accIndex,
+                                          isSelected,
+                                        )
+                                      }
+                                    />
+                                    <span className="text-md flex-1 text-left">
+                                      {acc.label}
+                                    </span>
+                                  </div>
+                                </CardBody>
+                              </Card>
+                            </div>
+                          ) : null,
+                        )}
+                        {/* аккордеон для подтем с опциями */}
+                        <Accordion
+                          className="w-full"
+                          isCompact={isCompact}
+                          variant="splitted"
+                        >
+                          {topic.accordions.map((acc, accIndex) =>
+                            acc.options.length > 0
+                              ? createAccordion(
+                                  accIndex + 1,
+                                  acc.label,
+                                  acc.selectedOptions,
+                                  (selected) =>
+                                    handleTopicCheckboxGroupChange(
+                                      topicIndex,
+                                      accIndex,
+                                      selected,
+                                    ),
+                                  acc.options.map((option) => ({
+                                    value: option,
+                                    label: option,
+                                  })),
+                                  acc.isSelected,
+                                  (isSelected) =>
+                                    handleTopicAccordionChange(
+                                      topicIndex,
+                                      accIndex,
+                                      isSelected,
+                                    ),
+                                )
+                              : null,
+                          )}
+                        </Accordion>
+                      </div>
+                    </CardBody>
                   </Card>
                 ))}
-              </div>
-            </CardBody>
-          </Card>
-          <Tabs fullWidth size="md">
-            <Tab key="FI" title="Фундаментальная информатика">
-              <Card shadow="sm">
-                <CardHeader className="flex flex-col items-start justify-center gap-2 bg-gray-100 dark:bg-gray-800">
-                  <h2 className="text-lg font-semibold">Выбранные задания:</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Start your journey with us today!
-                  </p>
-                </CardHeader>
-                <CardBody className="flex flex-col items-center justify-center gap-2">
-                  <Accordion variant="splitted">
-                    {accordionStates.map((state, index) =>
-                      createAccordion(
-                        index + 1,
-                        state.label,
-                        state.selectedOptions,
-                        (selected) =>
-                          handleCheckboxGroupChange(index, selected),
-                        state.options,
-                        state.isSelected,
-                        (isSelected) =>
-                          handleAccordionChange(index, isSelected),
-                      ),
-                    )}
-                  </Accordion>
-                </CardBody>
-              </Card>
-            </Tab>
-            <Tab key="AS" title="Алгоритмы и структуры данных">
-              <Accordion variant="splitted">
-                {accordionStates.map((state, index) =>
-                  createAccordion(
-                    index + 1,
-                    `Accordion ${index + 2}`,
-                    state.selectedOptions,
-                    (selected) => handleCheckboxGroupChange(index, selected),
-                    state.options,
-                    state.isSelected,
-                    (isSelected) => handleAccordionChange(index, isSelected),
-                  ),
-                )}
-              </Accordion>
-            </Tab>
-          </Tabs>
-
-          <div className="mt-8">
-            {topics.map((topic, index) => (
-              <div
-                key={index}
-                ref={(el) => {
-                  if (el) sectionRefs.current[index] = el;
-                }}
-                className="mb-6 scroll-mt-24"
+              </Tab>
+              <Tab
+                key="AS"
+                title={
+                  <>
+                    <span className="block sm:hidden">АиСД</span>
+                    <span className="hidden sm:block">
+                      Алгоритмы и структуры данных
+                    </span>
+                  </>
+                }
               >
-                <h2 className="text-lg font-semibold">{topic}</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-                  a neque risus. Pellentesque dictum massa in tortor
-                  pellentesque, quis dapibus ante pulvinar. Donec erat leo,
-                  tempus vitae placerat ac, pulvinar non sapien. Curabitur
-                  finibus fermentum libero eget mollis. Proin velit nisi,
-                  tincidunt quis auctor in, aliquam vitae nibh. In magna enim,
-                  auctor condimentum ornare ut, hendrerit suscipit neque. Ut
-                  pulvinar cursus arcu eu suscipit. Cras nisi lectus, suscipit
-                  id turpis a, dapibus ullamcorper dui. Maecenas suscipit erat
-                  urna, et tincidunt mi vulputate id. Aliquam condimentum ante
-                  at metus ultricies, eu pharetra nisi consectetur. Suspendisse
-                  volutpat sem quis convallis auctor. Morbi malesuada consequat
-                  turpis id vestibulum. Duis libero tellus, eleifend eu felis
-                  lacinia, luctus facilisis dolor. Mauris varius tincidunt justo
-                  sed bibendum. Nullam nec scelerisque mauris. Aenean
-                  sollicitudin blandit nisl, non ornare nunc egestas in. Aliquam
-                  gravida sodales faucibus. Nam dictum auctor nunc, ut dignissim
-                  justo sodales eu. Curabitur mattis libero et nisl gravida,
-                  fermentum mattis tellus consequat. In accumsan ullamcorper
-                  metus, in lobortis justo iaculis et. Praesent condimentum eget
-                  sem non ultricies. Nunc suscipit sapien orci, ac semper nibh
-                  pretium vitae. Nulla non lacinia ex, sit amet rhoncus est. Sed
-                  rutrum ultrices nibh, vel vulputate magna sodales nec. Proin
-                  blandit feugiat dui placerat aliquam. Donec auctor libero
-                  nisl. Nullam rutrum rutrum ultrices. Sed fermentum leo nisl.
-                  Mauris mattis vitae sem eu convallis. Mauris vestibulum, ante
-                  in lacinia efficitur, nisl est feugiat nulla, in ultricies
-                  neque massa nec lacus. Pellentesque iaculis at magna vel
-                  faucibus.
-                </p>
-              </div>
-            ))}
+                {asTopicStates.map((topic, topicIndex) => (
+                  <Card key={topicIndex} className="mb-4" shadow="sm">
+                    <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+                      <h2 className="text-lg font-semibold mb-4 mt-3">
+                        {topic.label}
+                      </h2>
+                      <div className="w-full flex flex-col gap-2">
+                        {topic.accordions.map((acc, accIndex) =>
+                          acc.options.length === 0 ? (
+                            <div key={accIndex} className="px-2">
+                              <Card
+                                isPressable
+                                className="shadow-md w-full cursor-pointer select-none transition-none"
+                                shadow="sm"
+                                style={{ transform: "none" }}
+                                onPress={(e) => {
+                                  if (
+                                    e.target instanceof HTMLElement &&
+                                    (e.target.closest("label") ||
+                                      e.target.tagName === "INPUT")
+                                  ) {
+                                    return;
+                                  }
+                                  handleAstopicAccordionChange(
+                                    topicIndex,
+                                    accIndex,
+                                    !acc.isSelected,
+                                  );
+                                }}
+                              >
+                                <CardBody className="p-0">
+                                  <div className="flex w-full h-full gap-2 items-center px-4 py-3">
+                                    <Checkbox
+                                      className="pointer-events-auto"
+                                      color="primary"
+                                      isSelected={acc.isSelected}
+                                      onValueChange={(isSelected) =>
+                                        handleAstopicAccordionChange(
+                                          topicIndex,
+                                          accIndex,
+                                          isSelected,
+                                        )
+                                      }
+                                    />
+                                    <span className="text-md flex-1 text-left">
+                                      {acc.label}
+                                    </span>
+                                  </div>
+                                </CardBody>
+                              </Card>
+                            </div>
+                          ) : null,
+                        )}
+                        <Accordion
+                          className="w-full"
+                          isCompact={isCompact}
+                          variant="splitted"
+                        >
+                          {topic.accordions.map((acc, accIndex) =>
+                            acc.options.length > 0
+                              ? createAccordion(
+                                  accIndex + 1,
+                                  acc.label,
+                                  acc.selectedOptions,
+                                  (selected) =>
+                                    handleAstopicCheckboxGroupChange(
+                                      topicIndex,
+                                      accIndex,
+                                      selected,
+                                    ),
+                                  acc.options.map((option) => ({
+                                    value: option,
+                                    label: option,
+                                  })),
+                                  acc.isSelected,
+                                  (isSelected) =>
+                                    handleAstopicAccordionChange(
+                                      topicIndex,
+                                      accIndex,
+                                      isSelected,
+                                    ),
+                                )
+                              : null,
+                          )}
+                        </Accordion>
+                      </div>
+                    </CardBody>
+                  </Card>
+                ))}
+              </Tab>
+            </Tabs>
+          </div>
+          <div
+            ref={(el) => {
+              if (el) sectionRefs.current[2] = el;
+            }}
+            className="mb-8 scroll-mt-24"
+          >
+            <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">
+              Предложить вопрос
+            </h1>
+            <QuestionForm />
           </div>
         </div>
       }
       leftPanel={
-        <div>
-          <div className="flex flex-col items-start mt-8 pl-4">
-            <div className="relative flex flex-col items-start">
-              <div className="absolute top-1 bottom-5 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
-              {topics.map((topic, index) => (
-                <button
-                  key={index}
-                  className={`relative flex items-center gap-3 mb-4 transition-all text-left group ${
-                    index === currentIndex
-                      ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg"
-                      : ""
-                  }`}
-                  onClick={() => scrollToSection(index)}
+        <div className="mt-8 pl-4">
+          <div className="relative flex flex-col items-start">
+            <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
+            {/* Кнопки из массива sections */}
+            {sections.map((label, idx) => (
+              <button
+                key={label}
+                className={`
+                  relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left
+                  ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg" : ""}
+                `}
+                onClick={() => scrollToSection(idx)}
+              >
+                <div
+                  className={`
+                  z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all
+                  ${idx === currentIndex ? "border-blue-500 bg-blue-500 animate-ping-slow" : "border-gray-300 bg-white dark:bg-gray-700"}
+                `}
+                />
+                <span
+                  className={`
+                  text-sm transition-colors
+                  ${idx === currentIndex ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-400"}
+                `}
                 >
-                  <div
-                    className={`z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all duration-300 group-hover:border-blue-400 group-hover:bg-blue-200 ${
-                      index === currentIndex
-                        ? "border-blue-500 bg-blue-500 animate-ping-slow"
-                        : "border-gray-300 bg-white dark:bg-gray-700"
-                    }`}
-                  />
-                  <span
-                    className={`text-sm transition-colors group-hover:text-blue-500 ${
-                      index === currentIndex
-                        ? "text-black dark:text-white font-semibold"
-                        : "text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    {topic}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  {label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       }
       rightPanel={
         <div>
           <Card isFooterBlurred className="border-none" radius="lg">
-            <CardHeader className="flex flex-col items-center justify-center gap-2">
-              <h2 className="text-lg font-semibold">Выбранные задания:</h2>
+            <CardHeader className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+              <h2 className="text-lg font-semibold">Выбранные темы</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Start your journey with us today!
+                Всего тем: {totalSelected}
               </p>
             </CardHeader>
+            <CardBody>
+              <div className="flex flex-col items-start justify-left gap-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  ФИ: {totalFI}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  АиСД: {totalAS}
+                </p>
+              </div>
+            </CardBody>
             <CardFooter className="flex flex-col items-center justify-center gap-2">
-              <p>Available soon.</p>
-              <Button color="default" radius="lg" size="sm" variant="flat">
-                Notify me
+              <Button
+                className="w-full text-md font-semibold py-3"
+                color="primary"
+                radius="lg"
+                size="lg"
+                variant="shadow"
+              >
+                Генерация варианта
+              </Button>
+              <Button
+                radius="lg"
+                size="sm"
+                variant="light"
+                onPress={handleResetSelections}
+              >
+                Сбросить
               </Button>
             </CardFooter>
           </Card>
