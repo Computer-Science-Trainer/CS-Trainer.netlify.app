@@ -19,10 +19,11 @@ import {
 import { Link as HeroLink } from "@heroui/link";
 import { useTranslations } from "next-intl";
 import { DateValue } from "@internationalized/date";
+import { motion } from "framer-motion";
 
 import { TelegramIcon, GithubIcon, WebsiteIcon } from "@/components/icons";
 import { useAuth } from "@/context/auth";
-import { makeApiRequest } from "@/config/api";
+import { makeApiRequest, API_BASE_URL } from "@/config/api";
 import { TestDetailsModal } from "@/components/TestDetailsModal";
 
 // Type for other user's profile data
@@ -45,10 +46,16 @@ export default function ProfilePage() {
 
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
   useEffect(() => {
-    makeApiRequest(`api/user/${username}`, "GET")
-      .then((data) => setProfileUser(data))
-      .catch(() => setProfileUser(null));
-  }, [username]);
+    async function loadProfile() {
+      try {
+        const data: ProfileUser = await makeApiRequest(`api/user/${username}`, "GET");
+        setProfileUser(data);
+      } catch {
+        router.replace('/404');
+      }
+    }
+    loadProfile();
+  }, [username, router]);
 
   const [stats, setStats] = useState({
     passed: 0,
@@ -143,8 +150,18 @@ export default function ProfilePage() {
 
   const base = process.env.NEXT_PUBLIC_API_URL;
 
+  // If profileUser not yet loaded, render nothing (avoids flash)
+  if (!profileUser) {
+    return null;
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
           <Card className="p-6">
@@ -462,6 +479,6 @@ export default function ProfilePage() {
         test={selectedTest}
         onClose={() => setTestModalOpen(false)}
       />
-    </div>
+    </motion.div>
   );
 }

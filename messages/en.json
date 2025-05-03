@@ -397,6 +397,10 @@
         "closeButton": "Close",
         "totalLabel": "Total",
         "testIdLabel": "Test ID"
+    },
+    "notFound": {
+        "title": "404",
+        "description": "Page not found.<br />The page you are looking for does not exist.",
+        "button": "Go to Home"
     }
-
 }

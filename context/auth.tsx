@@ -43,9 +43,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             bio: data.bio,
           }),
         )
-        .catch(() => {
-          localStorage.removeItem("token");
-          sessionStorage.removeItem("token");
+        .catch((err: any) => {
+          if (err.status !== 404) {
+            localStorage.removeItem("token");
+            sessionStorage.removeItem("token");
+          }
         });
     }
   }, []);

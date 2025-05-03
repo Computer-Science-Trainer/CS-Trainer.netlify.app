@@ -396,5 +396,10 @@
         "closeButton": "Закрыть",
         "totalLabel": "Всего",
         "testIdLabel": "ID теста"
+    },
+    "notFound": {
+        "title": "404",
+        "description": "Страница не найдена.<br/>Запрашиваемая страница не существует.",
+        "button": "На главную"
     }
 }

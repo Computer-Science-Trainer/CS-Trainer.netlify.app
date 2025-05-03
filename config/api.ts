@@ -35,6 +35,7 @@ export async function makeApiRequest(
         ? err.detail
         : err.detail?.code || err.message || "Request failed",
     );
+    e.status = res.status;
 
     throw e;
   }
