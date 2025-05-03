@@ -30,6 +30,7 @@ import {
   Globe02Icon,
 } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
 
 import { TelegramIcon, Logo } from "@/components/icons";
 import LoginWindow from "@/components/login";
@@ -37,7 +38,6 @@ import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuth } from "@/context/auth";
 import { API_BASE_URL, makeApiRequest } from "@/config/api";
-import { useState, useEffect } from "react";
 
 export const SettingsDropdown = () => {
   const router = useRouter();
@@ -134,6 +134,7 @@ export const SettingsDropdown = () => {
 export const Navbar = () => {
   const { user } = useAuth();
   const [avatarPath, setAvatarPath] = useState<string | undefined>(undefined);
+
   useEffect(() => {
     if (user?.username) {
       makeApiRequest(`api/user/${user.username}`, "GET")
@@ -214,14 +215,14 @@ export const Navbar = () => {
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => {
-            const href = item.href === "/profile" && user ? `/${user.username}` : item.href;
+            const href =
+              item.href === "/profile" && user
+                ? `/${user.username}`
+                : item.href;
+
             return (
-              <NavbarMenuItem key={`${item.label}-${index}`}>  
-                <Link
-                  color="foreground"
-                  href={href}
-                  size="lg"
-                >
+              <NavbarMenuItem key={`${item.label}-${index}`}>
+                <Link color="foreground" href={href} size="lg">
                   {t(item.label)}
                 </Link>
               </NavbarMenuItem>
@@ -229,12 +230,7 @@ export const Navbar = () => {
           })}
           {!user && (
             <NavbarMenuItem>
-              <Link
-                color="primary"
-                href="#"
-                size="lg"
-                onPress={onOpen}
-              >
+              <Link color="primary" href="#" size="lg" onPress={onOpen}>
                 {t("nav.login")}
               </Link>
             </NavbarMenuItem>

@@ -98,7 +98,7 @@ export default function AuthWindow({
 
   // Form state management
   const [authState, setAuthState] = useState<AuthState>(AuthState.Login); // Current authentication state
-  const [nickname, setNickname] = useState(""); // Nickname for registration
+  const [username, setNickname] = useState(""); // Nickname for registration
   const [email, setEmail] = useState(""); // Email for login/registration
   const [password, setPassword] = useState(""); // Password for login/registration
   const [confirmPassword, setConfirmPassword] = useState(""); // Confirm password for registration
@@ -167,14 +167,14 @@ export default function AuthWindow({
     [t],
   );
 
-  // Validates nickname length and allowed characters
+  // Validates username length and allowed characters
   const validateNickname = useCallback(
     (value: string): string | null => {
-      if (!value) return t("auth.errors.nicknameMissing");
-      if (value.length < 3) return t("auth.errors.nicknameShort");
-      if (value.length > 15) return t("auth.errors.nicknameLong");
+      if (!value) return t("auth.errors.usernameMissing");
+      if (value.length < 3) return t("auth.errors.usernameShort");
+      if (value.length > 15) return t("auth.errors.usernameLong");
       if (!/^[a-zA-Z0-9_]+$/.test(value))
-        return t("auth.errors.nicknameInvalid");
+        return t("auth.errors.usernameInvalid");
 
       return null;
     },
@@ -234,12 +234,12 @@ export default function AuthWindow({
         break;
 
       case AuthState.Register:
-        const nicknameError = validateNickname(nickname);
+        const usernameError = validateNickname(username);
         const regEmailError = validateEmail(email);
         const regPasswordError = validatePassword(password);
         const confirmError = validateConfirmPassword(password, confirmPassword);
 
-        if (nicknameError) newErrors.nickname = nicknameError;
+        if (usernameError) newErrors.username = usernameError;
         if (regEmailError) newErrors.email = regEmailError;
         if (regPasswordError) newErrors.password = regPasswordError;
         if (confirmError) newErrors.confirmPassword = confirmError;
@@ -278,7 +278,7 @@ export default function AuthWindow({
     authState,
     email,
     password,
-    nickname,
+    username,
     confirmPassword,
     verificationCode,
     termsAccepted,
@@ -303,11 +303,11 @@ export default function AuthWindow({
 
       case AuthState.Register:
         return (
-          !!nickname &&
+          !!username &&
           !!email &&
           !!password &&
           !!confirmPassword &&
-          !validateNickname(nickname) &&
+          !validateNickname(username) &&
           !validateEmail(email) &&
           !validatePassword(password) &&
           !validateConfirmPassword(password, confirmPassword) &&
@@ -336,7 +336,7 @@ export default function AuthWindow({
     authState,
     email,
     password,
-    nickname,
+    username,
     confirmPassword,
     verificationCode,
     termsAccepted,
@@ -380,9 +380,14 @@ export default function AuthWindow({
           color: "warning",
         });
       } else {
+        let desc = t(`auth.errors.detail.${error.message}`);
+
+        if (desc.startsWith("auth.errors.detail.")) {
+          desc = t("auth.errors.detail.unknown");
+        }
         addToast({
           title: t("auth.errors.title.loginFailed"),
-          description: t(`auth.errors.detail.${error.message}`),
+          description: desc,
           color: "danger",
         });
       }
@@ -394,14 +399,20 @@ export default function AuthWindow({
       await makeApiRequest(
         "api/auth/register",
         "POST",
-        { email, password, nickname },
+        { email, password, username },
         true,
       );
       setAuthState(AuthState.Verify);
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.registerFailed"),
-        description: t(`auth.errors.detail.${error.message}`),
+        description: (() => {
+          const desc = t(`auth.errors.detail.${error.message}`);
+
+          return desc.startsWith("auth.errors.detail.")
+            ? t("auth.errors.detail.unknown")
+            : desc;
+        })(),
         color: "danger",
       });
     }
@@ -426,7 +437,13 @@ export default function AuthWindow({
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.verifyFailed"),
-        description: t(`auth.errors.detail.${error.message}`),
+        description: (() => {
+          const desc = t(`auth.errors.detail.${error.message}`);
+
+          return desc.startsWith("auth.errors.detail.")
+            ? t("auth.errors.detail.unknown")
+            : desc;
+        })(),
         color: "danger",
       });
     }
@@ -439,7 +456,13 @@ export default function AuthWindow({
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.recoverFailed"),
-        description: t(`auth.errors.detail.${error.message}`),
+        description: (() => {
+          const desc = t(`auth.errors.detail.${error.message}`);
+
+          return desc.startsWith("auth.errors.detail.")
+            ? t("auth.errors.detail.unknown")
+            : desc;
+        })(),
         color: "danger",
       });
     }
@@ -464,7 +487,13 @@ export default function AuthWindow({
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.resendFailed"),
-        description: t(`auth.errors.detail.${error.message}`),
+        description: (() => {
+          const desc = t(`auth.errors.detail.${error.message}`);
+
+          return desc.startsWith("auth.errors.detail.")
+            ? t("auth.errors.detail.unknown")
+            : desc;
+        })(),
         color: "danger",
       });
     } finally {
@@ -484,7 +513,13 @@ export default function AuthWindow({
     } catch (error: any) {
       addToast({
         title: t("auth.errors.title.recoverVerifyFailed"),
-        description: t(`auth.errors.detail.${error.message}`),
+        description: (() => {
+          const desc = t(`auth.errors.detail.${error.message}`);
+
+          return desc.startsWith("auth.errors.detail.")
+            ? t("auth.errors.detail.unknown")
+            : desc;
+        })(),
         color: "danger",
       });
     }
@@ -514,7 +549,13 @@ export default function AuthWindow({
     } catch (error: any) {
       addToast({
         title: t("auth.errors.changePasswordFailed"),
-        description: t(`auth.errors.detail.${error.message}`),
+        description: (() => {
+          const desc = t(`auth.errors.detail.${error.message}`);
+
+          return desc.startsWith("auth.errors.detail.")
+            ? t("auth.errors.detail.unknown")
+            : desc;
+        })(),
         color: "danger",
       });
     }
@@ -559,7 +600,7 @@ export default function AuthWindow({
       authState,
       email,
       password,
-      nickname,
+      username,
       confirmPassword,
       verificationCode,
       termsAccepted,
@@ -581,23 +622,23 @@ export default function AuthWindow({
     <Input
       isRequired
       endContent={
-        <Tooltip content={t("auth.rules.nickname")} placement="top">
+        <Tooltip content={t("auth.rules.username")} placement="top">
           <HugeiconsIcon
             className="text-2xl text-default-400"
             icon={User03Icon}
           />
         </Tooltip>
       }
-      errorMessage={errors.nickname}
-      isInvalid={!!errors.nickname}
-      label={t("auth.labels.nickname")}
-      name="nickname"
-      placeholder={t("auth.placeholders.nickname")}
-      value={nickname}
+      errorMessage={errors.username}
+      isInvalid={!!errors.username}
+      label={t("auth.labels.username")}
+      name="username"
+      placeholder={t("auth.placeholders.username")}
+      value={username}
       onBlur={() => {
-        const error = validateNickname(nickname);
+        const error = validateNickname(username);
 
-        setErrors((prev) => ({ ...prev, nickname: error || "" }));
+        setErrors((prev) => ({ ...prev, username: error || "" }));
       }}
       onValueChange={setNickname}
     />

@@ -23,7 +23,7 @@ import { motion } from "framer-motion";
 
 import { TelegramIcon, GithubIcon, WebsiteIcon } from "@/components/icons";
 import { useAuth } from "@/context/auth";
-import { makeApiRequest, API_BASE_URL } from "@/config/api";
+import { makeApiRequest } from "@/config/api";
 import { TestDetailsModal } from "@/components/TestDetailsModal";
 
 // Type for other user's profile data
@@ -45,13 +45,18 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
+
   useEffect(() => {
     async function loadProfile() {
       try {
-        const data: ProfileUser = await makeApiRequest(`api/user/${username}`, "GET");
+        const data: ProfileUser = await makeApiRequest(
+          `api/user/${username}`,
+          "GET",
+        );
+
         setProfileUser(data);
       } catch {
-        router.replace('/404');
+        router.replace("/404");
       }
     }
     loadProfile();
@@ -157,10 +162,10 @@ export default function ProfilePage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      initial={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
@@ -175,8 +180,8 @@ export default function ProfilePage() {
                   profileUser?.avatar
                     ? `${base}${profileUser.avatar}`
                     : user?.username === username && user?.avatar
-                    ? `${base}${user.avatar}`
-                    : undefined
+                      ? `${base}${user.avatar}`
+                      : undefined
                 }
               />
               <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
