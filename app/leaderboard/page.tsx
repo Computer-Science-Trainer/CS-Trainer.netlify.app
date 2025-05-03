@@ -21,6 +21,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
 
 import { useAuth } from "@/context/auth";
 import { makeApiRequest, API_BASE_URL } from "@/config/api";
@@ -276,18 +277,20 @@ export default function Leaderboard() {
             );
           case "user":
             return (
-              <UserComponent
-                avatarProps={{
-                  radius: "full",
-                  size: "md",
-                  src: cellData.avatar
-                    ? `${API_BASE_URL}${cellData.avatar}`
-                    : undefined,
-                  showFallback: true,
-                }}
-                description={`${cellData.achievement}`}
-                name={cellData.username}
-              />
+              <Link href={`/${cellData.username}`}>
+                <UserComponent
+                  avatarProps={{
+                    radius: "full",
+                    size: "md",
+                    src: cellData.avatar
+                      ? `${API_BASE_URL}${cellData.avatar}`
+                      : undefined,
+                    showFallback: true,
+                  }}
+                  description={`${cellData.achievement}`}
+                  name={cellData.username}
+                />
+              </Link>
             );
           case "score":
             return (
