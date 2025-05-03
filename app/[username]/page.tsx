@@ -173,34 +173,34 @@ export default function ProfilePage() {
                   <Divider />
                 </>
               )}
-              {user?.username === username && (
+              {profileUser && (
                 <div className="flex items-center gap-4">
-                  {user.telegram && (
+                  {profileUser.telegram && (
                     <HeroLink
                       isExternal
                       aria-label="Telegram"
                       color="foreground"
-                      href={`https://t.me/${user.telegram}`}
+                      href={`https://t.me/${profileUser.telegram}`}
                     >
                       <TelegramIcon size={20} />
                     </HeroLink>
                   )}
-                  {user.github && (
+                  {profileUser.github && (
                     <HeroLink
                       isExternal
                       aria-label="GitHub"
                       color="foreground"
-                      href={`https://github.com/${user.github}`}
+                      href={`https://github.com/${profileUser.github}`}
                     >
                       <GithubIcon size={24} />
                     </HeroLink>
                   )}
-                  {user.website && (
+                  {profileUser.website && (
                     <HeroLink
                       isExternal
                       aria-label="Website"
                       color="foreground"
-                      href={user.website}
+                      href={`https://${profileUser.website}`}
                     >
                       <WebsiteIcon size={26} />
                     </HeroLink>

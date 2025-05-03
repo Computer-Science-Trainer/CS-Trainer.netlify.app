@@ -36,7 +36,8 @@ import LoginWindow from "@/components/login";
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuth } from "@/context/auth";
-import { API_BASE_URL } from "@/config/api";
+import { API_BASE_URL, makeApiRequest } from "@/config/api";
+import { useState, useEffect } from "react";
 
 export const SettingsDropdown = () => {
   const router = useRouter();
@@ -132,6 +133,14 @@ export const SettingsDropdown = () => {
 
 export const Navbar = () => {
   const { user } = useAuth();
+  const [avatarPath, setAvatarPath] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (user?.username) {
+      makeApiRequest(`api/user/${user.username}`, "GET")
+        .then((data) => setAvatarPath(data.avatar))
+        .catch(() => {});
+    }
+  }, [user]);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const t = useTranslations();
 
@@ -185,7 +194,7 @@ export const Navbar = () => {
               avatarProps={{
                 radius: "full",
                 size: "sm",
-                src: user.avatar ? `${API_BASE_URL}${user.avatar}` : undefined,
+                src: avatarPath ? `${API_BASE_URL}${avatarPath}` : undefined,
                 showFallback: true,
               }}
               description={user.email}

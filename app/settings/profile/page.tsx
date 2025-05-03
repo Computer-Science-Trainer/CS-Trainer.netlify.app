@@ -11,6 +11,7 @@ import {
   Card,
   Textarea,
   Avatar,
+  Spinner,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
@@ -42,11 +43,20 @@ export default function SettingsProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || "");
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setAvatarPreview(user?.avatar || "");
-    setRemoveAvatar(false);
-  }, [user?.avatar]);
+    if (user) {
+      setNickname(user.username || "");
+      setEmail(user.email || "");
+      setTelegram(user.telegram || "");
+      setGithub(user.github || "");
+      setWebsite(user.website || "");
+      setBio(user.bio || "");
+      setAvatarPreview(user.avatar || "");
+      setRemoveAvatar(false);
+    }
+  }, [user]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateLength = (field: string, value: string) => {
@@ -56,7 +66,6 @@ export default function SettingsProfilePage() {
       setErrors((prev) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { [field]: _, ...rest } = prev;
-
         return rest;
       });
     }
@@ -90,6 +99,7 @@ export default function SettingsProfilePage() {
 
   const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSaving(true);
     try {
       const formData = new FormData();
 
@@ -118,6 +128,8 @@ export default function SettingsProfilePage() {
         description: e.message,
         color: "danger",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -319,7 +331,7 @@ export default function SettingsProfilePage() {
             maxLength={240}
             name="website"
             placeholder={t("settings.placeholders.website")}
-            type="url"
+            type="text"
             value={website}
             variant="bordered"
             onValueChange={(v) => {
@@ -328,8 +340,19 @@ export default function SettingsProfilePage() {
             }}
           />
 
-          <Button className="w-full" color="primary" type="submit">
-            {t("settings.saveButton")}
+          <Button
+            className="w-full"
+            color="primary"
+            type="submit"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <div className="flex justify-center w-full">
+                <Spinner size="sm" color="white" />
+              </div>
+            ) : (
+              t("settings.saveButton")
+            )}
           </Button>
         </Form>
       </Card>
