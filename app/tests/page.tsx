@@ -133,8 +133,8 @@ const TopicAccordions = ({
                       }
                     >
                       {acc.options.map((option) => (
-                        <Checkbox key={option} value={option}>
-                          {t(`tests.topics.${option}`)}
+                        <Checkbox key={option} value={option} >
+                          <span className="px-2 py-2">{t(`tests.topics.${option}`)}</span>
                         </Checkbox>
                       ))}
                     </CheckboxGroup>
