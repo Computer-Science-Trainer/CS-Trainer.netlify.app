@@ -51,7 +51,7 @@ export default function Leaderboard() {
 
   // Define current user id.
   const currentUserId = user?.id ?? -1;
-
+  
   // Component state for search filter, current topic, pagination, and sorting.
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedTopic, setSelectedTopic] = React.useState<
@@ -86,7 +86,7 @@ export default function Leaderboard() {
   // build usersData based on selectedTopic only
   const usersData = React.useMemo(() => {
     return (rawData[selectedTopic] || []).map((item: any) => ({
-      id: item.id,
+      id: item.user_id,
       username: item.username,
       achievement: item.achievement ?? "",
       avatar: item.avatar || "",
