@@ -322,7 +322,7 @@ export default function QuestionForm() {
 
   return (
     <div>
-      <Card className="mb-4 p-4 w-full max-w-2xl mx-auto" shadow="sm">
+      <Card className="mb-4 p-4 w-full mx-auto" shadow="sm">
         <Form
           className="w-full flex flex-col gap-4"
           validationErrors={Object.fromEntries(

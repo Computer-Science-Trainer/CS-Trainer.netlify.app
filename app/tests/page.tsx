@@ -346,10 +346,10 @@ export default function TestsPage() {
       : recommendedSubsAll.slice(0, 6);
 
   return (
-    <section className="max-w-7xl mx-auto p-4 flex gap-4 flex-col lg:flex-row lg:gap-4 items-start justify-center">
+    <section className="max-w-7xl pt-4 flex flex-col lg:flex-row lg:gap-6">
       {/* Левая панель */}
-      <aside className="hidden lg:block w-[185px] flex-shrink-0 sticky top-32 h-fit self-start">
-        <div className="mt-8 pl-4">
+      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
+        <div className="">
           <div className="relative flex flex-col items-start">
             <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
             {[
@@ -385,11 +385,11 @@ export default function TestsPage() {
             }}
             className="mb-8 scroll-mt-24"
           >
-            <h1 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-bold flex justify-center">
               Рекомендованные тесты
             </h1>
             <Card className="mb-4 mt-4">
-              <CardBody className="flex flex-col items-center justify-center gap-11">
+              <CardBody className="flex flex-col">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                   {recommendedSubs.map((sub, idx) => (
                     <Card
@@ -445,7 +445,7 @@ export default function TestsPage() {
             }}
             className="mb-8 scroll-mt-24"
           >
-            <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">
+            <h1 className="text-2xl font-bold mb-4 flex justify-center">
               Создание собственного варианта
             </h1>
             <Tabs fullWidth size="md">
@@ -461,7 +461,7 @@ export default function TestsPage() {
                 }
               >
                 {loading ? (
-                  <div className="flex justify-center items-center py-10">
+                  <div className="flex justify-center py-10">
                     <Spinner label={t("loading")} size="lg" />
                   </div>
                 ) : (
@@ -488,7 +488,7 @@ export default function TestsPage() {
                 }
               >
                 {loading ? (
-                  <div className="flex justify-center items-center py-10">
+                  <div className="flex justify-center py-10">
                     <Spinner label={t("loading")} size="lg" />
                   </div>
                 ) : (
@@ -512,7 +512,7 @@ export default function TestsPage() {
             }}
             className="mb-8 scroll-mt-24"
           >
-            <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">
+            <h1 className="text-2xl font-bold mb-4 flex justify-center">
               Предложить вопрос
             </h1>
             <QuestionForm />
@@ -520,7 +520,7 @@ export default function TestsPage() {
         </div>
       </aside>
       {/* Правая панель */}
-      <aside className="hidden lg:block w-[200px] flex-shrink-0 sticky top-32 h-fit self-start">
+      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 self-start">
         <div>
           <Card isFooterBlurred className="border-none" radius="lg">
             <CardHeader className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
