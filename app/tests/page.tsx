@@ -91,7 +91,7 @@ function createAccordion(
 }
 
 // Основной компонент
-export default function ProblemsPage() {
+export default function TestsPage() {
   const t = useTranslations();
   const [isCompact, setIsCompact] = useState(false);
   const [topicStates, setTopicStates] = useState<TopicState[]>([]);

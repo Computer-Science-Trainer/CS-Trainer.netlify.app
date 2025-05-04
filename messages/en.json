@@ -1,9 +1,9 @@
 {
     "subtitle": "Fundamental Computer Science, Algorithms and Data Structures",
-    "problems": "Problems",
+    "testsLabel": "Tests",
     "telegramBot": "Telegram-bot",
     "nav": {
-        "problems": "Problems",
+        "tests": "Tests",
         "leaderboard": "Leaderboard",
         "about": "About",
         "search_placeholder": "Search...",

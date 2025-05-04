@@ -1,9 +1,9 @@
 {
     "subtitle": "Фундаментальная Информатика, Алгоритмы и Структуры Данных",
-    "problems": "Задачи",
+    "testsLabel": "Тесты",
     "telegramBot": "Telegram-бот",
     "nav": {
-        "problems": "Задачи",
+        "tests": "Тесты",
         "leaderboard": "Таблица лидеров",
         "about": "О нас",
         "search_placeholder": "Поиск...",

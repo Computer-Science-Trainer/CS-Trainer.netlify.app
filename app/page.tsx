@@ -28,9 +28,9 @@ export default function Home() {
             radius: "full",
             variant: "shadow",
           })}
-          href="/problems"
+          href="/tests"
         >
-          <h1>{t("problems")}</h1>
+          <h1>{t("testsLabel")}</h1>
         </Link>
         <Link
           isExternal
