@@ -413,7 +413,7 @@ export default function TestsPage() {
                       }
                     >
                       <CardFooter
-                        className="absolute left-0 right-0 bottom-0 top-0 px-4 py-3 flex flex-col bg-white/60 dark:bg-gray-900/60 backdrop-blur transition-all duration-300 z-10 pointer-events-none h-full rounded-b-2xl translate-y-[60%] group-hover:translate-y-0"
+                        className="absolute left-0 right-0 bottom-0 top-0 px-4 py-3 flex flex-col bg-white/60 dark:bg-gray-900/60 transition-all duration-300 z-10 pointer-events-none h-full rounded-b-2xl translate-y-[60%] group-hover:translate-y-0"
                         style={{ borderRadius: 12 }}
                       >
                         <div className="w-full flex flex-col h-full">
