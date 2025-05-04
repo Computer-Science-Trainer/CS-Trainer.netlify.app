@@ -409,6 +409,10 @@
             "prolog_logical_programming_languages": "8.2 Prolog logical programming languages",
             "lisp_afp_functional_programming_languages": "8.3 LISP AFP functional programming languages"
         },
+        "errors": {
+            "ErrorTitle": "Error",
+            "loadErrorDescription": "Failed to load topics. Please check your server connection."
+        },
         "correctAnswersLabel": "Correct answers",
         "incorrectAnswersLabel": "Incorrect answers",
         "earnedScoreLabel": "Earned score",

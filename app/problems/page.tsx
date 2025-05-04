@@ -14,6 +14,7 @@ import {
   Tabs,
   Tab,
   Spinner,
+  addToast,
 } from "@heroui/react";
 
 import { makeApiRequest } from "@/config/api";
@@ -128,7 +129,14 @@ export default function ProblemsPage() {
         setAsTopicStates(mapToState(algorithms));
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoading(false);
+          addToast({
+            title: t("tests.errors.ErrorTitle"),
+            description: t("tests.errors.loadErrorDescription"),
+            color: "danger",
+          });
+      });
   }, []);
 
   const handleTopicCheckboxGroupChange = (

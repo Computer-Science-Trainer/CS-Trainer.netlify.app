@@ -409,6 +409,10 @@
             "prolog_logical_programming_languages": "8.2 Языки логического программирования PROLOG",
             "lisp_afp_functional_programming_languages": "8.3 Языки функционального программирования LISP AFP"
         },
+        "errors": {
+            "ErrorTitle": "Ошибка",
+            "loadErrorDescription": "Не удалось загрузить темы. Проверьте соединение с сервером."
+        },
         "correctAnswersLabel": "Правильных ответов",
         "incorrectAnswersLabel": "Ошибок",
         "earnedScoreLabel": "Заработанные баллы",
