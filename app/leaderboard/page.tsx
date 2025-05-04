@@ -308,6 +308,7 @@ export default function Leaderboard() {
             return (
               <div className="flex items-center gap-2">
                 <Progress
+                  aria-label="progress"
                   className="w-24"
                   color="primary"
                   maxValue={cellData[selectedTopic].totalTests}
