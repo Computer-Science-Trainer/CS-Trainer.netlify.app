@@ -219,6 +219,9 @@ export const Navbar = () => {
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => {
+            if (item.href === "/profile" && !user) {
+              return null;
+            }
             const href =
               item.href === "/profile" && user
                 ? `/${user.username}`
