@@ -66,6 +66,7 @@
                 "verification_code_sent": "Код подтверждения отправлен на ваш email",
                 "registration_success": "Регистрация успешна. Проверьте почту для подтверждения",
                 "verification_success": "Email успешно подтвержден",
+                "accessDenied": "Доступ запрещен",
                 "unknown": "Неизвестная ошибка"
             },
             "general": "Произошла ошибка. Попробуйте ещё раз.",
