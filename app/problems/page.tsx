@@ -16,7 +16,6 @@ import {
   Spinner,
 } from "@heroui/react";
 
-import ProblemsLayout from "./ProblemsLayout"; // Заменили локальную функцию ProblemsLayout на импорт
 import { makeApiRequest } from "@/config/api";
 import QuestionForm from "./QuestionForm"; // Импорт нового компонента формы
 import { useTranslations } from "next-intl";
@@ -358,9 +357,43 @@ export default function ProblemsPage() {
       : recommendedSubsAll.slice(0, 6);
 
   return (
-    <ProblemsLayout
-      centralPanel={
-        <div>
+    <section className="max-w-7xl mx-auto p-4 flex gap-4 flex-col lg:flex-row lg:gap-4 items-start justify-center">
+      {/* Левая панель */}
+      <aside className="hidden lg:block w-[185px] flex-shrink-0 sticky top-32 h-fit self-start">
+        <div className="mt-8 pl-4">
+          <div className="relative flex flex-col items-start">
+            <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
+            {sections.map((label, idx) => (
+              <button
+                key={label}
+                className={`
+                  relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left
+                  ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg" : ""}
+                `}
+                onClick={() => scrollToSection(idx)}
+              >
+                <div
+                  className={`
+                  z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all
+                  ${idx === currentIndex ? "border-blue-500 bg-blue-500 animate-ping-slow" : "border-gray-300 bg-white dark:bg-gray-700"}
+                `}
+                />
+                <span
+                  className={`
+                  text-sm transition-colors
+                  ${idx === currentIndex ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-400"}
+                `}
+                >
+                  {label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
+      {/* Центральная панель */}
+      <aside className="flex flex-col items-center justify-center w-full">
+        <div className="w-full">
           {/* Рекомендованное Вам */}
           <div
             ref={(el) => {
@@ -675,41 +708,9 @@ export default function ProblemsPage() {
             <QuestionForm />
           </div>
         </div>
-      }
-      leftPanel={
-        <div className="mt-8 pl-4">
-          <div className="relative flex flex-col items-start">
-            <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
-            {/* Кнопки из массива sections */}
-            {sections.map((label, idx) => (
-              <button
-                key={label}
-                className={`
-                  relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left
-                  ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg" : ""}
-                `}
-                onClick={() => scrollToSection(idx)}
-              >
-                <div
-                  className={`
-                  z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all
-                  ${idx === currentIndex ? "border-blue-500 bg-blue-500 animate-ping-slow" : "border-gray-300 bg-white dark:bg-gray-700"}
-                `}
-                />
-                <span
-                  className={`
-                  text-sm transition-colors
-                  ${idx === currentIndex ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-400"}
-                `}
-                >
-                  {label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      }
-      rightPanel={
+      </aside>
+      {/* Правая панель */}
+      <aside className="hidden lg:block w-[200px] flex-shrink-0 sticky top-32 h-fit self-start">
         <div>
           <Card isFooterBlurred className="border-none" radius="lg">
             <CardHeader className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
@@ -749,7 +750,7 @@ export default function ProblemsPage() {
             </CardFooter>
           </Card>
         </div>
-      }
-    />
+      </aside>
+    </section>
   );
 }
