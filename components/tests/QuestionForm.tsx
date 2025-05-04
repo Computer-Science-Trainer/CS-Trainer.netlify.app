@@ -341,6 +341,7 @@ export default function QuestionForm() {
             labelPlacement="outside"
             name="questionText"
             placeholder="Введите текст вопроса"
+            minRows={5}
           />
 
           <Select
