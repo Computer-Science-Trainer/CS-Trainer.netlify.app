@@ -13,12 +13,28 @@ import {
   CardBody,
   Tabs,
   Tab,
+  Spinner,
 } from "@heroui/react";
 
 import ProblemsLayout from "./ProblemsLayout"; // Заменили локальную функцию ProblemsLayout на импорт
-import { initialFiTopics, initialAsTopics } from "./topicsState";
+import { makeApiRequest } from "@/config/api";
 import QuestionForm from "./QuestionForm"; // Импорт нового компонента формы
+import { useTranslations } from "next-intl";
 
+export interface AccordionState {
+    label: string;
+    options: string[];
+    isSelected: boolean;
+    selectedOptions: string[];
+    description?: string;
+  }
+  
+  export interface TopicState {
+    label: string;
+    accordions: AccordionState[];
+  }
+
+  
 // Константы
 const sections = [
   "Рекомендованное Вам",
@@ -28,6 +44,7 @@ const sections = [
 
 // Функции
 function createAccordion(
+  t: ReturnType<typeof useTranslations>,
   key: number,
   title: string,
   selectedOptions: string[],
@@ -40,7 +57,7 @@ function createAccordion(
     return (
       <div key={key}>
         <Checkbox isSelected={isSelected} onValueChange={onAccordionChange} />
-        <span>{title}</span>
+        <span>{t(`tests.topics.${title}`)}</span>
       </div>
     );
   }
@@ -52,7 +69,7 @@ function createAccordion(
       title={
         <div className="flex items-center gap-2">
           <Checkbox isSelected={isSelected} onValueChange={onAccordionChange} />
-          <span>{title}</span>
+          <span>{t(`tests.topics.${title}`)}</span>
         </div>
       }
     >
@@ -64,7 +81,7 @@ function createAccordion(
         >
           {options.map((option) => (
             <Checkbox key={option.value} value={option.value}>
-              {option.label}
+              {t(`tests.topics.${option.label}`)}
             </Checkbox>
           ))}
         </CheckboxGroup>
@@ -75,20 +92,45 @@ function createAccordion(
 
 // Основной компонент
 export default function ProblemsPage() {
+  const t = useTranslations();
   const [isCompact, setIsCompact] = useState(false);
+  const [topicStates, setTopicStates] = useState<TopicState[]>([]);
+  const [asTopicStates, setAsTopicStates] = useState<TopicState[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const check = () => setIsCompact(window.innerWidth < 640);
-
-    check();
-    window.addEventListener("resize", check);
-
-    return () => window.removeEventListener("resize", check);
+    setIsCompact(window.innerWidth < 640);
+    const onResize = () => setIsCompact(window.innerWidth < 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Используем импортированные начальные значения для состояний тем
-  const [topicStates, setTopicStates] = useState(initialFiTopics);
-  const [asTopicStates, setAsTopicStates] = useState(initialAsTopics);
+  useEffect(() => {
+    setLoading(true);
+    makeApiRequest("api/topics", "GET")
+      .then((data: any[]) => {
+        const fundamentals = data.find((t) => t.label === "fundamentals")?.accordions || [];
+        const algorithms = data.find((t) => t.label === "algorithms")?.accordions || [];
+        const mapToState = (items: any[]): TopicState[] =>
+          items.map((item) => ({
+            label: typeof item === 'string' ? item : item.label,
+            accordions: Array.isArray(item.accordions)
+              ? item.accordions.map((sub: any) => ({
+                  label: typeof sub === 'string' ? sub : sub.label,
+                  options: Array.isArray(sub.accordions)
+                    ? (sub.accordions as string[])
+                    : [],
+                  isSelected: false,
+                  selectedOptions: [],
+                }))
+              : [],
+          }));
+        setTopicStates(mapToState(fundamentals));
+        setAsTopicStates(mapToState(algorithms));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const handleTopicCheckboxGroupChange = (
     topicIndex: number,
@@ -389,7 +431,7 @@ export default function ProblemsPage() {
                             `}
                           >
                             <span className="text-base font-bold text-right text-gray-900 dark:text-white transition-colors">
-                              {sub.label}
+                              {t(`tests.topics.${sub.label}`)}
                             </span>
                             {/* Описание всегда под названием, появляется при ховере */}
                             <span
@@ -439,103 +481,92 @@ export default function ProblemsPage() {
                   <>
                     <span className="block sm:hidden">ФИ</span>
                     <span className="hidden sm:block">
-                      Фундаментальная информатика
+                      {t('leaderboard.topics.fundamentals')}
                     </span>
                   </>
                 }
               >
-                {topicStates.map((topic, topicIndex) => (
-                  <Card key={topicIndex} className="mb-4" shadow="sm">
-                    <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
-                      <h2 className="text-lg font-semibold mb-4 mt-3">
-                        {topic.label}
-                      </h2>
-                      <div className="w-full flex flex-col gap-2">
-                        {/* простые чекбоксы для подтем без опций */}
-                        {topic.accordions.map((acc, accIndex) =>
-                          acc.options.length === 0 ? (
-                            <div key={accIndex} className="px-2">
-                              <Card
-                                isPressable
-                                className="shadow-md w-full cursor-pointer select-none transition-none"
-                                shadow="sm"
-                                style={{ transform: "none" }}
-                                onPress={(e) => {
-                                  // Не срабатывает, если клик по чекбоксу
-                                  if (
-                                    e.target instanceof HTMLElement &&
-                                    (e.target.closest("label") ||
-                                      e.target.tagName === "INPUT")
-                                  ) {
-                                    return;
-                                  }
-                                  handleTopicAccordionChange(
-                                    topicIndex,
-                                    accIndex,
-                                    !acc.isSelected,
-                                  );
-                                }}
-                              >
-                                <CardBody className="p-0">
-                                  <div className="flex w-full h-full gap-2 items-center px-4 py-3">
-                                    <Checkbox
-                                      className="pointer-events-auto"
-                                      color="primary"
-                                      isSelected={acc.isSelected}
-                                      onValueChange={(isSelected) =>
-                                        handleTopicAccordionChange(
-                                          topicIndex,
-                                          accIndex,
-                                          isSelected,
-                                        )
-                                      }
-                                    />
-                                    <span className="text-md flex-1 text-left">
-                                      {acc.label}
-                                    </span>
-                                  </div>
-                                </CardBody>
-                              </Card>
-                            </div>
-                          ) : null,
-                        )}
-                        {/* аккордеон для подтем с опциями */}
-                        <Accordion
-                          className="w-full"
-                          isCompact={isCompact}
-                          variant="splitted"
-                        >
-                          {topic.accordions.map((acc, accIndex) =>
-                            acc.options.length > 0
-                              ? createAccordion(
-                                  accIndex + 1,
-                                  acc.label,
-                                  acc.selectedOptions,
-                                  (selected) =>
-                                    handleTopicCheckboxGroupChange(
-                                      topicIndex,
-                                      accIndex,
-                                      selected,
-                                    ),
-                                  acc.options.map((option) => ({
-                                    value: option,
-                                    label: option,
-                                  })),
-                                  acc.isSelected,
-                                  (isSelected) =>
+                {loading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <Spinner size="lg" label={t("loading")} />
+                  </div>
+                ) : (
+                  topicStates.map((topic, topicIndex) => (
+                    <Card key={topicIndex} className="mb-4" shadow="sm">
+                      <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+                        <h2 className="text-lg font-semibold mb-4 mt-3">
+                          {t(`tests.topics.${topic.label}`)}
+                        </h2>
+                        <div className="w-full flex flex-col gap-2">
+                          {topic.accordions.map((acc, accIndex) => (
+                            acc.options.length === 0 ? (
+                              <div key={accIndex} className="px-2">
+                                <Card
+                                  isPressable
+                                  className="shadow-md w-full cursor-pointer select-none transition-none"
+                                  shadow="sm"
+                                  style={{ transform: "none" }}
+                                  onPress={(e) => {
+                                    if (
+                                      e.target instanceof HTMLElement &&
+                                      (e.target.closest("label") ||
+                                        e.target.tagName === "INPUT")
+                                    ) {
+                                      return;
+                                    }
                                     handleTopicAccordionChange(
                                       topicIndex,
                                       accIndex,
-                                      isSelected,
-                                    ),
-                                )
-                              : null,
-                          )}
-                        </Accordion>
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
+                                      !acc.isSelected,
+                                    );
+                                  }}
+                                >
+                                  <CardBody className="p-0">
+                                    <div className="flex w-full h-full gap-2 items-center px-4 py-3">
+                                      <Checkbox
+                                        className="pointer-events-auto"
+                                        color="primary"
+                                        isSelected={acc.isSelected}
+                                        onValueChange={(isSelected) =>
+                                          handleTopicAccordionChange(
+                                            topicIndex,
+                                            accIndex,
+                                            isSelected,
+                                          )
+                                        }
+                                      />
+                                      <span className="text-md flex-1 text-left">
+                                        {t(`tests.topics.${acc.label}`)}
+                                      </span>
+                                    </div>
+                                  </CardBody>
+                                </Card>
+                              </div>
+                            ) : (
+                              <Accordion
+                                key={accIndex}
+                                className="w-full"
+                                isCompact={isCompact}
+                                variant="splitted"
+                              >
+                                {createAccordion(
+                                  t,
+                                  accIndex + 1,
+                                  acc.label,
+                                  acc.selectedOptions,
+                                  (selected) => handleTopicCheckboxGroupChange(topicIndex, accIndex, selected),
+                                  acc.options.map((option) => ({ value: option, label: option })),
+                                  acc.isSelected,
+                                  (isSelected) => handleTopicAccordionChange(topicIndex, accIndex, isSelected)
+                                )}
+                              </Accordion>
+                            )
+                          ))}
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))
+                )}
               </Tab>
               <Tab
                 key="AS"
@@ -543,100 +574,92 @@ export default function ProblemsPage() {
                   <>
                     <span className="block sm:hidden">АиСД</span>
                     <span className="hidden sm:block">
-                      Алгоритмы и структуры данных
+                    {t('leaderboard.topics.algorithms')}
                     </span>
                   </>
                 }
               >
-                {asTopicStates.map((topic, topicIndex) => (
-                  <Card key={topicIndex} className="mb-4" shadow="sm">
-                    <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
-                      <h2 className="text-lg font-semibold mb-4 mt-3">
-                        {topic.label}
-                      </h2>
-                      <div className="w-full flex flex-col gap-2">
-                        {topic.accordions.map((acc, accIndex) =>
-                          acc.options.length === 0 ? (
-                            <div key={accIndex} className="px-2">
-                              <Card
-                                isPressable
-                                className="shadow-md w-full cursor-pointer select-none transition-none"
-                                shadow="sm"
-                                style={{ transform: "none" }}
-                                onPress={(e) => {
-                                  if (
-                                    e.target instanceof HTMLElement &&
-                                    (e.target.closest("label") ||
-                                      e.target.tagName === "INPUT")
-                                  ) {
-                                    return;
-                                  }
-                                  handleAstopicAccordionChange(
-                                    topicIndex,
-                                    accIndex,
-                                    !acc.isSelected,
-                                  );
-                                }}
-                              >
-                                <CardBody className="p-0">
-                                  <div className="flex w-full h-full gap-2 items-center px-4 py-3">
-                                    <Checkbox
-                                      className="pointer-events-auto"
-                                      color="primary"
-                                      isSelected={acc.isSelected}
-                                      onValueChange={(isSelected) =>
-                                        handleAstopicAccordionChange(
-                                          topicIndex,
-                                          accIndex,
-                                          isSelected,
-                                        )
-                                      }
-                                    />
-                                    <span className="text-md flex-1 text-left">
-                                      {acc.label}
-                                    </span>
-                                  </div>
-                                </CardBody>
-                              </Card>
-                            </div>
-                          ) : null,
-                        )}
-                        <Accordion
-                          className="w-full"
-                          isCompact={isCompact}
-                          variant="splitted"
-                        >
-                          {topic.accordions.map((acc, accIndex) =>
-                            acc.options.length > 0
-                              ? createAccordion(
-                                  accIndex + 1,
-                                  acc.label,
-                                  acc.selectedOptions,
-                                  (selected) =>
-                                    handleAstopicCheckboxGroupChange(
-                                      topicIndex,
-                                      accIndex,
-                                      selected,
-                                    ),
-                                  acc.options.map((option) => ({
-                                    value: option,
-                                    label: option,
-                                  })),
-                                  acc.isSelected,
-                                  (isSelected) =>
+                {loading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <Spinner size="lg" label={t("loading")} />
+                  </div>
+                ) : (
+                  asTopicStates.map((topic, topicIndex) => (
+                    <Card key={topicIndex} className="mb-4" shadow="sm">
+                      <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+                        <h2 className="text-lg font-semibold mb-4 mt-3">
+                          {t(`tests.topics.${topic.label}`)}
+                        </h2>
+                        <div className="w-full flex flex-col gap-2">
+                          {topic.accordions.map((acc, accIndex) => (
+                            acc.options.length === 0 ? (
+                              <div key={accIndex} className="px-2">
+                                <Card
+                                  isPressable
+                                  className="shadow-md w-full cursor-pointer select-none transition-none"
+                                  shadow="sm"
+                                  style={{ transform: "none" }}
+                                  onPress={(e) => {
+                                    if (
+                                      e.target instanceof HTMLElement &&
+                                      (e.target.closest("label") ||
+                                        e.target.tagName === "INPUT")
+                                    ) {
+                                      return;
+                                    }
                                     handleAstopicAccordionChange(
                                       topicIndex,
                                       accIndex,
-                                      isSelected,
-                                    ),
-                                )
-                              : null,
-                          )}
-                        </Accordion>
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
+                                      !acc.isSelected,
+                                    );
+                                  }}
+                                >
+                                  <CardBody className="p-0">
+                                    <div className="flex w-full h-full gap-2 items-center px-4 py-3">
+                                      <Checkbox
+                                        className="pointer-events-auto"
+                                        color="primary"
+                                        isSelected={acc.isSelected}
+                                        onValueChange={(isSelected) =>
+                                          handleAstopicAccordionChange(
+                                            topicIndex,
+                                            accIndex,
+                                            isSelected,
+                                          )
+                                        }
+                                      />
+                                      <span className="text-md flex-1 text-left">
+                                        {t(`tests.topics.${acc.label}`)}
+                                      </span>
+                                    </div>
+                                  </CardBody>
+                                </Card>
+                              </div>
+                            ) : (
+                              <Accordion
+                                key={accIndex}
+                                className="w-full"
+                                isCompact={isCompact}
+                                variant="splitted"
+                              >
+                                {createAccordion(
+                                  t,
+                                  accIndex + 1,
+                                  acc.label,
+                                  acc.selectedOptions,
+                                  (selected) => handleAstopicCheckboxGroupChange(topicIndex, accIndex, selected),
+                                  acc.options.map((option) => ({ value: option, label: option })),
+                                  acc.isSelected,
+                                  (isSelected) => handleAstopicAccordionChange(topicIndex, accIndex, isSelected)
+                                )}
+                              </Accordion>
+                            )
+                          ))}
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))
+                )}
               </Tab>
             </Tabs>
           </div>
