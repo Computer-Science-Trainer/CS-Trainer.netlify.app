@@ -515,26 +515,26 @@ export default function TestsPage() {
                   АиСД: {totalAS}
                 </p>
               </div>
+              <div className="flex flex-col gap-2 mt-4">
+                <Button
+                    className="w-full font-semibold"
+                    color="primary"
+                    radius="lg"
+                    size="lg"
+                    variant="shadow"
+                >
+                    Генерация варианта
+                </Button>
+                <Button
+                    radius="lg"
+                    size="sm"
+                    variant="light"
+                    onPress={handleResetSelections}
+                >
+                    Сбросить
+                </Button>
+              </div>
             </CardBody>
-            <CardFooter className="flex flex-col gap-2">
-              <Button
-                className="w-full font-semibold"
-                color="primary"
-                radius="lg"
-                size="lg"
-                variant="shadow"
-              >
-                Генерация варианта
-              </Button>
-              <Button
-                radius="lg"
-                size="sm"
-                variant="light"
-                onPress={handleResetSelections}
-              >
-                Сбросить
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </aside>
