@@ -389,7 +389,19 @@ export default function Leaderboard() {
             }}
           >
             {topics.map((topic) => (
-              <Tab key={topic.uid} title={topic.name} />
+              <Tab
+                key={topic.uid}
+                title={
+                  <>
+                    <span className="block sm:hidden">
+                      {t(`tests.sections.${topic.uid}`)}
+                    </span>
+                    <span className="hidden sm:block">
+                      {t(`leaderboard.topics.${topic.uid}`)}
+                    </span>
+                  </>
+                }
+              />
             ))}
           </Tabs>
         </div>
