@@ -288,22 +288,8 @@ export default function TestsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollToSection = (index: number) => {
     const target = sectionRefs.current[index];
-
     if (target) {
-      const start = window.scrollY;
-      const end = target.offsetTop;
-      const duration = 400;
-      const startTime = performance.now();
-      const animateScroll = (now: number) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const ease = progress < 1 ? 1 - Math.pow(1 - progress, 3) : 1;
-
-        window.scrollTo(0, start + (end - start) * ease);
-        if (progress < 1) requestAnimationFrame(animateScroll);
-      };
-
-      requestAnimationFrame(animateScroll);
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
