@@ -59,19 +59,19 @@ const TopicAccordions = ({
 }) => (
   <>
     {topics.map((topic, topicIndex) => (
-      <Card key={topicIndex} className="mb-4" shadow="sm">
-        <CardBody className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+      <Card key={topicIndex} className="mb-4 select-none" shadow="none">
+        <CardBody className="flex flex-col items-center bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900 rounded-3xl">
           <h2 className="text-lg font-semibold mb-4 mt-3">
             {t(`tests.topics.${topic.label}`)}
           </h2>
-          <div className="w-full flex flex-col gap-2">
+          <div className="flex w-full flex-col gap-2">
             {topic.accordions.map((acc, accIndex) =>
               acc.options.length === 0 ? (
                 <div key={accIndex} className="px-2">
                   <Card
                     isPressable
-                    className="shadow-md w-full cursor-pointer select-none transition-none"
-                    shadow="sm"
+                    className="w-full py-1 rounded-2xl"
+                    shadow="none"
                     style={{ transform: "none" }}
                     onPress={(e) => {
                       if (
@@ -84,18 +84,15 @@ const TopicAccordions = ({
                     }}
                   >
                     <CardBody className="p-0">
-                      <div className="flex w-full h-full gap-2 items-center px-4 py-3">
+                      <div className="flex w-full h-full px-4 py-3">
                         <Checkbox
-                          className="pointer-events-auto"
                           color="primary"
                           isSelected={acc.isSelected}
                           onValueChange={(isSelected) =>
                             onAccordionChange(topicIndex, accIndex, isSelected)
                           }
                         />
-                        <span className="text-md flex-1 text-left">
-                          {t(`tests.topics.${acc.label}`)}
-                        </span>
+                        {t(`tests.topics.${acc.label}`)}
                       </div>
                     </CardBody>
                   </Card>
@@ -110,8 +107,9 @@ const TopicAccordions = ({
                   <AccordionItem
                     key={accIndex}
                     aria-label={`Accordion ${accIndex}`}
+                    className="rounded-2xl shadow-none"
                     title={
-                      <div className="flex items-center gap-2">
+                      <>
                         <Checkbox
                           isIndeterminate={
                             acc.selectedOptions.length > 0 &&
@@ -122,8 +120,8 @@ const TopicAccordions = ({
                             onAccordionChange(topicIndex, accIndex, isSelected)
                           }
                         />
-                        <span>{t(`tests.topics.${acc.label}`)}</span>
-                      </div>
+                        {t(`tests.topics.${acc.label}`)}
+                      </>
                     }
                   >
                     <CheckboxGroup
@@ -134,7 +132,7 @@ const TopicAccordions = ({
                     >
                       {acc.options.map((option) => (
                         <Checkbox key={option} value={option} >
-                          <span className="px-2 py-2">{t(`tests.topics.${option}`)}</span>
+                          {t(`tests.topics.${option}`)}
                         </Checkbox>
                       ))}
                     </CheckboxGroup>
@@ -346,33 +344,27 @@ export default function TestsPage() {
       : recommendedSubsAll.slice(0, 6);
 
   return (
-    <section className="max-w-7xl pt-4 flex flex-col lg:flex-row lg:gap-6">
+    <section className="pt-4 flex lg:gap-6">
       {/* Левая панель */}
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
-        <div className="">
-          <div className="relative flex flex-col items-start">
-            <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
-            {[
-              "Рекомендованное Вам",
-              "Создание собственного варианта",
-              "Предложить вопрос",
-            ].map((label, idx) => (
-              <button
-                key={label}
-                className={`relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg" : ""}`}
-                onClick={() => scrollToSection(idx)}
-              >
-                <div
-                  className={`z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${idx === currentIndex ? "border-blue-500 bg-blue-500 animate-ping-slow" : "border-gray-300 bg-white dark:bg-gray-700"}`}
-                />
-                <span
-                  className={`text-sm transition-colors ${idx === currentIndex ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-400"}`}
-                >
-                  {label}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="relative flex flex-col items-start">
+          <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
+          {[
+            "Рекомендованное Вам",
+            "Создание собственного варианта",
+            "Предложить вопрос",
+          ].map((label, idx) => (
+            <button
+              key={label}
+              className={`relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg" : ""}`}
+              onClick={() => scrollToSection(idx)}
+            >
+            <div className={`z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${idx === currentIndex ? "border-blue-500 bg-blue-500 animate-ping-slow" : "border-gray-300 bg-white dark:bg-gray-700"}`} />
+            <span className={`text-sm transition-colors ${idx === currentIndex ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-400"}`} >
+              {label}
+            </span>
+            </button>
+          ))}
         </div>
       </aside>
       {/* Центральная панель */}
@@ -401,8 +393,7 @@ export default function TestsPage() {
                         minHeight: 220,
                         width: "100%",
                         maxWidth: 340,
-                        borderBottomLeftRadius: 12,
-                        borderBottomRightRadius: 12,
+                        borderRadius: 12
                       }}
                       onPress={() =>
                         handleAccordionChange(setTopicStates)(
@@ -413,7 +404,7 @@ export default function TestsPage() {
                       }
                     >
                       <CardFooter
-                        className="absolute left-0 right-0 bottom-0 top-0 px-4 py-3 flex flex-col bg-white/60 dark:bg-gray-900/60 transition-all duration-300 z-10 pointer-events-none h-full rounded-b-2xl translate-y-[60%] group-hover:translate-y-0"
+                        className="flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
                         style={{ borderRadius: 12 }}
                       >
                         <div className="w-full flex flex-col h-full">
@@ -523,14 +514,14 @@ export default function TestsPage() {
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 self-start">
         <div>
           <Card isFooterBlurred className="border-none" radius="lg">
-            <CardHeader className="flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
+            <CardHeader className="flex flex-col justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
               <h2 className="text-lg font-semibold">Выбранные темы</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Всего тем: {totalSelected}
               </p>
             </CardHeader>
             <CardBody>
-              <div className="flex flex-col items-start justify-left gap-2">
+              <div className="flex flex-col  gap-2">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   ФИ: {totalFI}
                 </p>
@@ -539,9 +530,9 @@ export default function TestsPage() {
                 </p>
               </div>
             </CardBody>
-            <CardFooter className="flex flex-col items-center justify-center gap-2">
+            <CardFooter className="flex flex-col gap-2">
               <Button
-                className="w-full text-md font-semibold py-3"
+                className="w-full font-semibold"
                 color="primary"
                 radius="lg"
                 size="lg"
