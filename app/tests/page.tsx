@@ -390,7 +390,7 @@ export default function TestsPage() {
                       }
                     >
                       <CardFooter
-                        className="flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
+                        className="absolute flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
                         style={{ borderRadius: 12 }}
                       >
                         <div className="w-full flex flex-col h-full">
