@@ -59,7 +59,7 @@ const TopicAccordions = ({
 }) => (
   <>
     {topics.map((topic, topicIndex) => (
-      <Card key={topicIndex} className="mb-4 select-none" shadow="none">
+      <Card key={topicIndex} className="mb-4 select-none rounded-3xl" shadow="none">
         <CardBody className="flex flex-col items-center bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900 rounded-3xl">
           <h2 className="text-lg font-semibold mb-4 mt-3">
             {t(`tests.topics.${topic.label}`)}
