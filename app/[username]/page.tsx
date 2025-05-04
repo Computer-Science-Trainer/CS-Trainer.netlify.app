@@ -201,7 +201,7 @@ export default function ProfilePage() {
                     <HeroLink
                       isExternal
                       aria-label="Telegram"
-                      color="foreground"
+                      className="text-default-500 hover:text-default-400 transition-colors"
                       href={`https://t.me/${profileUser.telegram}`}
                     >
                       <TelegramIcon size={20} />
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                     <HeroLink
                       isExternal
                       aria-label="GitHub"
-                      color="foreground"
+                      className="text-default-500 hover:text-default-400 transition-colors"
                       href={`https://github.com/${profileUser.github}`}
                     >
                       <GithubIcon size={24} />
@@ -221,7 +221,7 @@ export default function ProfilePage() {
                     <HeroLink
                       isExternal
                       aria-label="Website"
-                      color="foreground"
+                      className="text-default-500 hover:text-default-400 transition-colors"
                       href={`https://${profileUser.website}`}
                     >
                       <WebsiteIcon size={26} />
