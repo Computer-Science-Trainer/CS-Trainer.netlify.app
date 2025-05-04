@@ -420,7 +420,7 @@ export default function TestsPage() {
             ref={(el) => {
               if (el) sectionRefs.current[1] = el;
             }}
-            className="mb-8 scroll-mt-24"
+            className="scroll-mt-24"
           >
             <h1 className="text-2xl font-bold mb-4 flex justify-center">
               Создание собственного варианта
