@@ -113,6 +113,10 @@ const TopicAccordions = ({
                     title={
                       <div className="flex items-center gap-2">
                         <Checkbox
+                          isIndeterminate={
+                            acc.selectedOptions.length > 0 &&
+                            acc.selectedOptions.length < acc.options.length
+                          }
                           isSelected={acc.isSelected}
                           onValueChange={(isSelected) =>
                             onAccordionChange(topicIndex, accIndex, isSelected)
