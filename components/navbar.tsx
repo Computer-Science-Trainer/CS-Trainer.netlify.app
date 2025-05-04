@@ -147,9 +147,9 @@ export const Navbar = () => {
 
   return (
     <HeroUINavbar
-        maxWidth="xl"
-        style={{ position: "fixed" }} 
-        className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      maxWidth="xl"
+      style={{ position: "fixed" }}
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
