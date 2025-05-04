@@ -123,7 +123,6 @@ const TopicAccordions = ({
                     }
                   >
                     <CheckboxGroup
-                      label={t(`tests.topics.${acc.label}`)}
                       value={acc.selectedOptions}
                       onValueChange={(selected) =>
                         onCheckboxGroupChange(topicIndex, accIndex, selected)
