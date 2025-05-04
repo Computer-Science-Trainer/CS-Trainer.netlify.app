@@ -18,7 +18,7 @@ import {
 } from "@heroui/react";
 
 import { makeApiRequest } from "@/config/api";
-import QuestionForm from "./QuestionForm"; // Импорт нового компонента формы
+import QuestionForm from "../../components/tests/QuestionForm";
 import { useTranslations } from "next-intl";
 
 export interface AccordionState {
