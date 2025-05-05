@@ -26,7 +26,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Settings01Icon,
-  ArrowRight01Icon,
+  ArrowDown01Icon,
   Globe02Icon,
 } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
@@ -84,7 +84,7 @@ export const SettingsDropdown = () => {
         >
           <Dropdown
             closeOnSelect={false}
-            placement="right-start"
+            placement="bottom"
             shouldBlockScroll={false}
           >
             <DropdownTrigger
@@ -95,7 +95,7 @@ export const SettingsDropdown = () => {
                 <HugeiconsIcon icon={Globe02Icon} />
                 <span>Language</span>
                 <div className="ml-auto">
-                  <HugeiconsIcon icon={ArrowRight01Icon} />
+                  <HugeiconsIcon icon={ArrowDown01Icon} />
                 </div>
               </div>
             </DropdownTrigger>
@@ -216,6 +216,7 @@ export const Navbar = () => {
         )}
       </NavbarContent>
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
+        <SettingsDropdown />
         <NavbarMenuToggle onChange={setMenuOpen} />
       </NavbarContent>
 
