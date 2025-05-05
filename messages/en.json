@@ -94,11 +94,13 @@
             "title": {
                 "loginSuccess": "Success",
                 "verifySuccess": "Email Verified",
-                "changePasswordSuccess": "Password Changed"
+                "changePasswordSuccess": "Password Changed",
+                "codeResent": "Code Sent"
             },
             "loginSuccess": "You have successfully logged in",
             "verifySuccess": "Your email has been verified",
-            "changePasswordSuccess": "Your password has been changed successfully"
+            "changePasswordSuccess": "Your password has been changed successfully",
+            "codeResent": "A new code has been sent to your email"
         },
         "actions": {
             "signIn": "Sign In",
