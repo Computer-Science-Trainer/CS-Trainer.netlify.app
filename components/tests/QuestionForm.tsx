@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { TrashIcon } from "../icons";
+import { TrashIcon, DragHandleIcon } from "../icons";
 import {
   Form,
   Input,
@@ -85,14 +85,7 @@ function SortableChoice({
         style={{ touchAction: "none" }}
         tabIndex={-1}
       >
-        <svg fill="none" height={16} viewBox="0 0 18 18" width={16}>
-          <circle cx="5" cy="5" fill="#888" r="1.5" />
-          <circle cx="5" cy="9" fill="#888" r="1.5" />
-          <circle cx="5" cy="13" fill="#888" r="1.5" />
-          <circle cx="13" cy="5" fill="#888" r="1.5" />
-          <circle cx="13" cy="9" fill="#888" r="1.5" />
-          <circle cx="13" cy="13" fill="#888" r="1.5" />
-        </svg>
+        <DragHandleIcon />
       </div>
 
       <Input
