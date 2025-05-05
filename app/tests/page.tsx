@@ -315,6 +315,29 @@ export default function TestsPage() {
   const totalFI = countSelected(topicStates);
   const totalAS = countSelected(asTopicStates);
   const totalSelected = totalFI + totalAS;
+  // collect selected topic labels or sub-options for FI and AS
+  const selectedFI = topicStates.flatMap(topic =>
+    topic.accordions.flatMap(acc =>
+      acc.options.length === 0
+        ? acc.isSelected
+          ? [acc.label]
+          : []
+        : acc.selectedOptions.length === acc.options.length
+          ? [acc.label]
+          : acc.selectedOptions
+    )
+  );
+  const selectedAS = asTopicStates.flatMap(topic =>
+    topic.accordions.flatMap(acc =>
+      acc.options.length === 0
+        ? acc.isSelected
+          ? [acc.label]
+          : []
+        : acc.selectedOptions.length === acc.options.length
+          ? [acc.label]
+          : acc.selectedOptions
+    )
+  );
 
   const recommendedSubsAll = topicStates.flatMap((topic, tIdx) =>
     topic.accordions.map((acc, aIdx) => ({
@@ -328,6 +351,14 @@ export default function TestsPage() {
     windowWidth < 640
       ? recommendedSubsAll.slice(0, 3)
       : recommendedSubsAll.slice(0, 6);
+
+  // track which tab is active
+  const [activeTab, setActiveTab] = useState<'FI' | 'AS'>('FI');
+
+  // whenever the tab changes, clear all selections
+  useEffect(() => {
+    handleResetSelections();
+  }, [activeTab]);
 
   return (
     <section className="pt-4 flex lg:gap-6">
@@ -425,9 +456,15 @@ export default function TestsPage() {
             <h1 className="text-2xl font-bold mb-4 flex justify-center">
               Создание собственного варианта
             </h1>
-            <Tabs fullWidth size="md">
+            <Tabs
+                fullWidth
+                size="md"
+                selectedKey={activeTab}
+                onSelectionChange={(key) => setActiveTab(key as 'FI' | 'AS')}
+            >
               <Tab
                 key="FI"
+                value="FI"
                 title={
                   <>
                     <span className="block sm:hidden">ФИ</span>
@@ -455,6 +492,7 @@ export default function TestsPage() {
               </Tab>
               <Tab
                 key="AS"
+                value="AS"
                 title={
                   <>
                     <span className="block sm:hidden">АиСД</span>
@@ -497,23 +535,42 @@ export default function TestsPage() {
         </div>
       </aside>
       {/* Правая панель */}
-      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 self-start">
+      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
         <div>
           <Card isFooterBlurred className="border-none" radius="lg">
             <CardHeader className="flex flex-col justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
               <h2 className="text-lg font-semibold">Выбранные темы</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Всего тем: {totalSelected}
+                Всего тем: {activeTab === 'FI' ? totalFI : totalAS}
               </p>
             </CardHeader>
             <CardBody>
-              <div className="flex flex-col  gap-2">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  ФИ: {totalFI}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  АиСД: {totalAS}
-                </p>
+              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                {activeTab === 'FI' ? (
+                  selectedFI.length > 0 ? (
+                    <ul className="pl-4 list-disc text-sm text-gray-600 dark:text-gray-400">
+                      {selectedFI.map(l => (
+                        <li key={l}>{t(`tests.topics.${l}`)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Нет выбранных тем ФИ
+                    </p>
+                  )
+                ) : (
+                  selectedAS.length > 0 ? (
+                    <ul className="pl-4 list-disc text-sm text-gray-600 dark:text-gray-400">
+                      {selectedAS.map(l => (
+                        <li key={l}>{t(`tests.topics.${l}`)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Нет выбранных тем АиСД
+                    </p>
+                  )
+                )}
               </div>
               <div className="flex flex-col gap-2 mt-4">
                 <Button
