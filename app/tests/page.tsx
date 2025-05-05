@@ -365,7 +365,8 @@ export default function TestsPage() {
       {/* Левая панель */}
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
         <div className="relative flex flex-col items-start">
-          <div className="absolute inset-y-6 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
+          {/* линия теперь начинается на уровне нижнего края первого кружочка (16px) и заканчивается на уровне верхнего края последнего кружочка */}
+          <div className="absolute top-4 bottom-5 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
           {[
             "Рекомендованное Вам",
             "Создание собственного варианта",
@@ -373,13 +374,29 @@ export default function TestsPage() {
           ].map((label, idx) => (
             <button
               key={label}
-              className={`relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg" : ""}`}
+              className={`relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left ${
+                idx === currentIndex
+                  ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg"
+                  : ""
+              }`}
               onClick={() => scrollToSection(idx)}
             >
-            <div className={`z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${idx === currentIndex ? "border-blue-500 bg-blue-500 animate-ping-slow" : "border-gray-300 bg-white dark:bg-gray-700"}`} />
-            <span className={`text-sm transition-colors ${idx === currentIndex ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-400"}`} >
-              {label}
-            </span>
+              <div
+                className={`z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
+                  idx === currentIndex
+                    ? "border-blue-500 bg-blue-500 animate-ping-slow"
+                    : "border-gray-300 bg-white dark:bg-gray-700"
+                }`}
+              />
+              <span
+                className={`text-sm transition-colors ${
+                  idx === currentIndex
+                    ? "text-black dark:text-white font-semibold"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {label}
+              </span>
             </button>
           ))}
         </div>
