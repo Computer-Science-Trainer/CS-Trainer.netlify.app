@@ -551,7 +551,7 @@ export default function TestsPage() {
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
         <div className="group">
           <Card className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2" radius="lg">
-            <CardHeader className="flex flex-col justify-center gap-2 border-b-3 border-gray-200 dark:border-zinc-800 p-6">
+            <CardHeader className="flex flex-col justify-center gap-2 border-b-3 border-gray-200 dark:border-zinc-800 p-6 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:to-slate-900">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Выбранные темы</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">Всего тем: {activeTab === 'FI' ? totalFI : totalAS}</p>
             </CardHeader>
@@ -631,7 +631,8 @@ export default function TestsPage() {
           <div className="absolute inset-x-0 bottom-0 z-20">
               <Button
                 variant="solid"
-                className="w-full h-16 rounded-t-2xl rounded-b-3xl border-3 dark:border-zinc-800 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:to-slate-900 font-bold text-lg shadow-none"
+                className="w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none"
+                color="primary"
                 onMouseEnter={() => setIsGenerateHovered(true)}
                 onMouseLeave={() => setIsGenerateHovered(false)}
                 // onPress={handleStartTest}
