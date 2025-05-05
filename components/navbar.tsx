@@ -133,6 +133,7 @@ export const SettingsDropdown = () => {
 
 export const Navbar = () => {
   const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -150,6 +151,8 @@ export const Navbar = () => {
       className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       maxWidth="xl"
       style={{ position: "fixed" }}
+      isMenuOpen={menuOpen}
+      onMenuOpenChange={setMenuOpen}
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
@@ -213,7 +216,7 @@ export const Navbar = () => {
         )}
       </NavbarContent>
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <NavbarMenuToggle className="" />
+        <NavbarMenuToggle onChange={setMenuOpen} />
       </NavbarContent>
 
       <NavbarMenu>
@@ -229,7 +232,12 @@ export const Navbar = () => {
 
             return (
               <NavbarMenuItem key={`${item.label}-${index}`}>
-                <Link color="foreground" href={href} size="lg">
+                <Link
+                  color="foreground"
+                  href={href}
+                  size="lg"
+                  onPress={() => setMenuOpen(false)}
+                >
                   {t(item.label)}
                 </Link>
               </NavbarMenuItem>
@@ -237,7 +245,15 @@ export const Navbar = () => {
           })}
           {!user && (
             <NavbarMenuItem>
-              <Link color="primary" href="#" size="lg" onPress={onOpen}>
+              <Link
+                color="primary"
+                href="#"
+                size="lg"
+                onPress={() => {
+                  setMenuOpen(false);
+                  onOpen();
+                }}
+              >
                 {t("nav.login")}
               </Link>
             </NavbarMenuItem>
