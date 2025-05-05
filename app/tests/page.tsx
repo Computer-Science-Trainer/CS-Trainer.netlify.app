@@ -417,7 +417,7 @@ export default function TestsPage() {
                     <Card
                       key={idx}
                       isPressable
-                      className="group regroup lagroup tigroup ve overflow-hidden bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 rounded-b-3xl shadow-none"
+                      className="group bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 rounded-b-3xl shadow-none"
                       shadow="none"
                       style={{
                         minHeight: 220,
