@@ -186,6 +186,7 @@ export default function TestsPage() {
   const [topicStates, setTopicStates] = useState<TopicState[]>([]);
   const [asTopicStates, setAsTopicStates] = useState<TopicState[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isGenerateHovered, setIsGenerateHovered] = useState(false);
   const windowWidth = useWindowWidth();
   const isCompact = windowWidth < 640;
 
@@ -363,10 +364,9 @@ export default function TestsPage() {
   return (
     <section className="pt-4 flex lg:gap-6">
       {/* Левая панель */}
-      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
-        <div className="relative flex flex-col items-start">
-          {/* линия теперь начинается на уровне нижнего края первого кружочка (16px) и заканчивается на уровне верхнего края последнего кружочка */}
-          <div className="absolute top-4 bottom-5 left-2 w-[2px] bg-gray-300 dark:bg-gray-600 z-0" />
+      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit border-3 p-4 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900">
+        <div className="relative flex flex-col items-start ">
+          <div className="absolute inset-y-4 left-3.5 w-[4px] bg-gray-300 dark:bg-gray-600 bottom-5" />
           {[
             "Рекомендованное Вам",
             "Создание собственного варианта",
@@ -374,11 +374,7 @@ export default function TestsPage() {
           ].map((label, idx) => (
             <button
               key={label}
-              className={`relative flex items-center gap-3 mb-4 transition-colors transition-shadow duration-150 text-left ${
-                idx === currentIndex
-                  ? "bg-gray-100 dark:bg-gray-800 p-2 rounded-lg"
-                  : ""
-              }`}
+              className={`relative flex items-center gap-3 mt-2 mb-2 transition-colors transition-shadow duration-150 text-left pl-2 rounded-lg ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2" : ""}`}
               onClick={() => scrollToSection(idx)}
             >
               <div
@@ -414,15 +410,15 @@ export default function TestsPage() {
             <h1 className="text-2xl font-bold flex justify-center">
               Рекомендованные тесты
             </h1>
-            <Card className="mb-4 mt-4">
+            <Card className="mb-4 mt-4 rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
               <CardBody className="flex flex-col">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 p-2 w-full">
                   {recommendedSubs.map((sub, idx) => (
                     <Card
                       key={idx}
                       isPressable
-                      className="group relative overflow-hidden cursor-pointer p-0 bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 transition-shadow duration-200 hover:shadow-lg min-h-[220px] w-full max-w-[340px] mx-auto rounded-b-2xl"
-                      shadow="sm"
+                      className="group regroup lagroup tigroup ve overflow-hidden bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 rounded-b-3xl shadow-none"
+                      shadow="none"
                       style={{
                         minHeight: 220,
                         width: "100%",
@@ -553,63 +549,96 @@ export default function TestsPage() {
       </aside>
       {/* Правая панель */}
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
-        <div>
-          <Card isFooterBlurred className="border-none" radius="lg">
-            <CardHeader className="flex flex-col justify-center gap-2 bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900">
-              <h2 className="text-lg font-semibold">Выбранные темы</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Всего тем: {activeTab === 'FI' ? totalFI : totalAS}
-              </p>
+        <div className="group">
+          <Card className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2" radius="lg">
+            <CardHeader className="flex flex-col justify-center gap-2 rounded-3xl border-b-3 border-gray-200 dark:border-zinc-800 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Выбранные темы</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Всего тем: {activeTab === 'FI' ? totalFI : totalAS}</p>
             </CardHeader>
-            <CardBody>
-              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                {activeTab === 'FI' ? (
-                  selectedFI.length > 0 ? (
-                    <ul className="pl-4 list-disc text-sm text-gray-600 dark:text-gray-400">
-                      {selectedFI.map(l => (
-                        <li key={l}>{t(`tests.topics.${l}`)}</li>
-                      ))}
-                    </ul>
+            <CardBody className="p-2 mb-2">
+              <div className="flex flex-col h-[9rem] bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
+                <div className="flex-1 overflow-y-auto">
+                  {activeTab === 'FI' ? (
+                    selectedFI.length > 0 ? (
+                      <ul className="p-3 list-disc text-sm text-gray-700 dark:text-gray-200">
+                        {selectedFI.map(l => (
+                          <li key={l} className="truncate">{t(`tests.topics.${l}`)}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="p-3 text-sm text-gray-400 italic">Нет выбранных тем ФИ</p>
+                    )
                   ) : (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Нет выбранных тем ФИ
-                    </p>
-                  )
-                ) : (
-                  selectedAS.length > 0 ? (
-                    <ul className="pl-4 list-disc text-sm text-gray-600 dark:text-gray-400">
-                      {selectedAS.map(l => (
-                        <li key={l}>{t(`tests.topics.${l}`)}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Нет выбранных тем АиСД
-                    </p>
-                  )
+                    selectedAS.length > 0 ? (
+                      <ul className="p-3 list-disc text-sm text-gray-700 dark:text-gray-200">
+                        {selectedAS.map(l => (
+                          <li key={l} className="truncate">{t(`tests.topics.${l}`)}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="p-3 text-sm text-gray-400 italic">Нет выбранных тем АиСД</p>
+                    )
+                  )}
+                </div>
+                {((activeTab === 'FI' && selectedFI.length > 0) || (activeTab === 'AS' && selectedAS.length > 0)) && (
+                  <div className="mt-auto p-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full"
+                      onPress={handleResetSelections}
+                    >
+                      Сбросить
+                    </Button>
+                  </div>
                 )}
               </div>
-              <div className="flex flex-col gap-2 mt-4">
-                <Button
-                    className="w-full font-semibold"
-                    color="primary"
-                    radius="lg"
-                    size="lg"
-                    variant="shadow"
-                >
-                    Генерация варианта
-                </Button>
-                <Button
-                    radius="lg"
-                    size="sm"
-                    variant="light"
-                    onPress={handleResetSelections}
-                >
-                    Сбросить
-                </Button>
-              </div>
             </CardBody>
+            <div className="mb-11"/>
+            <CardFooter
+                className={`absolute z-10 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? 'translate-y-0' : 'translate-y-[82%]'}`}
+                style={{ borderRadius: 12 }}
+                >
+                <div className="relative rounded-2xl w-full flex flex-col h-full">
+                    <div className="w-full flex flex-col absolute justify-center items-center transition-all duration-300 mt-8">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <span className="text-base font-bold text-gray-900 dark:text-white transition-colors">
+                                Генерация варианта
+                            </span>
+                            <div className="mt-3 w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-1 text-[15px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">Кол-во вопросов:</span>
+                                <span className="ml-auto font-mono text-primary">20</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">Время:</span>
+                                <span className="ml-auto font-mono text-primary">60 минут</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">Макс. балл:</span>
+                                <span className="ml-auto font-mono text-primary">100</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">Раздел:</span>
+                                <span className="ml-auto font-mono text-primary">{activeTab === 'FI' ? 'ФИ' : 'АиСД'}</span>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </CardFooter>
           </Card>
+          <div className="absolute inset-x-0 bottom-0 z-20">
+              <Button
+                variant="solid"
+                className="w-full h-16 rounded-t-2xl rounded-b-3xl border-3 dark:border-zinc-800 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:to-slate-900 font-bold text-lg shadow-none"
+                onMouseEnter={() => setIsGenerateHovered(true)}
+                onMouseLeave={() => setIsGenerateHovered(false)}
+                // onPress={handleStartTest}
+            >
+                Начать тест
+              </Button>
+          </div>
         </div>
       </aside>
     </section>
