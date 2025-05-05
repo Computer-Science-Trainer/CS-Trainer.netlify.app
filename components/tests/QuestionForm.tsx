@@ -49,6 +49,7 @@ function SortableChoice({
   onRemove,
   dragHandleProps,
   inputRef,
+  isDisabled, // добавляем проп
 }: {
   id: string;
   value: string;
@@ -56,6 +57,7 @@ function SortableChoice({
   onRemove: () => void;
   dragHandleProps?: any;
   inputRef?: React.Ref<HTMLInputElement>;
+  isDisabled?: boolean; // добавляем типизацию
 }) {
   const {
     attributes,
@@ -106,6 +108,7 @@ function SortableChoice({
         type="button"
         variant="flat"
         onPress={onRemove}
+        isDisabled={isDisabled} // используем проп
       >
         <TrashIcon />
       </Button>
@@ -189,24 +192,19 @@ export default function QuestionForm() {
         data.questionType,
       )
     ) {
-      if (data.questionType === "single-choice") {
-        if ((data.options || []).length < 2) {
-          newErrors.correctAnswer = "Укажите хотя бы два варианта ответа";
-        } else if (singleAnswerIndex === null) {
-          newErrors.correctAnswer = "Выберите правильный вариант";
-        }
+      if (filledOptions.length < 2) {
+        newErrors.options = "Укажите минимум два варианта ответа";
       }
 
-      if (data.questionType === "multiple-choice") {
-        if ((data.options || []).length < 2) {
-          newErrors.correctAnswers = "Укажите хотя бы два варианта ответа";
-        } else if (multipleAnswerIndices.length === 0) {
-          newErrors.correctAnswers = "Выберите правильные варианты";
-        }
+      if (data.questionType === "single-choice" && singleAnswerIndex === null) {
+        newErrors.correctAnswer = "Выберите правильный вариант";
       }
 
-      if (data.questionType === "ordering" && (data.options || []).length < 2) {
-        newErrors.correctAnswer = "Укажите хотя бы два варианта ответа";
+      if (
+        data.questionType === "multiple-choice" &&
+        multipleAnswerIndices.length === 0
+      ) {
+        newErrors.correctAnswers = "Выберите правильные варианты";
       }
     }
 
@@ -310,65 +308,61 @@ export default function QuestionForm() {
 
           {/* Списки вариантов */}
           {["single-choice", "multiple-choice"].includes(questionType) && (
-            <div className="flex flex-col gap-3 items-center justify-center w-full">
+            <div className="flex flex-col gap-3 items-center w-full">
               <p className="font-medium text-center w-full">Варианты ответа</p>
               <div className="flex flex-col gap-2 items-center w-full">
                 {answerOptions.map((o, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-1 w-full justify-center"
-                  >
-                    {questionType === "single-choice" && (
-                      <Checkbox
-                        aria-label="Выбрать правильный вариант"
-                        isDisabled={
-                          singleAnswerIndex !== null && singleAnswerIndex !== i
-                        }
-                        isSelected={singleAnswerIndex === i}
-                        onValueChange={(checked) =>
-                          setSingleAnswerIndex(checked ? i : null)
-                        }
+                  <React.Fragment key={i}>
+                    <div className="flex items-center gap-1 w-full justify-center">
+                      {questionType === "single-choice" && (
+                        <Checkbox
+                          aria-label="Выбрать правильный вариант"
+                          isDisabled={
+                            singleAnswerIndex !== null && singleAnswerIndex !== i
+                          }
+                          isSelected={singleAnswerIndex === i}
+                          onValueChange={(checked) =>
+                            setSingleAnswerIndex(checked ? i : null)
+                          }
+                        />
+                      )}
+                      {questionType === "multiple-choice" && (
+                        <Checkbox
+                          aria-label="Отметить правильный вариант"
+                          isSelected={multipleAnswerIndices.includes(i)}
+                          onValueChange={(checked) =>
+                            setMultipleAnswerIndices((prev) =>
+                              checked
+                                ? [...prev, i]
+                                : prev.filter((idx) => idx !== i),
+                            )
+                          }
+                        />
+                      )}
+                      <Input
+                        className="flex-1 max-w-md"
+                        name="options"
+                        placeholder={`Вариант ${i + 1}`}
+                        value={o}
+                        onChange={(e) => handleUpdateOption(i, e.target.value)}
                       />
-                    )}
-                    {questionType === "multiple-choice" && (
-                      <Checkbox
-                        aria-label="Отметить правильный вариант"
-                        isSelected={multipleAnswerIndices.includes(i)}
-                        onValueChange={(checked) => {
-                          setMultipleAnswerIndices((prev) =>
-                            checked
-                              ? [...prev, i]
-                              : prev.filter((idx) => idx !== i),
-                          );
-                        }}
-                      />
-                    )}
-                    <Input
-                      className="flex-1 max-w-md"
-                      name="options"
-                      placeholder={`Вариант ${i + 1}`}
-                      value={o}
-                      onChange={(e) => handleUpdateOption(i, e.target.value)}
-                    />
-                    <Button
-                      isIconOnly
-                      aria-label="Удалить вариант"
-                      className="transition-none"
-                      color="danger"
-                      type="button"
-                      variant="flat"
-                      onPress={() => handleRemoveOption(i)}
-                    >
-                      <TrashIcon />
-                    </Button>
-                  </div>
+                      <Button
+                        isIconOnly
+                        aria-label="Удалить вариант"
+                        className="transition-none"
+                        color="danger"
+                        type="button"
+                        variant="flat"
+                        onPress={() => handleRemoveOption(i)}
+                        isDisabled={i < 2}
+                      >
+                        <TrashIcon />
+                      </Button>
+                    </div>
+                  </React.Fragment>
                 ))}
               </div>
-              <Button
-                className="self-center"
-                type="button"
-                onPress={handleAddOption}
-              >
+              <Button className="self-center" type="button" onPress={handleAddOption}>
                 Добавить вариант ответа
               </Button>
             </div>
@@ -376,27 +370,22 @@ export default function QuestionForm() {
 
           {/* DND для упорядочивания */}
           {questionType === "ordering" && (
-            <div className="flex flex-col gap-3 items-center justify-center w-full">
-              <p className="font-medium text-center w-full">
-                Упорядочите ответы
-              </p>
-              <div className="flex flex-col gap-2 items-center w-full">
-                <DndContext
-                  collisionDetection={closestCenter}
-                  modifiers={[restrictToVerticalAxis]}
-                  sensors={sensors}
-                  onDragEnd={handleDragEnd}
+            <div className="flex flex-col gap-3 items-center w-full">
+              <p className="font-medium text-center w-full">Упорядочите ответы</p>
+              <DndContext
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis]}
+                sensors={sensors}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={answerOptions.map((_, i) => `opt-${i}`)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <SortableContext
-                    items={answerOptions.map((_, i) => `opt-${i}`)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="flex flex-col gap-2 items-center w-full">
-                      {answerOptions.map((o, i) => (
-                        <div
-                          key={`opt-${i}`}
-                          className="flex items-center gap-1 w-full max-w-md justify-center"
-                        >
+                  <div className="flex flex-col gap-2 items-center w-full">
+                    {answerOptions.map((o, i) => (
+                      <React.Fragment key={`opt-${i}`}>
+                        <div className="flex items-center gap-1 w-full max-w-md justify-center">
                           <SortableChoice
                             dragHandleProps={{ tabIndex: 0 }}
                             id={`opt-${i}`}
@@ -404,70 +393,18 @@ export default function QuestionForm() {
                             value={o}
                             onChange={(val) => handleUpdateOption(i, val)}
                             onRemove={() => handleRemoveOption(i)}
+                            isDisabled={i < 2} // передаем проп
                           />
                         </div>
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              </div>
-              <Button
-                className="self-center"
-                type="button"
-                onPress={handleAddOption}
-              >
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              <Button className="self-center" type="button" onPress={handleAddOption}>
                 Добавить вариант ответа
               </Button>
-              {validationErrors.options && (
-                <span className="text-danger text-small">
-                  {validationErrors.options}
-                </span>
-              )}
             </div>
-          )}
-
-          {/* Additional fields for SINGLE, MULTIPLE, ORDERING */}
-          {questionType === "single-choice" && (
-            <Input
-              isRequired
-              readOnly
-              errorMessage={validationErrors.correctAnswer}
-              label="Правильный вариант"
-              labelPlacement="outside"
-              name="correctAnswer"
-              placeholder="Выберите правильный вариант"
-              value={
-                singleAnswerIndex !== null
-                  ? answerOptions[singleAnswerIndex]
-                  : ""
-              }
-            />
-          )}
-          {questionType === "multiple-choice" && (
-            <Input
-              isRequired
-              readOnly
-              errorMessage={validationErrors.correctAnswers}
-              label="Правильные варианты"
-              labelPlacement="outside"
-              name="correctAnswers"
-              placeholder="Укажите правильные варианты"
-              value={multipleAnswerIndices
-                .map((i) => answerOptions[i])
-                .join(", ")}
-            />
-          )}
-          {questionType === "ordering" && (
-            <Input
-              isRequired
-              readOnly
-              errorMessage={validationErrors.correctAnswer}
-              label="Правильный порядок"
-              labelPlacement="outside"
-              name="correctOrder"
-              placeholder="Укажите правильный порядок"
-              value={answerOptions.join(", ")}
-            />
           )}
 
           {/* Field for OPEN-ENDED */}
@@ -482,6 +419,7 @@ export default function QuestionForm() {
             />
           )}
 
+          {/* Единый чекбокс согласия */}
           <Checkbox
             isRequired
             isInvalid={!!validationErrors.terms}
