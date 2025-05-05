@@ -93,12 +93,14 @@
         "success": {
             "title": {
                 "loginSuccess": "Успешно",
-                "verifySuccess": "Email подтвержден",
-                "changePasswordSuccess": "Пароль изменен"
+                "verifySuccess": "Email подтверждён",
+                "changePasswordSuccess": "Пароль изменён",
+                "codeResent": "Код отправлен"
             },
             "loginSuccess": "Вы успешно вошли в систему",
-            "verifySuccess": "Ваш email успешно подтвержден",
-            "changePasswordSuccess": "Ваш пароль был успешно изменен"
+            "verifySuccess": "Ваш email успешно подтверждён",
+            "changePasswordSuccess": "Ваш пароль был успешно изменён",
+            "codeResent": "Новый код был отправлен на вашу почту"
         },
         "actions": {
             "signIn": "Войти",

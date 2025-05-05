@@ -470,7 +470,7 @@ export default function AuthWindow({
 
   const handleResendCode = async () => {
     setIsLoading(true);
-    const code_type = authState === AuthState.Verify ? "verify" : "recover";
+    const code_type = authState === AuthState.Verify ? "verification" : "recover";
 
     try {
       await makeApiRequest(
