@@ -31,6 +31,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 interface SubmittedData {
   questionText: string;
   questionType: string;
+  difficulty: string;
   options?: string[];
   correctAnswer?: string;
   correctAnswers?: string;
@@ -133,6 +134,8 @@ export default function QuestionForm() {
   const [validationErrors, setValidationErrors] = useState<FormErrors>({});
   // State for the selected question type
   const [questionType, setQuestionType] = useState("");
+  // State for the selected difficulty level
+  const [difficulty, setDifficulty] = useState<string>("");
   // Dynamic list of answer options
   const [answerOptions, setAnswerOptions] = useState<string[]>([]);
   // Index of selected answer in single-choice mode
@@ -217,6 +220,7 @@ export default function QuestionForm() {
     const data = {
       questionText: formData.get("questionText") as string,
       questionType: formData.get("questionType") as string,
+      difficulty: formData.get("difficulty") as string,
       options: filledOptions,
       correctAnswer: formData.get("correctAnswer") as string | undefined,
       correctAnswers: formData.get("correctAnswers") as string | undefined,
@@ -309,6 +313,7 @@ export default function QuestionForm() {
   const handleReset = () => {
     setSubmission(null);
     setQuestionType("");
+    setDifficulty("");
     setAnswerOptions([]);
     setValidationErrors({});
     setSingleAnswerIndex(null);
@@ -342,22 +347,50 @@ export default function QuestionForm() {
             minRows={5}
           />
 
-          {/* Dropdown selector for question type */}
-          <Select
-            isRequired
-            label="Тип вопроса"
-            name="questionType"
-            placeholder="Выберите тип вопроса"
-            value={questionType}
-            onSelectionChange={handleTypeChange}
-          >
-            <SelectItem key="single-choice">С выбором одного ответа</SelectItem>
-            <SelectItem key="multiple-choice">
-              С множественным выбором
-            </SelectItem>
-            <SelectItem key="ordering">С упорядочиванием ответов</SelectItem>
-            <SelectItem key="open-ended">С развернутым ответом</SelectItem>
-          </Select>
+            {/* Select question type and difficulty */}
+            <div className="flex gap-2 w-full">
+            {/* Question type */}
+            <div className="flex-1">
+              <Select
+              isRequired
+              label="Тип вопроса"
+              name="questionType"
+              placeholder="Выберите тип вопроса"
+              value={questionType}
+              onSelectionChange={handleTypeChange}
+              >
+              <SelectItem key="single-choice">
+                С выбором одного ответа
+              </SelectItem>
+              <SelectItem key="multiple-choice">
+                С множественным выбором
+              </SelectItem>
+              <SelectItem key="ordering">
+                С упорядочиванием ответов
+              </SelectItem>
+              <SelectItem key="open-ended">С развернутым ответом</SelectItem>
+              </Select>
+            </div>
+
+            {/* Question difficulty */}
+            <div className="flex-1">
+              <Select
+              isRequired
+              label="Сложность"
+              name="difficulty"
+              placeholder="Выберите сложность"
+              value={difficulty}
+              onSelectionChange={(sel) => {
+                const key = Array.isArray(sel) ? sel[0] : sel.currentKey;
+                setDifficulty(key || "");
+              }}
+              >
+              <SelectItem key="easy">Простая</SelectItem>
+              <SelectItem key="medium">Средняя</SelectItem>
+              <SelectItem key="hard">Сложная</SelectItem>
+              </Select>
+            </div>
+            </div>
 
           {/* Render answer choices for single/multiple choice questions */}
           {["single-choice", "multiple-choice"].includes(questionType) && (
