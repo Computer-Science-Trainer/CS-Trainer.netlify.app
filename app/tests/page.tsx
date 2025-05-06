@@ -15,10 +15,16 @@ import {
   Tab,
   Spinner,
   addToast,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import QuestionForm from "../../components/tests/QuestionForm";
+import { SelectedTopics } from "../../components/SelectedTopics";
 
 import { makeApiRequest } from "@/config/api";
 
@@ -187,6 +193,7 @@ export default function TestsPage() {
   const [asTopicStates, setAsTopicStates] = useState<TopicState[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerateHovered, setIsGenerateHovered] = useState(false);
+  const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const windowWidth = useWindowWidth();
   const isCompact = windowWidth < 640;
 
@@ -556,47 +563,15 @@ export default function TestsPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400">Всего тем: {activeTab === 'FI' ? totalFI : totalAS}</p>
             </CardHeader>
             <CardBody className="p-2 mb-2">
-              <div className="flex flex-col h-[10rem] bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
-                <div className="flex-1 overflow-y-auto">
-                  {activeTab === 'FI' ? (
-                    selectedFI.length > 0 ? (
-                      <ul className="p-3 list-disc text-sm text-gray-700 dark:text-gray-200">
-                        {selectedFI.map(l => (
-                          <li key={l} className="truncate">{t(`tests.topics.${l}`)}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="p-3 text-sm text-gray-400 italic">Нет выбранных тем ФИ</p>
-                    )
-                  ) : (
-                    selectedAS.length > 0 ? (
-                      <ul className="p-3 list-disc text-sm text-gray-700 dark:text-gray-200">
-                        {selectedAS.map(l => (
-                          <li key={l} className="truncate">{t(`tests.topics.${l}`)}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="p-3 text-sm text-gray-400 italic">Нет выбранных тем АиСД</p>
-                    )
-                  )}
-                </div>
-                {((activeTab === 'FI' && selectedFI.length > 0) || (activeTab === 'AS' && selectedAS.length > 0)) && (
-                  <div className="mt-auto p-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full"
-                      onPress={handleResetSelections}
-                    >
-                      Сбросить
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <SelectedTopics
+                topics={activeTab === 'FI' ? selectedFI : selectedAS}
+                emptyLabel={activeTab === 'FI' ? 'Нет выбранных тем ФИ' : 'Нет выбранных тем АиСД'}
+                onReset={handleResetSelections}
+                    />
             </CardBody>
             <div className="mb-11"/>
             <CardFooter
-                className={`absolute z-10 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? 'translate-y-0' : 'translate-y-[82%]'}`}
+                className={`absolute z-10 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? 'translate-y-0' : 'translate-y-[85%]'}`}
                 style={{ borderRadius: 12 }}
                 >
                 <div className="relative rounded-2xl w-full flex flex-col h-full">
@@ -631,8 +606,9 @@ export default function TestsPage() {
           <div className="absolute inset-x-0 bottom-0 z-20">
               <Button
                 variant="solid"
-                className="w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none hover:!opacity-100 hover:!bg-blue-450 hover:dark:!bg-blue-450-dark"
+                className={`w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none !opacity-100 hover:!bg-blue-450 hover:dark:!bg-blue-450-dark ${totalSelected === 0 ? 'bg-gray-300 text-gray-500 dark:bg-zinc-800 dark:text-gray-400 cursor-not-allowed' : ''}`}
                 color="primary"
+                isDisabled={totalSelected === 0}
                 onMouseEnter={() => setIsGenerateHovered(true)}
                 onMouseLeave={() => setIsGenerateHovered(false)}
                 // onPress={handleStartTest}
@@ -642,6 +618,83 @@ export default function TestsPage() {
           </div>
         </div>
       </aside>
+      {/* Mobile Start Test Button (visible on small screens) */}
+      {totalSelected !== 0 && (
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-20 p-4">
+        <Card className="rounded-3xl shadow-none border-3 dark:border-zinc-800">
+            <span className="text-lg font-semibold text-center mb-2 mt-2">
+                Выбрано тем: {totalSelected}
+            </span>
+            <Button
+                variant="solid"
+                className="w-full h-16 rounded-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none"
+                color="primary"
+                onPress={() => setMobileModalOpen(true)}
+                >
+                Генерация варианта
+            </Button>
+        </Card>
+      </div>
+     )}
+      {/* Mobile Modal for generation info */}
+      <Modal
+        isOpen={mobileModalOpen}
+        placement="center"
+        size="md"
+        onOpenChange={setMobileModalOpen}
+      >
+        <ModalContent className="m-6">
+          <ModalHeader className="text-lg font-semibold text-center">Генерация варианта</ModalHeader>
+          <ModalBody>
+            <div className="flex flex-col items-center gap-4 mt-2">
+              <div className="w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-2 text-base text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Кол-во вопросов:</span>
+                  <span className="font-mono text-primary">20</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Время:</span>
+                  <span className="font-mono text-primary">60 минут</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Макс. балл:</span>
+                  <span className="font-mono text-primary">100</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Раздел:</span>
+                  <span className="font-mono text-primary">{activeTab === 'FI' ? 'ФИ' : 'АиСД'}</span>
+                </div>
+              </div>
+              {/* Unified SelectedTopics component */}
+              <div className="w-full">
+                <SelectedTopics
+                  topics={activeTab === 'FI' ? selectedFI : selectedAS}
+                  emptyLabel={activeTab === 'FI' ? 'Нет выбранных тем ФИ' : 'Нет выбранных тем АиСД'}
+                  onReset={() => {
+                    handleResetSelections();
+                    setMobileModalOpen(false);
+                  }}
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onPress={() => setMobileModalOpen(false)}>
+              Закрыть
+            </Button>
+            <Button
+                variant="solid"
+                color="primary"
+                isDisabled={totalSelected === 0}
+                onMouseEnter={() => setIsGenerateHovered(true)}
+                onMouseLeave={() => setIsGenerateHovered(false)}
+                // onPress={handleStartTest}
+            >
+                Начать тест
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </section>
   );
 }
