@@ -9,6 +9,12 @@ const config = {
   ],
   theme: {
     extend: {
+      colors: {
+        blue: {
+          450: '#478CF3',
+        },
+        'blue-450-dark': '#0364D5',
+      },
       fontFamily: {
         sans: ["var(--font-sans)"],
         mono: ["var(--font-mono)"],

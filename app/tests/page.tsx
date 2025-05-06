@@ -410,14 +410,14 @@ export default function TestsPage() {
             <h1 className="text-2xl font-bold flex justify-center">
               Рекомендованные тесты
             </h1>
-            <Card className="mb-4 mt-4 rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
+            <Card className="mb-4 mt-4 p-2 rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
               <CardBody className="flex flex-col">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 p-2 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {recommendedSubs.map((sub, idx) => (
                     <Card
                       key={idx}
                       isPressable
-                      className="group bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 rounded-b-3xl shadow-none"
+                      className="group mx-auto bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 rounded-b-3xl shadow-none"
                       shadow="none"
                       style={{
                         minHeight: 220,
@@ -556,7 +556,7 @@ export default function TestsPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400">Всего тем: {activeTab === 'FI' ? totalFI : totalAS}</p>
             </CardHeader>
             <CardBody className="p-2 mb-2">
-              <div className="flex flex-col h-[9rem] bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
+              <div className="flex flex-col h-[10rem] bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
                 <div className="flex-1 overflow-y-auto">
                   {activeTab === 'FI' ? (
                     selectedFI.length > 0 ? (
@@ -631,7 +631,7 @@ export default function TestsPage() {
           <div className="absolute inset-x-0 bottom-0 z-20">
               <Button
                 variant="solid"
-                className="w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none"
+                className="w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none hover:!opacity-100 hover:!bg-blue-450 hover:dark:!bg-blue-450-dark"
                 color="primary"
                 onMouseEnter={() => setIsGenerateHovered(true)}
                 onMouseLeave={() => setIsGenerateHovered(false)}
