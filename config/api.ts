@@ -103,9 +103,15 @@ export async function makeApiRequest(
 
   // Handle empty responses (e.g., DELETE or 204 No Content)
   const contentType = res.headers.get("Content-Type");
-  if (res.status === 204 || !contentType || !contentType.includes("application/json")) {
+
+  if (
+    res.status === 204 ||
+    !contentType ||
+    !contentType.includes("application/json")
+  ) {
     return null;
   }
+
   return res.json();
 }
 

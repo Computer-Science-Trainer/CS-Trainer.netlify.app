@@ -14,6 +14,7 @@ export const SelectedTopics: React.FC<SelectedTopicsProps> = ({
   onReset,
 }) => {
   const t = useTranslations();
+
   return (
     <div className="flex flex-col h-[10rem] bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
       <div className="flex-1 overflow-y-auto">
@@ -31,7 +32,12 @@ export const SelectedTopics: React.FC<SelectedTopicsProps> = ({
       </div>
       {topics.length > 0 && (
         <div className="mt-auto p-2">
-          <Button variant="ghost" size="sm" className="w-full" onPress={onReset}>
+          <Button
+            className="w-full"
+            size="sm"
+            variant="ghost"
+            onPress={onReset}
+          >
             Сбросить
           </Button>
         </div>

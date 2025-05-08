@@ -448,6 +448,7 @@
             "errors": {
                 "questionRequired": "Введите текст вопроса",
                 "typeRequired": "Выберите тип вопроса",
+                "topicRequired": "Выберите тему из списка",
                 "optionsMin": "Укажите минимум два варианта ответа",
                 "optionsFillAll": "Заполните все поля вариантов ответа",
                 "correctAnswerRequired": "Выберите правильный вариант",

@@ -51,7 +51,7 @@ export default function Leaderboard() {
 
   // Define current user id.
   const currentUserId = user?.id ?? -1;
-  
+
   // Component state for search filter, current topic, pagination, and sorting.
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedTopic, setSelectedTopic] = React.useState<
