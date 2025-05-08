@@ -405,6 +405,13 @@ export default function TestsPage() {
     handleResetSelections();
   }, [activeTab]);
 
+  // Вынесены ключи локализации для левого меню
+  const sectionLabels = [
+    t("tests.leftNav.recommended"),
+    t("tests.leftNav.custom"),
+    t("tests.leftNav.suggest"),
+  ];
+
   // Render main layout: left nav, central content, right panel
   return (
     <section className="pt-4 flex lg:gap-6">
@@ -412,13 +419,9 @@ export default function TestsPage() {
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit border-3 p-4 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900">
         <div className="relative flex flex-col items-start ">
           <div className="absolute inset-y-4 left-3.5 w-[4px] bg-gray-300 dark:bg-gray-600 bottom-5" />
-          {[
-            "Рекомендованное Вам",
-            "Создание собственного варианта",
-            "Предложить вопрос",
-          ].map((label, idx) => (
+          {sectionLabels.map((label, idx) => (
             <button
-              key={label}
+              key={idx}
               className={`relative flex items-center gap-3 mt-2 mb-2 transition-colors transition-shadow duration-150 text-left pl-2 rounded-lg ${idx === currentIndex ? "bg-gray-100 dark:bg-gray-800 p-2" : ""}`}
               onClick={() => scrollToSection(idx)}
             >
@@ -453,7 +456,7 @@ export default function TestsPage() {
             className="mb-8 scroll-mt-24"
           >
             <h1 className="text-2xl font-bold flex justify-center">
-              Рекомендованные тесты
+              {t("tests.labels.recommendedTests")}
             </h1>
             <Card className="mb-4 mt-4 p-2 rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
               <CardBody className="flex flex-col">
@@ -500,7 +503,7 @@ export default function TestsPage() {
                             </div>
                             <div className="w-full flex justify-center absolute left-0 right-0 bottom-4 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                               <span className="text-primary text-sm font-semibold">
-                                Начать тест
+                                {t("tests.labels.startTest")}
                               </span>
                             </div>
                           </div>
@@ -520,7 +523,7 @@ export default function TestsPage() {
             className="scroll-mt-24"
           >
             <h1 className="text-2xl font-bold mb-4 flex justify-center">
-              Создание собственного варианта
+              {t("tests.labels.createCustomTest")}
             </h1>
             <Tabs
                 fullWidth
@@ -533,7 +536,7 @@ export default function TestsPage() {
                 value="FI"
                 title={
                   <>
-                    <span className="block sm:hidden">ФИ</span>
+                    <span className="block sm:hidden">{t("tests.sections.fundamentalsShort")}</span>
                     <span className="hidden sm:block">
                       {t("leaderboard.topics.fundamentals")}
                     </span>
@@ -561,7 +564,7 @@ export default function TestsPage() {
                 value="AS"
                 title={
                   <>
-                    <span className="block sm:hidden">АиСД</span>
+                    <span className="block sm:hidden">{t("tests.sections.algorithmsShort")}</span>
                     <span className="hidden sm:block">
                       {t("leaderboard.topics.algorithms")}
                     </span>
@@ -594,7 +597,7 @@ export default function TestsPage() {
             className="mb-8 scroll-mt-24"
           >
             <h1 className="text-2xl font-bold mb-4 flex justify-center">
-              Предложить вопрос
+              {t("tests.labels.suggestQuestion")}
             </h1>
             <QuestionForm />
           </div>
@@ -605,13 +608,13 @@ export default function TestsPage() {
         <div className="group">
           <Card className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2" radius="lg">
             <CardHeader className="flex flex-col justify-center gap-2 border-b-3 border-gray-200 dark:border-zinc-800 p-6 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:to-slate-900">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Выбранные темы</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Всего тем: {activeTab === 'FI' ? totalFI : totalAS}</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">{t("tests.labels.selectedTopicsHeader")}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t("tests.summary.totalTopics", { count: activeTab === 'FI' ? totalFI : totalAS })}</p>
             </CardHeader>
             <CardBody className="p-2 mb-2">
               <SelectedTopics
                 topics={activeTab === 'FI' ? selectedFI : selectedAS}
-                emptyLabel={activeTab === 'FI' ? 'Нет выбранных тем ФИ' : 'Нет выбранных тем АиСД'}
+                emptyLabel={activeTab === 'FI' ? t("tests.empty.FITopics") : t("tests.empty.ASTopics")}
                 onReset={handleResetSelections}
                     />
             </CardBody>
@@ -624,24 +627,24 @@ export default function TestsPage() {
                     <div className="w-full flex flex-col absolute justify-center items-center transition-all duration-300 mt-8">
                         <div className="flex flex-col items-center justify-center gap-2">
                             <span className="text-base font-bold text-gray-900 dark:text-white transition-colors">
-                                Генерация варианта
+                                {t("tests.generation.modalTitle")}
                             </span>
                             <div className="mt-3 w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-1 text-[15px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
                               <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">Кол-во вопросов:</span>
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.questionCount")}</span>
                                 <span className="ml-auto font-mono text-primary">20</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">Время:</span>
-                                <span className="ml-auto font-mono text-primary">60 минут</span>
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.time")}</span>
+                                <span className="ml-auto font-mono text-primary">60 {t("tests.generation.minutes")}</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">Макс. балл:</span>
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.maxScore")}</span>
                                 <span className="ml-auto font-mono text-primary">100</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">Раздел:</span>
-                                <span className="ml-auto font-mono text-primary">{activeTab === 'FI' ? 'ФИ' : 'АиСД'}</span>
+                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.section")}</span>
+                                <span className="ml-auto font-mono text-primary">{activeTab === 'FI' ? t("tests.sections.fundamentals") : t("tests.sections.algorithms")}</span>
                               </div>
                             </div>
                         </div>
@@ -659,7 +662,7 @@ export default function TestsPage() {
                 onMouseLeave={() => setIsGenerateHovered(false)}
                 // onPress={handleStartTest}
             >
-                Начать тест
+                {t("tests.labels.startTest")}
               </Button>
           </div>
         </div>
@@ -669,7 +672,7 @@ export default function TestsPage() {
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-20 p-4">
         <Card className="rounded-3xl shadow-none border-3 dark:border-zinc-800">
             <span className="text-lg font-semibold text-center mb-2 mt-2">
-                Выбрано тем: {totalSelected}
+                {t("tests.selected.mobileCount", { count: totalSelected })}
             </span>
             <Button
                 variant="solid"
@@ -677,7 +680,7 @@ export default function TestsPage() {
                 color="primary"
                 onPress={() => setMobileModalOpen(true)}
                 >
-                Генерация варианта
+                {t("tests.generation.modalTitle")}
             </Button>
         </Card>
       </div>
@@ -690,32 +693,32 @@ export default function TestsPage() {
         onOpenChange={setMobileModalOpen}
       >
         <ModalContent className="m-6">
-          <ModalHeader className="text-lg font-semibold text-center">Генерация варианта</ModalHeader>
+          <ModalHeader className="text-lg font-semibold text-center">{t("tests.generation.modalTitle")}</ModalHeader>
           <ModalBody>
             <div className="flex flex-col items-center gap-4 mt-2">
               <div className="w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-2 text-base text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Кол-во вопросов:</span>
+                  <span className="font-semibold">{t("tests.generation.questionCount")}</span>
                   <span className="font-mono text-primary">20</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Время:</span>
-                  <span className="font-mono text-primary">60 минут</span>
+                  <span className="font-semibold">{t("tests.generation.time")}</span>
+                  <span className="font-mono text-primary">60 {t("tests.generation.minutes")}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Макс. балл:</span>
+                  <span className="font-semibold">{t("tests.generation.maxScore")}</span>
                   <span className="font-mono text-primary">100</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Раздел:</span>
-                  <span className="font-mono text-primary">{activeTab === 'FI' ? 'ФИ' : 'АиСД'}</span>
+                  <span className="font-semibold">{t("tests.generation.section")}</span>
+                  <span className="font-mono text-primary">{activeTab === 'FI' ? t("tests.sections.fundamentals") : t("tests.sections.algorithms")}</span>
                 </div>
               </div>
               {/* Unified SelectedTopics component */}
               <div className="w-full">
                 <SelectedTopics
                   topics={activeTab === 'FI' ? selectedFI : selectedAS}
-                  emptyLabel={activeTab === 'FI' ? 'Нет выбранных тем ФИ' : 'Нет выбранных тем АиСД'}
+                  emptyLabel={activeTab === 'FI' ? t("tests.empty.FITopics") : t("tests.empty.ASTopics")}
                   onReset={() => {
                     handleResetSelections();
                     setMobileModalOpen(false);
@@ -726,7 +729,7 @@ export default function TestsPage() {
           </ModalBody>
           <ModalFooter>
             <Button color="primary" onPress={() => setMobileModalOpen(false)}>
-              Закрыть
+              {t("tests.modal.close")}
             </Button>
             <Button
                 variant="solid"
@@ -736,7 +739,7 @@ export default function TestsPage() {
                 onMouseLeave={() => setIsGenerateHovered(false)}
                 // onPress={handleStartTest}
             >
-                Начать тест
+                {t("tests.labels.startTest")}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -223,7 +223,9 @@
         },
         "sections": {
             "fundamentals": "ФИ",
-            "algorithms": "АиСД"
+            "algorithms": "АиСД",
+            "fundamentalsShort": "ФИ",
+            "algorithmsShort": "АиСД"
         },
         "topics": {
             "fundamental_concepts_of_informatics": "1. Основные понятия информатики",
@@ -424,7 +426,41 @@
         "rawDataLabel": "Данные теста",
         "closeButton": "Закрыть",
         "totalLabel": "Всего",
-        "testIdLabel": "ID теста"
+        "testIdLabel": "ID теста",
+        "leftNav": {
+            "recommended": "Рекомендованные тесты",
+            "custom": "Создание собственного варианта",
+            "suggest": "Предложить вопрос"
+        },
+        "labels": {
+            "recommendedTests": "Рекомендованное для Вас",
+            "createCustomTest": "Создание собственного варианта",
+            "suggestQuestion": "Предложить вопрос",
+            "selectedTopicsHeader": "Выбранные темы",
+            "startTest": "Начать тест"
+        },
+        "summary": {
+            "totalTopics": "Всего тем: {count}"
+        },
+        "empty": {
+            "FITopics": "Нет выбранных тем ФИ",
+            "ASTopics": "Нет выбранных тем АиСД"
+        },
+        "generation": {
+            "questionCount": "Кол-во вопросов:",
+            "time": "Время:",
+            "minutes": "минут",
+            "maxScore": "Макс. балл:",
+            "section": "Раздел:",
+            "startTest": "Начать тест",
+            "modalTitle": "Генерация варианта"
+        },
+        "selected": {
+            "mobileCount": "Выбрано тем: {count}"
+        },
+        "modal": {
+            "close": "Закрыть"
+        }
     },
     "notFound": {
         "title": "404",

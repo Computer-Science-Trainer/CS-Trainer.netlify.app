@@ -223,7 +223,9 @@
         },
         "sections": {
             "fundamentals": "FI",
-            "algorithms": "AaDS"
+            "algorithms": "AaDS",
+            "fundamentalsShort": "FI",
+            "algorithmsShort": "AaDS"
         },
         "topics": {
             "fundamental_concepts_of_informatics": "1. Fundamental concepts of informatics",
@@ -424,7 +426,41 @@
         "rawDataLabel": "Raw data",
         "closeButton": "Close",
         "totalLabel": "Total",
-        "testIdLabel": "Test ID"
+        "testIdLabel": "Test ID",
+        "leftNav": {
+            "recommended": "Recommended tests",
+            "custom": "Create custom test",
+            "suggest": "Suggest question"
+        },
+        "labels": {
+            "recommendedTests": "Recommended for you",
+            "createCustomTest": "Create custom test",
+            "suggestQuestion": "Suggest question",
+            "selectedTopicsHeader": "Selected topics",
+            "startTest": "Start test"
+        },
+        "summary": {
+            "totalTopics": "Total topics: {count}"
+        },
+        "empty": {
+            "FITopics": "No selected FI topics",
+            "ASTopics": "No selected AS topics"
+        },
+        "generation": {
+            "questionCount": "Question count:",
+            "time": "Time:",
+            "minutes": "minutes",
+            "maxScore": "Max score:",
+            "section": "Section:",
+            "startTest": "Start test",
+            "modalTitle": "Generate test"
+        },
+        "selected": {
+            "mobileCount": "Selected topics: {count}"
+        },
+        "modal": {
+            "close": "Close"
+        }
     },
     "notFound": {
         "title": "404",
