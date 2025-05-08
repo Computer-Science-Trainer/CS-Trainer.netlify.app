@@ -113,7 +113,9 @@ export default function ProfilePage() {
 
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(null);
   const [visibleTests, setVisibleTests] = useState(4);
-  const [visibleMonths, setVisibleMonths] = useState(3);
+  const [visibleMonths, setVisibleMonths] = useState(1);
+  const [calendarContainer, setCalendarContainer] =
+    useState<HTMLElement | null>(null);
 
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<Test | null>(null);
@@ -147,17 +149,19 @@ export default function ProfilePage() {
   }, [username, profileUser]);
 
   useEffect(() => {
-    const updateVisibleMonths = () => {
-      const width = window.innerWidth;
+    if (!calendarContainer) return;
+    const observer = new ResizeObserver(() => {
+      const width = calendarContainer.getBoundingClientRect().width;
 
-      setVisibleMonths(width >= 1200 ? 3 : width >= 768 ? 2 : 1);
-    };
+      if (width >= 768) setVisibleMonths(3);
+      else if (width >= 518) setVisibleMonths(2);
+      else setVisibleMonths(1);
+    });
 
-    updateVisibleMonths();
-    window.addEventListener("resize", updateVisibleMonths);
+    observer.observe(calendarContainer);
 
-    return () => window.removeEventListener("resize", updateVisibleMonths);
-  }, []);
+    return () => observer.disconnect();
+  }, [calendarContainer]);
 
   let isDateUnavailable = (date: any): boolean => {
     const formatted = date.toString().slice(0, 10);
@@ -194,11 +198,14 @@ export default function ProfilePage() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
-          <Card className="p-6">
+          <Card
+            className="p-6 border-3 dark:border-zinc-800 rounded-3xl"
+            shadow="none"
+          >
             <div className="flex flex-col items-center space-y-4">
               <Avatar
                 showFallback
-                className="w-60 h-60 border-4 border-primary"
+                className="w-60 h-60 border-4 dark:border-zinc-800"
                 radius="full"
                 size="lg"
                 src={
@@ -261,7 +268,7 @@ export default function ProfilePage() {
                   <Button
                     className="w-full"
                     color="default"
-                    variant="shadow"
+                    variant="flat"
                     onPress={() => router.push("/settings/profile")}
                   >
                     {t("profile.editProfileButton")}
@@ -281,7 +288,10 @@ export default function ProfilePage() {
               )}
             </div>
           </Card>
-          <Card className="p-4 rounded-xl shadow-md">
+          <Card
+            className="p-4 rounded-3xl border-3 dark:border-zinc-800"
+            shadow="none"
+          >
             <Tabs color="secondary" variant="underlined">
               <Tab key="achievements" title={t("profile.achievementsTab")}>
                 <div className="space-y-4 mt-4">
@@ -295,6 +305,7 @@ export default function ProfilePage() {
                         key={achievement.code}
                         isPressable
                         className="text-left w-full bg-default-100 hover:bg-default-200 transition-colors cursor-pointer"
+                        shadow="sm"
                         onPress={() => {
                           const unlockedDate = new Date(
                             achievement.unlocked_at,
@@ -378,26 +389,35 @@ export default function ProfilePage() {
         </div>
 
         <div className="lg:col-span-2 space-y-8">
-          <Card className="p-4 rounded-xl shadow-md">
-            <div className="flex items-center gap-2 mb-4">
+          <Card
+            ref={setCalendarContainer}
+            className="rounded-3xl border-3 dark:border-zinc-800"
+            shadow="none"
+          >
+            <div className="p-4 flex items-center gap-2 mt-2">
               <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
                 {t("profile.activityHeading")}
               </h2>
               <Spacer />
             </div>
-            <Calendar
-              aria-label="Activity Calendar"
-              className="[&_button]:text-default-600 [&_button:hover]:bg-default-100"
-              color="primary"
-              isDateUnavailable={isDateUnavailable}
-              value={selectedDate}
-              visibleMonths={visibleMonths}
-              onChange={setSelectedDate}
-            />
+            <div className="mx-auto transform flex flex-col items-center">
+              <Calendar
+                aria-label="Activity Calendar"
+                className="[&_button]:text-default-600 [&_button:hover]:bg-default-100 shadow-none"
+                color="primary"
+                isDateUnavailable={isDateUnavailable}
+                value={selectedDate}
+                visibleMonths={visibleMonths}
+                onChange={setSelectedDate}
+              />
+            </div>
           </Card>
 
-          <Card className="p-4 rounded-xl shadow-md">
-            <div className="flex items-center justify-between mb-4">
+          <Card
+            className="p-4 rounded-3xl border-3 dark:border-zinc-800"
+            shadow="none"
+          >
+            <div className="flex items-center justify-between mt-2 mb-4">
               <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
                 {t("profile.testResultsHeading")}
               </h2>
@@ -406,7 +426,7 @@ export default function ProfilePage() {
                   <Button
                     color="default"
                     size="sm"
-                    variant="flat"
+                    variant="bordered"
                     onPress={() => {
                       setSelectedDate(null);
                       setVisibleTests(4);
@@ -432,7 +452,8 @@ export default function ProfilePage() {
                     <Card
                       key={test.id || test.created_at || idx}
                       isPressable
-                      className="transition-transform duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl rounded-xl border border-default-200 p-4 h-44 cursor-pointer"
+                      className="transition-transform duration-300 ease-in-out transform rounded-xl p-3 h-44 cursor-pointer bg-default-100 hover:bg-default-200"
+                      shadow="sm"
                       onPress={() => {
                         setSelectedTest(test);
                         setTestModalOpen(true);
