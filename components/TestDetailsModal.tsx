@@ -57,9 +57,9 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
         <Divider />
         <ModalBody>
           <div className="flex flex-col items-center md:items-start">
-            <div className="flex flex-col items-center w-full gap-4 rounded-2xl p-6 shadow-inner">
+            <div className="flex flex-col items-center w-full gap-4 rounded-2xl p-6">
               <div className="flex flex-col items-center justify-center w-full gap-2">
-                <span className="text-3xl font-extrabold text-primary drop-shadow-sm mb-4">
+                <span className="text-3xl font-extrabold text-primary mb-4">
                   {percent}%
                 </span>
                 <Progress
@@ -108,7 +108,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                 </Chip>
               </div>
             </div>
-            <div className="flex-1 space-y-4 text-base rounded-2xl p-6 shadow-sm w-full">
+            <div className="flex-1 space-y-4 text-base rounded-2xl p-6 w-full">
               <div className="flex flex-col gap-1">
                 <span className="font-semibold text-default-700">
                   {t("tests.dateLabel")}:
