@@ -197,6 +197,17 @@ export default function TestsPage() {
   const windowWidth = useWindowWidth();
   const isCompact = windowWidth < 640;
 
+  // добавить отслеживание тёмной темы
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => setIsDarkMode(root.classList.contains("dark"));
+    const obs = new MutationObserver(update);
+    obs.observe(root, { attributes: true, attributeFilter: ["class"] });
+    update();
+    return () => obs.disconnect();
+  }, []);
+
   useEffect(() => {
     setLoading(true);
     makeApiRequest("api/topics", "GET")
@@ -360,6 +371,28 @@ export default function TestsPage() {
       ? recommendedSubsAll.slice(0, 3)
       : recommendedSubsAll.slice(0, 6);
 
+  // theme color lists
+  const lightThemeColors = ["#FFAF64", "#FD8462", "#FF608D", "#C77ECC", "#ACA0D4"];
+  const darkThemeColors  = ["#5F0F40", "#9A031E", "#FB8B24", "#E36414", "#0F4C5C"];
+
+  // при первой загрузке страницы генерируем кольцевые пары соседних цветов
+  const [lightThemeCombos] = useState<[string, string][]>(() => {
+    const start = Math.floor(Math.random() * lightThemeColors.length);
+    return lightThemeColors.map((_, idx) => {
+      const i1 = (start + idx) % lightThemeColors.length;
+      const i2 = (i1 + 1) % lightThemeColors.length;
+      return [lightThemeColors[i1], lightThemeColors[i2]];
+    });
+  });
+  const [darkThemeCombos] = useState<[string, string][]>(() => {
+    const start = Math.floor(Math.random() * darkThemeColors.length);
+    return darkThemeColors.map((_, idx) => {
+      const i1 = (start + idx) % darkThemeColors.length;
+      const i2 = (i1 + 1) % darkThemeColors.length;
+      return [darkThemeColors[i1], darkThemeColors[i2]];
+    });
+  });
+
   // track which tab is active
   const [activeTab, setActiveTab] = useState<'FI' | 'AS'>('FI');
 
@@ -420,48 +453,55 @@ export default function TestsPage() {
             <Card className="mb-4 mt-4 p-2 rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
               <CardBody className="flex flex-col">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                  {recommendedSubs.map((sub, idx) => (
-                    <Card
-                      key={idx}
-                      isPressable
-                      className="group mx-auto bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 dark:from-slate-800 dark:to-emerald-800 rounded-b-3xl shadow-none"
-                      shadow="none"
-                      style={{
-                        minHeight: 220,
-                        width: "100%",
-                        maxWidth: 340,
-                        borderRadius: 12
-                      }}
-                      onPress={() =>
-                        handleAccordionChange(setTopicStates)(
-                          sub.topicIndex,
-                          sub.accIndex,
-                          true,
-                        )
-                      }
-                    >
-                      <CardFooter
-                        className="absolute flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
-                        style={{ borderRadius: 12 }}
+                  {recommendedSubs.map((sub, idx) => {
+                    const [lightFrom, lightTo] = lightThemeCombos[idx % lightThemeCombos.length];
+                    const [darkFrom, darkTo]   = darkThemeCombos[idx % darkThemeCombos.length];
+                    const [from, to] = isDarkMode ? [darkFrom, darkTo] : [lightFrom, lightTo];
+
+                    return (
+                      <Card
+                        key={idx}
+                        isPressable
+                        className="group mx-auto rounded-b-3xl shadow-none"
+                        shadow="none"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, ${from}, ${to})`,
+                          minHeight: 220,
+                          width: "100%",
+                          maxWidth: 340,
+                          borderRadius: 12,
+                        }}
+                        onPress={() =>
+                          handleAccordionChange(setTopicStates)(
+                            sub.topicIndex,
+                            sub.accIndex,
+                            true,
+                          )
+                        }
                       >
-                        <div className="w-full flex flex-col h-full">
-                          <div className="w-full flex flex-col items-end absolute right-0 px-4 transition-all duration-300 z-20 top-3 group-hover:top-9">
-                            <span className="text-base font-bold text-right text-gray-900 dark:text-white transition-colors">
-                              {t(`tests.topics.${sub.label}`)}
-                            </span>
-                            <span className="text-xs text-gray-700 dark:text-gray-300 text-right mt-1 opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32 transition-all duration-300">
-                              {sub.description}
-                            </span>
+                        <CardFooter
+                          className="absolute flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
+                          style={{ borderRadius: 12 }}
+                        >
+                          <div className="w-full flex flex-col h-full">
+                            <div className="w-full flex flex-col items-end absolute right-0 px-4 transition-all duration-300 z-20 top-3 group-hover:top-9">
+                              <span className="text-base font-bold text-right text-gray-900 dark:text-white transition-colors">
+                                {t(`tests.topics.${sub.label}`)}
+                              </span>
+                              <span className="text-xs text-gray-700 dark:text-gray-300 text-right mt-1 opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32 transition-all duration-300">
+                                {sub.description}
+                              </span>
+                            </div>
+                            <div className="w-full flex justify-center absolute left-0 right-0 bottom-4 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                              <span className="text-primary text-sm font-semibold">
+                                Начать тест
+                              </span>
+                            </div>
                           </div>
-                          <div className="w-full flex justify-center absolute left-0 right-0 bottom-4 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                            <span className="text-primary text-sm font-semibold">
-                              Начать тест
-                            </span>
-                          </div>
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  ))}
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
                 </div>
               </CardBody>
             </Card>
