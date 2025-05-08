@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { TrashIcon, DragHandleIcon } from "../icons";
+import React, { useState, useEffect } from "react";
 import {
   Form,
+  Autocomplete,
+  AutocompleteItem,
   Input,
   Select,
   SelectItem,
@@ -11,7 +12,9 @@ import {
   Checkbox,
   Button,
   Card,
+  addToast,
 } from "@heroui/react";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   closestCenter,
@@ -28,19 +31,27 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
-interface SubmittedData {
-  questionText: string;
-  questionType: string;
-  difficulty: string;
-  options?: string[];
-  correctAnswer?: string;
-  correctAnswers?: string;
-  sampleAnswer?: string;
-  termsAccepted: string;
+import { TrashIcon, DragHandleIcon } from "../icons";
+import { makeApiRequest } from "../../config/api";
+
+import { useAuth } from "@/context/auth";
+
+interface QuestionFormProps {
+  initialData?: Record<string, any>;
+  isEditMode?: boolean;
+  onSave?: () => void;
+  onClose?: () => void;
+  apiBase?: string;
+  submitLabel?: string;
 }
 
 interface FormErrors {
   [key: string]: string | undefined;
+}
+
+interface Topic {
+  code: string;
+  name: string;
 }
 
 function SortableChoice({
@@ -101,25 +112,25 @@ function SortableChoice({
       <Input
         ref={inputRef}
         className="flex-1 max-w-md"
+        isDisabled={isDisabled}
+        isInvalid={isInvalid}
         name="options"
-        placeholder="Вариант ответа"
+        placeholder="Answer option"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onClick={(e) => e.stopPropagation()}
-        isDisabled={isDisabled}
-        isInvalid={isInvalid}
       />
 
       {/* Button to remove this option */}
       <Button
         isIconOnly
-        aria-label="Удалить вариант"
+        aria-label="Delete option"
         className="transition-none"
         color="danger"
+        isDisabled={removeDisabled}
         type="button"
         variant="flat"
         onPress={onRemove}
-        isDisabled={removeDisabled}
       >
         <TrashIcon />
       </Button>
@@ -127,15 +138,27 @@ function SortableChoice({
   );
 }
 
-export default function QuestionForm() {
-  // State for storing submitted form data
-  const [submission, setSubmission] = useState<SubmittedData | null>(null);
+export default function QuestionForm({
+  initialData,
+  isEditMode,
+  onSave,
+  apiBase = "api/admin/proposed",
+}: QuestionFormProps) {
+  const { user } = useAuth();
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(
+    initialData?.terms_accepted ?? false,
+  );
+  // State for question text
+  const [questionText, setQuestionText] = useState<string>("");
   // State for tracking validation errors
   const [validationErrors, setValidationErrors] = useState<FormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
   // State for the selected question type
   const [questionType, setQuestionType] = useState("");
   // State for the selected difficulty level
   const [difficulty, setDifficulty] = useState<string>("");
+  // State for example answer in open-ended questions
+  const [sampleAnswer, setSampleAnswer] = useState<string>("");
   // Dynamic list of answer options
   const [answerOptions, setAnswerOptions] = useState<string[]>([]);
   // Index of selected answer in single-choice mode
@@ -146,14 +169,86 @@ export default function QuestionForm() {
   const [multipleAnswerIndices, setMultipleAnswerIndices] = useState<number[]>(
     [],
   );
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [selectedTopicCode, setSelectedTopicCode] = useState<string>("");
+
   // Configure pointer sensor with a small drag activation distance
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
+  useEffect(() => {
+    if (initialData) {
+      setDifficulty(initialData.difficulty || "");
+      setQuestionType(initialData.question_type);
+      setAnswerOptions(initialData.options || []);
+      setSelectedTopicCode(initialData.topic_code ?? "");
+      setQuestionText(initialData.question_text || "");
+      const corr = (initialData.correct_answers ??
+        initialData.correct_answer) as string;
+
+      if (initialData.question_type === "single-choice") {
+        const idx = initialData.options?.indexOf(corr) ?? -1;
+
+        setSingleAnswerIndex(idx >= 0 ? idx : null);
+      } else if (initialData.question_type === "multiple-choice") {
+        const arr = corr.split(",");
+        const idxs = (initialData.options || [])
+          .map((opt: string, i: number) => (arr.includes(opt) ? i : -1))
+          .filter((i: number) => i >= 0);
+
+        setMultipleAnswerIndices(idxs);
+      }
+      if (initialData.question_type === "open-ended") {
+        setSampleAnswer(initialData.sample_answer || "");
+      }
+      setTermsAccepted(initialData.terms_accepted ?? false);
+    } else {
+      handleReset();
+    }
+  }, [initialData]);
+  function flattenTopics(items: any[]): Topic[] {
+    const result: Topic[] = [];
+
+    function recurse(node: any) {
+      if (typeof node === "string") {
+        result.push({ code: node, name: node });
+
+        return;
+      }
+      if (node?.label) {
+        const children = Array.isArray(node.accordions) ? node.accordions : [];
+        const isLeaf =
+          children.length > 0 &&
+          children.every((c: any) => typeof c === "string");
+
+        if (children.length === 0 || isLeaf) {
+          result.push({ code: node.label, name: node.label });
+        }
+        children.forEach((child: any) => recurse(child));
+      }
+    }
+    items.forEach(recurse);
+
+    return result;
+  }
+  const tForm = useTranslations("tests.questionForm");
+  const tTests = useTranslations("tests");
+  const tTopic = useTranslations("tests.topics");
+
+  useEffect(() => {
+    makeApiRequest("api/topics", "GET")
+      .then((data: any[]) => {
+        const flat = flattenTopics(data);
+
+        setTopics(flat);
+      })
+      .catch(() => {});
+  }, []);
   // Add a blank option and clear option-related validation if enough exist
   const handleAddOption = () => {
     const newOptions = [...answerOptions, ""];
+
     setAnswerOptions(newOptions);
     if (
       validationErrors.options &&
@@ -166,6 +261,7 @@ export default function QuestionForm() {
   // Remove an option and adjust selected indices accordingly
   const handleRemoveOption = (idx: number) => {
     const newOptions = answerOptions.filter((_, i) => i !== idx);
+
     setAnswerOptions(newOptions);
     setMultipleAnswerIndices((prev) =>
       prev.filter((i) => i !== idx).map((i) => (i > idx ? i - 1 : i)),
@@ -184,6 +280,7 @@ export default function QuestionForm() {
   // Update the text of an option and clear validation for options
   const handleUpdateOption = (idx: number, val: string) => {
     const newOptions = answerOptions.map((o, i) => (i === idx ? val : o));
+
     setAnswerOptions(newOptions);
     if (
       validationErrors.options &&
@@ -210,82 +307,114 @@ export default function QuestionForm() {
   };
 
   // Validate form inputs and set submission data
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const filledOptions = formData
-      .getAll("options")
-      .map(String)
-      .filter((str) => str.trim() !== "");
+    if (!selectedTopicCode) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        topic: tForm("errors.topicRequired"),
+      }));
+
+      return;
+    }
     const data = {
-      questionText: formData.get("questionText") as string,
-      questionType: formData.get("questionType") as string,
-      difficulty: formData.get("difficulty") as string,
-      options: filledOptions,
-      correctAnswer: formData.get("correctAnswer") as string | undefined,
-      correctAnswers: formData.get("correctAnswers") as string | undefined,
-      sampleAnswer: formData.get("sampleAnswer") as string | undefined,
-      termsAccepted: formData.get("termsAccepted") as string,
+      questionText: questionText,
+      questionType: questionType,
+      difficulty: difficulty,
+      topicCode: selectedTopicCode!,
+      options: answerOptions.filter((o) => o.trim()),
+      sampleAnswer: sampleAnswer,
+      termsAccepted: termsAccepted,
     };
 
     const newErrors: FormErrors = {};
 
     if (!data.questionText?.trim())
-      newErrors.question = "Введите текст вопроса";
-    if (!data.questionType) newErrors.type = "Выберите тип вопроса";
+      newErrors.question = tForm("errors.questionRequired");
+    if (!data.questionType) newErrors.type = tForm("errors.typeRequired");
 
     if (
       ["single-choice", "multiple-choice", "ordering"].includes(
         data.questionType,
       )
     ) {
-      if (filledOptions.length < 2) {
-        newErrors.options = "Укажите минимум два варианта ответа";
+      if (data.options.length < 2) {
+        newErrors.options = tForm("errors.optionsMin");
       } else if (answerOptions.some((o) => o.trim() === "")) {
-        newErrors.options = "Заполните все поля вариантов ответа";
+        newErrors.options = tForm("errors.optionsFillAll");
       } else {
         if (
           data.questionType === "single-choice" &&
           singleAnswerIndex === null
         ) {
-          newErrors.correctAnswer = "Выберите правильный вариант";
+          newErrors.correctAnswer = tForm("errors.correctAnswerRequired");
         }
         if (
           data.questionType === "multiple-choice" &&
           multipleAnswerIndices.length === 0
         ) {
-          newErrors.correctAnswers = "Выберите правильные варианты";
+          newErrors.correctAnswers = tForm("errors.correctAnswersRequired");
         }
       }
     }
 
     if (data.questionType === "open-ended" && !data.sampleAnswer?.trim()) {
-      newErrors.sampleAnswer = "Укажите пример правильного ответа";
+      newErrors.sampleAnswer = tForm("errors.sampleAnswerRequired");
     }
 
-    if (data.termsAccepted !== "true")
-      newErrors.terms = "Вы должны подтвердить корректность вопроса";
+    if (!data.termsAccepted) newErrors.terms = tForm("errors.termsRequired");
 
     if (Object.keys(newErrors).length) {
       setValidationErrors(newErrors);
 
       return;
     }
-
     setValidationErrors({});
-    setSubmission({
-      ...data,
-      correctAnswer:
-        data.questionType === "single-choice"
-          ? answerOptions[singleAnswerIndex ?? -1]
-          : data.questionType === "ordering"
-          ? answerOptions.join(",")
-          : undefined,
-      correctAnswers:
-        data.questionType === "multiple-choice"
-          ? multipleAnswerIndices.map((i) => answerOptions[i]).join(",")
-          : undefined,
-    });
+    setSubmitting(true);
+    let correctAnswersValue = "";
+
+    if (questionType === "single-choice" && singleAnswerIndex !== null) {
+      correctAnswersValue = answerOptions[singleAnswerIndex];
+    } else if (questionType === "multiple-choice") {
+      correctAnswersValue = multipleAnswerIndices
+        .map((i) => answerOptions[i])
+        .join(",");
+    } else if (questionType === "ordering") {
+      correctAnswersValue = answerOptions.join(",");
+    }
+    const payload = {
+      title: data.questionText,
+      question_text: data.questionText,
+      question_type: data.questionType,
+      difficulty: data.difficulty,
+      options: data.options,
+      correct_answer: correctAnswersValue,
+      sample_answer: data.sampleAnswer || null,
+      terms_accepted: data.termsAccepted,
+      topic_code: data.topicCode,
+      proposer_id: user?.id,
+    };
+
+    try {
+      const endpoint = apiBase;
+
+      if (isEditMode && initialData?.id) {
+        await makeApiRequest(`${endpoint}/${initialData.id}`, "PUT", payload);
+      } else {
+        await makeApiRequest(endpoint, "POST", payload);
+      }
+      addToast({
+        title: isEditMode ? tForm("toast.saved") : tForm("toast.submitted"),
+        color: "success",
+      });
+      onSave?.();
+      handleReset();
+    } catch {
+      setValidationErrors({ submit: tForm("errors.submitError") });
+      addToast({ title: tForm("errors.submitError"), color: "danger" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Reset related states when question type changes
@@ -309,21 +438,26 @@ export default function QuestionForm() {
     }
   };
 
-  // Reset entire form to its initial state
   const handleReset = () => {
-    setSubmission(null);
     setQuestionType("");
     setDifficulty("");
     setAnswerOptions([]);
     setValidationErrors({});
     setSingleAnswerIndex(null);
     setMultipleAnswerIndices([]);
+    setSelectedTopicCode("");
+    setQuestionText("");
+    setSampleAnswer("");
+    setTermsAccepted(false);
   };
 
   return (
     <div>
       {/* Card container wrapping the entire question form */}
-      <Card className="mb-4 p-6 w-full mx-auto border-3 dark:border-zinc-800 rounded-3xl" shadow="none">
+      <Card
+        className="mb-4 p-6 w-full mx-auto border-3 dark:border-zinc-800 rounded-3xl"
+        shadow="none"
+      >
         {/* Form component handling validation and events */}
         <Form
           className="w-full flex flex-col gap-4"
@@ -336,77 +470,98 @@ export default function QuestionForm() {
           onReset={handleReset}
           onSubmit={handleSubmit}
         >
+          <Autocomplete
+            isRequired
+            errorMessage={validationErrors.topic}
+            label={tForm("topicLabel")}
+            placeholder={tForm("topicPlaceholder")}
+            selectedKey={selectedTopicCode}
+            onSelectionChange={(val) => setSelectedTopicCode(val as string)}
+          >
+            {topics.map((topic) => (
+              <AutocompleteItem key={topic.code} textValue={tTopic(topic.code)}>
+                {tTopic(topic.code)}
+              </AutocompleteItem>
+            ))}
+          </Autocomplete>
           {/* Text area for entering the question prompt */}
           <Textarea
             isRequired
             errorMessage={validationErrors.question}
-            label="Формулировка вопроса"
+            label={tForm("questionLabel")}
             labelPlacement="outside"
-            name="questionText"
-            placeholder="Введите текст вопроса"
             minRows={5}
+            placeholder={tForm("questionPlaceholder")}
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
           />
 
-            {/* Select question type and difficulty */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full">
+          {/* Select question type and difficulty */}
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
             {/* Question type */}
             <div className="flex-grow basis-2/3">
               <Select
+                isRequired
                 className="w-full"
-              isRequired
-              label="Тип вопроса"
-              name="questionType"
-              placeholder="Выберите тип вопроса"
-              value={questionType}
-              onSelectionChange={handleTypeChange}
+                label={tForm("typeLabel")}
+                name="questionType"
+                placeholder={tForm("typePlaceholder")}
+                selectedKeys={[questionType]}
+                onSelectionChange={handleTypeChange}
               >
-              <SelectItem key="single-choice">
-                С выбором одного ответа
-              </SelectItem>
-              <SelectItem key="multiple-choice">
-                С множественным выбором
-              </SelectItem>
-              <SelectItem key="ordering">
-                С упорядочиванием ответов
-              </SelectItem>
-              <SelectItem key="open-ended">С развернутым ответом</SelectItem>
+                <SelectItem key="single-choice">
+                  {tForm("type.singleChoice")}
+                </SelectItem>
+                <SelectItem key="multiple-choice">
+                  {tForm("type.multipleChoice")}
+                </SelectItem>
+                <SelectItem key="ordering">{tForm("type.ordering")}</SelectItem>
+                <SelectItem key="open-ended">
+                  {tForm("type.openEnded")}
+                </SelectItem>
               </Select>
             </div>
 
             {/* Question difficulty */}
             <div className="flex-grow basis-1/3">
               <Select
+                isRequired
                 className="w-full"
-              isRequired
-              label="Сложность"
-              name="difficulty"
-              placeholder="Выберите сложность"
-              value={difficulty}
-              onSelectionChange={(sel) => {
-                const key = Array.isArray(sel) ? sel[0] : sel.currentKey;
-                setDifficulty(key || "");
-              }}
+                label={tForm("difficultyLabel")}
+                name="difficulty"
+                placeholder={tForm("difficultyPlaceholder")}
+                selectedKeys={[difficulty]}
+                onSelectionChange={(sel) => {
+                  const key = Array.isArray(sel) ? sel[0] : sel.currentKey;
+
+                  setDifficulty(key || "");
+                }}
               >
-              <SelectItem key="easy">Простая</SelectItem>
-              <SelectItem key="medium">Средняя</SelectItem>
-              <SelectItem key="hard">Сложная</SelectItem>
+                <SelectItem key="easy">{tForm("difficulty.easy")}</SelectItem>
+                <SelectItem key="medium">
+                  {tForm("difficulty.medium")}
+                </SelectItem>
+                <SelectItem key="hard">{tForm("difficulty.hard")}</SelectItem>
               </Select>
             </div>
-            </div>
+          </div>
 
           {/* Render answer choices for single/multiple choice questions */}
           {["single-choice", "multiple-choice"].includes(questionType) && (
             <div className="flex flex-col gap-3 items-center w-full">
-              <p className="font-medium text-center w-full">Варианты ответа</p>
+              <p className="font-medium text-center w-full">
+                {tForm("optionsLabel")}
+              </p>
               <div className="flex flex-col gap-2 items-center w-full">
                 {answerOptions.map((o, i) => (
                   <React.Fragment key={i}>
                     <div className="flex items-center gap-1 w-full justify-center">
                       {questionType === "single-choice" && (
                         <Checkbox
-                          aria-label="Выбрать правильный вариант"
+                          aria-label="Select correct option"
                           isDisabled={
-                            singleAnswerIndex !== null && singleAnswerIndex !== i
+                            singleAnswerIndex !== null &&
+                            singleAnswerIndex !== i
                           }
                           isSelected={singleAnswerIndex === i}
                           onValueChange={(checked) => {
@@ -422,7 +577,7 @@ export default function QuestionForm() {
                       )}
                       {questionType === "multiple-choice" && (
                         <Checkbox
-                          aria-label="Отметить правильный вариант"
+                          aria-label="Select correct option"
                           isSelected={multipleAnswerIndices.includes(i)}
                           onValueChange={(checked) => {
                             setMultipleAnswerIndices((prev) =>
@@ -441,25 +596,25 @@ export default function QuestionForm() {
                       )}
                       <Input
                         className="flex-1 max-w-md"
-                        name="options"
-                        placeholder={`Вариант ${i + 1}`}
-                        value={o}
-                        onChange={(e) => handleUpdateOption(i, e.target.value)}
                         isInvalid={
                           !!validationErrors.options &&
                           (answerOptions.filter((x) => x.trim()).length < 2 ||
                             !o.trim())
                         }
+                        name="options"
+                        placeholder={`Option ${i + 1}`}
+                        value={o}
+                        onChange={(e) => handleUpdateOption(i, e.target.value)}
                       />
                       <Button
                         isIconOnly
-                        aria-label="Удалить вариант"
+                        aria-label="Delete option"
                         className="transition-none"
                         color="danger"
+                        isDisabled={i < 2}
                         type="button"
                         variant="flat"
                         onPress={() => handleRemoveOption(i)}
-                        isDisabled={i < 2}
                       >
                         <TrashIcon />
                       </Button>
@@ -472,7 +627,7 @@ export default function QuestionForm() {
                 type="button"
                 onPress={handleAddOption}
               >
-                Добавить вариант ответа
+                {tForm("addOption")}
               </Button>
             </div>
           )}
@@ -481,7 +636,7 @@ export default function QuestionForm() {
           {questionType === "ordering" && (
             <div className="flex flex-col gap-2 items-center w-full">
               <p className="font-medium text-center w-full">
-                Упорядочите ответы
+                {tForm("orderingLabel")}
               </p>
               <DndContext
                 collisionDetection={closestCenter}
@@ -501,15 +656,16 @@ export default function QuestionForm() {
                             dragHandleProps={{ tabIndex: 0 }}
                             id={`opt-${i}`}
                             inputRef={undefined}
-                            value={o}
-                            onChange={(val) => handleUpdateOption(i, val)}
-                            onRemove={() => handleRemoveOption(i)}
-                            removeDisabled={i < 2}
                             isInvalid={
                               !!validationErrors.options &&
                               (answerOptions.filter((x) => x.trim()).length <
-                                2 || !o.trim())
+                                2 ||
+                                !o.trim())
                             }
+                            removeDisabled={i < 2}
+                            value={o}
+                            onChange={(val) => handleUpdateOption(i, val)}
+                            onRemove={() => handleRemoveOption(i)}
                           />
                         </div>
                       </React.Fragment>
@@ -522,7 +678,7 @@ export default function QuestionForm() {
                 type="button"
                 onPress={handleAddOption}
               >
-                Добавить вариант ответа
+                {tForm("addOption")}
               </Button>
             </div>
           )}
@@ -532,35 +688,23 @@ export default function QuestionForm() {
             <Textarea
               isRequired
               errorMessage={validationErrors.sampleAnswer}
-              label="Пример ответа"
+              label={tForm("sampleAnswerLabel")}
               labelPlacement="outside"
-              name="sampleAnswer"
-              placeholder="Введите пример правильного ответа"
+              placeholder={tForm("sampleAnswerPlaceholder")}
+              value={sampleAnswer}
+              onChange={(e) => setSampleAnswer(e.target.value)}
             />
           )}
 
           {/* Read-only display of correct answer(s) */}
           {questionType && questionType !== "open-ended" && (
             <Textarea
-              minRows={1}
-              name="displayCorrect"
-              label="Правильные варианты ответов"
-              labelPlacement="outside"
-              placeholder="Здесь появятся правильные варианты ответов"
-              value={
-                questionType === "single-choice"
-                  ? answerOptions[singleAnswerIndex ?? -1] ?? ""
-                  : questionType === "multiple-choice"
-                  ? multipleAnswerIndices
-                      .map((i) => answerOptions[i])
-                      .join(", ")
-                  : questionType === "ordering"
-                  ? answerOptions.every((o) => !o.trim())
-                    ? ""
-                    : answerOptions.join(", ")
-                  : ""
-              }
               isDisabled
+              errorMessage={
+                validationErrors.options ||
+                validationErrors.correctAnswer ||
+                validationErrors.correctAnswers
+              }
               isInvalid={
                 !!(
                   validationErrors.options ||
@@ -568,10 +712,23 @@ export default function QuestionForm() {
                   validationErrors.correctAnswers
                 )
               }
-              errorMessage={
-                validationErrors.options ||
-                validationErrors.correctAnswer ||
-                validationErrors.correctAnswers
+              label={tTests("correctAnswersLabel")}
+              labelPlacement="outside"
+              minRows={1}
+              name="displayCorrect"
+              placeholder={tForm("correctAnswersPlaceholder")}
+              value={
+                questionType === "single-choice"
+                  ? (answerOptions[singleAnswerIndex ?? -1] ?? "")
+                  : questionType === "multiple-choice"
+                    ? multipleAnswerIndices
+                        .map((i) => answerOptions[i])
+                        .join(", ")
+                    : questionType === "ordering"
+                      ? answerOptions.every((o) => !o.trim())
+                        ? ""
+                        : answerOptions.join(", ")
+                      : ""
               }
             />
           )}
@@ -580,14 +737,14 @@ export default function QuestionForm() {
           <Checkbox
             isRequired
             isInvalid={!!validationErrors.terms}
-            name="termsAccepted"
+            isSelected={termsAccepted}
             validationBehavior="aria"
-            value="true"
-            onValueChange={() =>
-              setValidationErrors((prev) => ({ ...prev, terms: undefined }))
-            }
+            onValueChange={(checked) => {
+              setTermsAccepted(checked);
+              setValidationErrors((prev) => ({ ...prev, terms: undefined }));
+            }}
           >
-            Я подтверждаю, что вопрос корректный и не нарушает правила
+            {tForm("termsConfirmation")}
           </Checkbox>
           {validationErrors.terms && (
             <span className="text-danger text-small">
@@ -597,21 +754,21 @@ export default function QuestionForm() {
 
           {/* Buttons for submitting or resetting the form */}
           <div className="flex gap-4">
-            <Button className="flex-1" color="primary" type="submit">
-              Предложить
+            <Button
+              className="flex-1"
+              color="primary"
+              isLoading={submitting}
+              type="submit"
+            >
+              {isEditMode
+                ? tForm("submitButton.save")
+                : tForm("submitButton.propose")}
             </Button>
             <Button className="flex-1" type="reset" variant="bordered">
-              Сбросить
+              {tForm("resetButton")}
             </Button>
           </div>
         </Form>
-
-        {/* Show submission result as pretty-printed JSON */}
-        {submission && (
-          <pre className="mt-6 bg-gray-100 p-3 rounded">
-            {JSON.stringify(submission, null, 2)}
-          </pre>
-        )}
       </Card>
     </div>
   );

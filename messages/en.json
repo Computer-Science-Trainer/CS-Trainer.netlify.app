@@ -413,6 +413,55 @@
             "prolog_logical_programming_languages": "8.2 Prolog logical programming languages",
             "lisp_afp_functional_programming_languages": "8.3 LISP AFP functional programming languages"
         },
+        "questionForm": {
+            "topicLabel": "Topic",
+            "topicPlaceholder": "Select a topic",
+            "difficulty": {
+                "easy": "Easy",
+                "medium": "Medium",
+                "hard": "Hard"
+            },
+            "questionLabel": "Question text",
+            "questionPlaceholder": "Enter the question text",
+            "typeLabel": "Question type",
+            "typePlaceholder": "Select question type",
+            "type": {
+                "singleChoice": "Single choice",
+                "multipleChoice": "Multiple choice",
+                "ordering": "Ordering",
+                "openEnded": "Open-ended"
+            },
+            "difficultyLabel": "Difficulty",
+            "difficultyPlaceholder": "Select difficulty",
+            "optionsLabel": "Answer options",
+            "addOption": "Add answer option",
+            "orderingLabel": "Order answers",
+            "sampleAnswerLabel": "Sample answer",
+            "sampleAnswerPlaceholder": "Enter a sample correct answer",
+            "correctAnswersPlaceholder": "Correct answers will appear here",
+            "termsConfirmation": "I confirm that the question is correct and complies with the rules",
+            "submitButton": {
+                "save": "Save",
+                "propose": "Submit"
+            },
+            "resetButton": "Reset",
+            "errors": {
+                "questionRequired": "Enter the question text",
+                "typeRequired": "Select a question type",
+                "topicRequired": "Select a topic from the list",
+                "optionsMin": "Provide at least two answer options",
+                "optionsFillAll": "Fill in all answer option fields",
+                "correctAnswerRequired": "Select the correct answer",
+                "correctAnswersRequired": "Select the correct answers",
+                "sampleAnswerRequired": "Provide a sample correct answer",
+                "termsRequired": "You must confirm the question's correctness",
+                "submitError": "Error submitting to server"
+            },
+            "toast": {
+                "saved": "Question saved",
+                "submitted": "Question successfully submitted"
+            }
+        },
         "errors": {
             "ErrorTitle": "Error",
             "loadErrorDescription": "Failed to load topics. Please check your server connection."
@@ -467,5 +516,41 @@
         "description": "Page not found.<br />The page you are looking for does not exist.",
         "button": "Go to Home"
     },
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "admin": {
+        "authLoading": "Checking authentication...",
+        "checkingAdmin": "Checking admin rights...",
+        "tabs": {
+            "current": "Current questions",
+            "proposed": "Proposed questions",
+            "settings": "Settings"
+        },
+        "table": {
+            "proposedBy": "Proposed by",
+            "question": "Question",
+            "type": "Type",
+            "difficulty": "Difficulty",
+            "edit": "Edit",
+            "delete": "Delete",
+            "reject": "Reject",
+            "approve": "Approve"
+        },
+        "backendAddress": "Backend address",
+        "submitLabel": {
+            "add": "Add",
+            "propose": "Propose"
+        },
+        "noQuestions": "No questions available",
+        "settings": {
+            "parameter": "Parameter",
+            "value": "Value",
+            "frontendUrl": "Frontend URL",
+            "backendUrl": "Backend URL",
+            "smtpHost": "SMTP Host",
+            "smtpPort": "SMTP Port",
+            "fromEmail": "From Email",
+            "googleClientId": "Google Client ID",
+            "githubClientId": "GitHub Client ID"
+        }
+    }
 }

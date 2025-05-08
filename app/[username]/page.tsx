@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import {
   Avatar,
   Card,
@@ -41,6 +41,7 @@ interface ProfileUser {
 export default function ProfilePage() {
   const t = useTranslations();
   const { username } = useParams() as { username: string };
+  const searchParams = useSearchParams();
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -48,6 +49,24 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
+      const idParam = searchParams.get("id");
+
+      if (idParam) {
+        try {
+          const dataById: ProfileUser = await makeApiRequest(
+            `api/user/${idParam}`,
+            "GET",
+          );
+
+          router.replace(`/${dataById.username}`);
+
+          return;
+        } catch {
+          router.replace("/404");
+
+          return;
+        }
+      }
       try {
         const data: ProfileUser = await makeApiRequest(
           `api/user/${username}`,
@@ -57,10 +76,12 @@ export default function ProfilePage() {
         setProfileUser(data);
       } catch {
         router.replace("/404");
+
+        return;
       }
     }
     loadProfile();
-  }, [username, router]);
+  }, [username, searchParams, router]);
 
   const [stats, setStats] = useState({
     passed: 0,
@@ -102,6 +123,7 @@ export default function ProfilePage() {
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
+    if (!profileUser) return;
     setLoadingTests(true);
     makeApiRequest(`api/user/${username}/tests`, "GET")
       .then(setTests)
@@ -122,7 +144,7 @@ export default function ProfilePage() {
         }),
       )
       .finally(() => setLoadingStats(false));
-  }, [username]);
+  }, [username, profileUser]);
 
   useEffect(() => {
     const updateVisibleMonths = () => {
@@ -155,9 +177,12 @@ export default function ProfilePage() {
 
   const base = process.env.NEXT_PUBLIC_API_URL;
 
-  // If profileUser not yet loaded, render nothing (avoids flash)
   if (!profileUser) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner label={t("loading")} size="lg" />
+      </div>
+    );
   }
 
   return (

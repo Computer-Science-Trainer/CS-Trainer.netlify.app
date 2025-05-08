@@ -413,6 +413,55 @@
             "prolog_logical_programming_languages": "8.2 Языки логического программирования PROLOG",
             "lisp_afp_functional_programming_languages": "8.3 Языки функционального программирования LISP AFP"
         },
+        "questionForm": {
+            "topicLabel": "Тема",
+            "topicPlaceholder": "Выберите тему",
+            "difficulty": {
+                "easy": "Простая",
+                "medium": "Средняя",
+                "hard": "Сложная"
+            },
+            "questionLabel": "Текст вопроса",
+            "questionPlaceholder": "Введите текст вопроса",
+            "typeLabel": "Тип вопроса",
+            "typePlaceholder": "Выберите тип вопроса",
+            "type": {
+                "singleChoice": "Одиночный выбор",
+                "multipleChoice": "Множественный выбор",
+                "ordering": "Упорядочивание",
+                "openEnded": "Открытый ответ"
+            },
+            "difficultyLabel": "Сложность",
+            "difficultyPlaceholder": "Выберите сложность",
+            "optionsLabel": "Варианты ответа",
+            "addOption": "Добавить вариант ответа",
+            "orderingLabel": "Упорядочить ответы",
+            "sampleAnswerLabel": "Пример ответа",
+            "sampleAnswerPlaceholder": "Введите пример правильного ответа",
+            "correctAnswersPlaceholder": "Правильные ответы появятся здесь",
+            "termsConfirmation": "Я подтверждаю, что вопрос корректный и соответствует правилам",
+            "submitButton": {
+                "save": "Сохранить",
+                "propose": "Предложить"
+            },
+            "resetButton": "Сбросить",
+            "errors": {
+                "questionRequired": "Введите текст вопроса",
+                "typeRequired": "Выберите тип вопроса",
+                "topicRequired": "Выберите тему из списка",
+                "optionsMin": "Укажите минимум два варианта ответа",
+                "optionsFillAll": "Заполните все поля вариантов ответа",
+                "correctAnswerRequired": "Выберите правильный вариант",
+                "correctAnswersRequired": "Выберите правильные варианты",
+                "sampleAnswerRequired": "Укажите пример правильного ответа",
+                "termsRequired": "Вы должны подтвердить корректность вопроса",
+                "submitError": "Ошибка отправки на сервер"
+            },
+            "toast": {
+                "saved": "Вопрос сохранён",
+                "submitted": "Вопрос успешно отправлен"
+            }
+        },
         "errors": {
             "ErrorTitle": "Ошибка",
             "loadErrorDescription": "Не удалось загрузить темы. Проверьте соединение с сервером."
@@ -467,5 +516,41 @@
         "description": "Страница не найдена.<br/>Запрашиваемая страница не существует.",
         "button": "На главную"
     },
-    "loading": "Загрузка..."
+    "loading": "Загрузка...",
+    "admin": {
+        "authLoading": "Проверка авторизации...",
+        "checkingAdmin": "Проверка прав администратора...",
+        "tabs": {
+            "current": "Текущие вопросы",
+            "proposed": "Предложенные вопросы",
+            "settings": "Настройки"
+        },
+        "table": {
+            "proposedBy": "Автор предложения",
+            "question": "Вопрос",
+            "type": "Тип",
+            "difficulty": "Сложность",
+            "edit": "Редактировать",
+            "delete": "Удалить",
+            "reject": "Отклонить",
+            "approve": "Одобрить"
+        },
+        "backendAddress": "Адрес бэкенда",
+        "submitLabel": {
+            "add": "Добавить",
+            "propose": "Предложить"
+        },
+        "noQuestions": "Нет доступных вопросов",
+        "settings": {
+            "parameter": "Параметр",
+            "value": "Значение",
+            "frontendUrl": "URL фронтенда",
+            "backendUrl": "URL бэкенда",
+            "smtpHost": "SMTP хост",
+            "smtpPort": "SMTP порт",
+            "fromEmail": "Email отправителя",
+            "googleClientId": "ID клиента Google",
+            "githubClientId": "ID клиента GitHub"
+        }
+    }
 }
