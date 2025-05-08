@@ -149,9 +149,9 @@ export const Navbar = () => {
   return (
     <HeroUINavbar
       className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      isMenuOpen={menuOpen}
       maxWidth="xl"
       style={{ position: "fixed" }}
-      isMenuOpen={menuOpen}
       onMenuOpenChange={setMenuOpen}
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">

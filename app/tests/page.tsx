@@ -66,7 +66,11 @@ const TopicAccordions = ({
   <>
     {topics.map((topic, topicIndex) => (
       // Card per topic
-      <Card key={topicIndex} className="mb-4 select-none rounded-3xl" shadow="none">
+      <Card
+        key={topicIndex}
+        className="mb-4 select-none rounded-3xl"
+        shadow="none"
+      >
         <CardBody className="flex flex-col items-center bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900 rounded-3xl">
           <h2 className="text-lg font-semibold mb-4 mt-3">
             {t(`tests.topics.${topic.label}`)}
@@ -139,7 +143,7 @@ const TopicAccordions = ({
                       }
                     >
                       {acc.options.map((option) => (
-                        <Checkbox key={option} value={option} >
+                        <Checkbox key={option} value={option}>
                           {t(`tests.topics.${option}`)}
                         </Checkbox>
                       ))}
@@ -204,12 +208,15 @@ export default function TestsPage() {
 
   // Effect: detect dark mode by observing <html> class
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
   useEffect(() => {
     const root = document.documentElement;
     const update = () => setIsDarkMode(root.classList.contains("dark"));
     const obs = new MutationObserver(update);
+
     obs.observe(root, { attributes: true, attributeFilter: ["class"] });
     update();
+
     return () => obs.disconnect();
   }, []);
 
@@ -313,6 +320,7 @@ export default function TestsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollToSection = (index: number) => {
     const target = sectionRefs.current[index];
+
     if (target) {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -341,27 +349,27 @@ export default function TestsPage() {
   const totalAS = countSelected(asTopicStates);
   const totalSelected = totalFI + totalAS;
   // collect selected topic labels or sub-options for FI and AS
-  const selectedFI = topicStates.flatMap(topic =>
-    topic.accordions.flatMap(acc =>
+  const selectedFI = topicStates.flatMap((topic) =>
+    topic.accordions.flatMap((acc) =>
       acc.options.length === 0
         ? acc.isSelected
           ? [acc.label]
           : []
         : acc.selectedOptions.length === acc.options.length
           ? [acc.label]
-          : acc.selectedOptions
-    )
+          : acc.selectedOptions,
+    ),
   );
-  const selectedAS = asTopicStates.flatMap(topic =>
-    topic.accordions.flatMap(acc =>
+  const selectedAS = asTopicStates.flatMap((topic) =>
+    topic.accordions.flatMap((acc) =>
       acc.options.length === 0
         ? acc.isSelected
           ? [acc.label]
           : []
         : acc.selectedOptions.length === acc.options.length
           ? [acc.label]
-          : acc.selectedOptions
-    )
+          : acc.selectedOptions,
+    ),
   );
 
   const recommendedSubsAll = topicStates.flatMap((topic, tIdx) =>
@@ -378,27 +386,43 @@ export default function TestsPage() {
       : recommendedSubsAll.slice(0, 6);
 
   // Generate circular color pairs once per mount
-  const lightThemeColors = ["#FFAF64", "#FD8462", "#FF608D", "#C77ECC", "#ACA0D4"];
-  const darkThemeColors  = ["#5F0F40", "#9A031E", "#FB8B24", "#E36414", "#0F4C5C"];
+  const lightThemeColors = [
+    "#FFAF64",
+    "#FD8462",
+    "#FF608D",
+    "#C77ECC",
+    "#ACA0D4",
+  ];
+  const darkThemeColors = [
+    "#5F0F40",
+    "#9A031E",
+    "#FB8B24",
+    "#E36414",
+    "#0F4C5C",
+  ];
   const [lightThemeCombos] = useState<[string, string][]>(() => {
     const start = Math.floor(Math.random() * lightThemeColors.length);
+
     return lightThemeColors.map((_, idx) => {
       const i1 = (start + idx) % lightThemeColors.length;
       const i2 = (i1 + 1) % lightThemeColors.length;
+
       return [lightThemeColors[i1], lightThemeColors[i2]];
     });
   });
   const [darkThemeCombos] = useState<[string, string][]>(() => {
     const start = Math.floor(Math.random() * darkThemeColors.length);
+
     return darkThemeColors.map((_, idx) => {
       const i1 = (start + idx) % darkThemeColors.length;
       const i2 = (i1 + 1) % darkThemeColors.length;
+
       return [darkThemeColors[i1], darkThemeColors[i2]];
     });
   });
 
   // track which tab is active
-  const [activeTab, setActiveTab] = useState<'FI' | 'AS'>('FI');
+  const [activeTab, setActiveTab] = useState<"FI" | "AS">("FI");
 
   // whenever the tab changes, clear all selections
   useEffect(() => {
@@ -462,9 +486,13 @@ export default function TestsPage() {
               <CardBody className="flex flex-col">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {recommendedSubs.map((sub, idx) => {
-                    const [lightFrom, lightTo] = lightThemeCombos[idx % lightThemeCombos.length];
-                    const [darkFrom, darkTo]   = darkThemeCombos[idx % darkThemeCombos.length];
-                    const [from, to] = isDarkMode ? [darkFrom, darkTo] : [lightFrom, lightTo];
+                    const [lightFrom, lightTo] =
+                      lightThemeCombos[idx % lightThemeCombos.length];
+                    const [darkFrom, darkTo] =
+                      darkThemeCombos[idx % darkThemeCombos.length];
+                    const [from, to] = isDarkMode
+                      ? [darkFrom, darkTo]
+                      : [lightFrom, lightTo];
 
                     return (
                       // Card with dynamic gradient
@@ -526,22 +554,24 @@ export default function TestsPage() {
               {t("tests.labels.createCustomTest")}
             </h1>
             <Tabs
-                fullWidth
-                size="md"
-                selectedKey={activeTab}
-                onSelectionChange={(key) => setActiveTab(key as 'FI' | 'AS')}
+              fullWidth
+              selectedKey={activeTab}
+              size="md"
+              onSelectionChange={(key) => setActiveTab(key as "FI" | "AS")}
             >
               <Tab
                 key="FI"
-                value="FI"
                 title={
                   <>
-                    <span className="block sm:hidden">{t("tests.sections.fundamentalsShort")}</span>
+                    <span className="block sm:hidden">
+                      {t("tests.sections.fundamentalsShort")}
+                    </span>
                     <span className="hidden sm:block">
                       {t("leaderboard.topics.fundamentals")}
                     </span>
                   </>
                 }
+                value="FI"
               >
                 {loading ? (
                   <div className="flex justify-center py-10">
@@ -561,15 +591,17 @@ export default function TestsPage() {
               </Tab>
               <Tab
                 key="AS"
-                value="AS"
                 title={
                   <>
-                    <span className="block sm:hidden">{t("tests.sections.algorithmsShort")}</span>
+                    <span className="block sm:hidden">
+                      {t("tests.sections.algorithmsShort")}
+                    </span>
                     <span className="hidden sm:block">
                       {t("leaderboard.topics.algorithms")}
                     </span>
                   </>
                 }
+                value="AS"
               >
                 {loading ? (
                   <div className="flex justify-center py-10">
@@ -606,85 +638,116 @@ export default function TestsPage() {
       {/* Right summary panel */}
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
         <div className="group">
-          <Card className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2" radius="lg">
+          <Card
+            className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2"
+            radius="lg"
+          >
             <CardHeader className="flex flex-col justify-center gap-2 border-b-3 border-gray-200 dark:border-zinc-800 p-6 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:to-slate-900">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">{t("tests.labels.selectedTopicsHeader")}</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t("tests.summary.totalTopics", { count: activeTab === 'FI' ? totalFI : totalAS })}</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                {t("tests.labels.selectedTopicsHeader")}
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t("tests.summary.totalTopics", {
+                  count: activeTab === "FI" ? totalFI : totalAS,
+                })}
+              </p>
             </CardHeader>
             <CardBody className="p-2 mb-2">
               <SelectedTopics
-                topics={activeTab === 'FI' ? selectedFI : selectedAS}
-                emptyLabel={activeTab === 'FI' ? t("tests.empty.FITopics") : t("tests.empty.ASTopics")}
+                emptyLabel={
+                  activeTab === "FI"
+                    ? t("tests.empty.FITopics")
+                    : t("tests.empty.ASTopics")
+                }
+                topics={activeTab === "FI" ? selectedFI : selectedAS}
                 onReset={handleResetSelections}
-                    />
+              />
             </CardBody>
-            <div className="mb-11"/>
+            <div className="mb-11" />
             <CardFooter
-                className={`absolute z-10 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? 'translate-y-0' : 'translate-y-[85%]'}`}
-                style={{ borderRadius: 12 }}
-                >
-                <div className="relative rounded-2xl w-full flex flex-col h-full">
-                    <div className="w-full flex flex-col absolute justify-center items-center transition-all duration-300 mt-8">
-                        <div className="flex flex-col items-center justify-center gap-2">
-                            <span className="text-base font-bold text-gray-900 dark:text-white transition-colors">
-                                {t("tests.generation.modalTitle")}
-                            </span>
-                            <div className="mt-3 w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-1 text-[15px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.questionCount")}</span>
-                                <span className="ml-auto font-mono text-primary">20</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.time")}</span>
-                                <span className="ml-auto font-mono text-primary">60 {t("tests.generation.minutes")}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.maxScore")}</span>
-                                <span className="ml-auto font-mono text-primary">100</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-700 dark:text-gray-100">{t("tests.generation.section")}</span>
-                                <span className="ml-auto font-mono text-primary">{activeTab === 'FI' ? t("tests.sections.fundamentals") : t("tests.sections.algorithms")}</span>
-                              </div>
-                            </div>
-                        </div>
+              className={`absolute z-10 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? "translate-y-0" : "translate-y-[85%]"}`}
+              style={{ borderRadius: 12 }}
+            >
+              <div className="relative rounded-2xl w-full flex flex-col h-full">
+                <div className="w-full flex flex-col absolute justify-center items-center transition-all duration-300 mt-8">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <span className="text-base font-bold text-gray-900 dark:text-white transition-colors">
+                      {t("tests.generation.modalTitle")}
+                    </span>
+                    <div className="mt-3 w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-1 text-[15px] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-700 dark:text-gray-100">
+                          {t("tests.generation.questionCount")}
+                        </span>
+                        <span className="ml-auto font-mono text-primary">
+                          20
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-700 dark:text-gray-100">
+                          {t("tests.generation.time")}
+                        </span>
+                        <span className="ml-auto font-mono text-primary">
+                          60 {t("tests.generation.minutes")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-700 dark:text-gray-100">
+                          {t("tests.generation.maxScore")}
+                        </span>
+                        <span className="ml-auto font-mono text-primary">
+                          100
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-700 dark:text-gray-100">
+                          {t("tests.generation.section")}
+                        </span>
+                        <span className="ml-auto font-mono text-primary">
+                          {activeTab === "FI"
+                            ? t("tests.sections.fundamentals")
+                            : t("tests.sections.algorithms")}
+                        </span>
+                      </div>
                     </div>
+                  </div>
                 </div>
+              </div>
             </CardFooter>
           </Card>
           <div className="absolute inset-x-0 bottom-0 z-20">
-              <Button
-                variant="solid"
-                className={`w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none !opacity-100 hover:!bg-blue-450 hover:dark:!bg-blue-450-dark ${totalSelected === 0 ? 'bg-gray-300 text-gray-500 dark:bg-zinc-800 dark:text-gray-400 cursor-not-allowed' : ''}`}
-                color="primary"
-                isDisabled={totalSelected === 0}
-                onMouseEnter={() => setIsGenerateHovered(true)}
-                onMouseLeave={() => setIsGenerateHovered(false)}
-                // onPress={handleStartTest}
+            <Button
+              className={`w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none !opacity-100 hover:!bg-blue-450 hover:dark:!bg-blue-450-dark ${totalSelected === 0 ? "bg-gray-300 text-gray-500 dark:bg-zinc-800 dark:text-gray-400 cursor-not-allowed" : ""}`}
+              color="primary"
+              isDisabled={totalSelected === 0}
+              variant="solid"
+              onMouseEnter={() => setIsGenerateHovered(true)}
+              onMouseLeave={() => setIsGenerateHovered(false)}
+              // onPress={handleStartTest}
             >
-                {t("tests.labels.startTest")}
-              </Button>
+              {t("tests.labels.startTest")}
+            </Button>
           </div>
         </div>
       </aside>
       {/* Mobile Start Test Button (visible on small screens) */}
       {totalSelected !== 0 && (
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-20 p-4">
-        <Card className="rounded-3xl shadow-none border-3 dark:border-zinc-800">
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-20 p-4">
+          <Card className="rounded-3xl shadow-none border-3 dark:border-zinc-800">
             <span className="text-lg font-semibold text-center mb-2 mt-2">
-                {t("tests.selected.mobileCount", { count: totalSelected })}
+              {t("tests.selected.mobileCount", { count: totalSelected })}
             </span>
             <Button
-                variant="solid"
-                className="w-full h-16 rounded-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none"
-                color="primary"
-                onPress={() => setMobileModalOpen(true)}
-                >
-                {t("tests.generation.modalTitle")}
+              className="w-full h-16 rounded-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none"
+              color="primary"
+              variant="solid"
+              onPress={() => setMobileModalOpen(true)}
+            >
+              {t("tests.generation.modalTitle")}
             </Button>
-        </Card>
-      </div>
-     )}
+          </Card>
+        </div>
+      )}
       {/* Mobile Modal for generation info */}
       <Modal
         isOpen={mobileModalOpen}
@@ -693,32 +756,52 @@ export default function TestsPage() {
         onOpenChange={setMobileModalOpen}
       >
         <ModalContent className="m-6">
-          <ModalHeader className="text-lg font-semibold text-center">{t("tests.generation.modalTitle")}</ModalHeader>
+          <ModalHeader className="text-lg font-semibold text-center">
+            {t("tests.generation.modalTitle")}
+          </ModalHeader>
           <ModalBody>
             <div className="flex flex-col items-center gap-4 mt-2">
               <div className="w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-900/70 shadow-sm flex flex-col gap-2 text-base text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">{t("tests.generation.questionCount")}</span>
+                  <span className="font-semibold">
+                    {t("tests.generation.questionCount")}
+                  </span>
                   <span className="font-mono text-primary">20</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">{t("tests.generation.time")}</span>
-                  <span className="font-mono text-primary">60 {t("tests.generation.minutes")}</span>
+                  <span className="font-semibold">
+                    {t("tests.generation.time")}
+                  </span>
+                  <span className="font-mono text-primary">
+                    60 {t("tests.generation.minutes")}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">{t("tests.generation.maxScore")}</span>
+                  <span className="font-semibold">
+                    {t("tests.generation.maxScore")}
+                  </span>
                   <span className="font-mono text-primary">100</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">{t("tests.generation.section")}</span>
-                  <span className="font-mono text-primary">{activeTab === 'FI' ? t("tests.sections.fundamentals") : t("tests.sections.algorithms")}</span>
+                  <span className="font-semibold">
+                    {t("tests.generation.section")}
+                  </span>
+                  <span className="font-mono text-primary">
+                    {activeTab === "FI"
+                      ? t("tests.sections.fundamentals")
+                      : t("tests.sections.algorithms")}
+                  </span>
                 </div>
               </div>
               {/* Unified SelectedTopics component */}
               <div className="w-full">
                 <SelectedTopics
-                  topics={activeTab === 'FI' ? selectedFI : selectedAS}
-                  emptyLabel={activeTab === 'FI' ? t("tests.empty.FITopics") : t("tests.empty.ASTopics")}
+                  emptyLabel={
+                    activeTab === "FI"
+                      ? t("tests.empty.FITopics")
+                      : t("tests.empty.ASTopics")
+                  }
+                  topics={activeTab === "FI" ? selectedFI : selectedAS}
                   onReset={() => {
                     handleResetSelections();
                     setMobileModalOpen(false);
@@ -732,14 +815,14 @@ export default function TestsPage() {
               {t("tests.modal.close")}
             </Button>
             <Button
-                variant="solid"
-                color="primary"
-                isDisabled={totalSelected === 0}
-                onMouseEnter={() => setIsGenerateHovered(true)}
-                onMouseLeave={() => setIsGenerateHovered(false)}
-                // onPress={handleStartTest}
+              color="primary"
+              isDisabled={totalSelected === 0}
+              variant="solid"
+              onMouseEnter={() => setIsGenerateHovered(true)}
+              onMouseLeave={() => setIsGenerateHovered(false)}
+              // onPress={handleStartTest}
             >
-                {t("tests.labels.startTest")}
+              {t("tests.labels.startTest")}
             </Button>
           </ModalFooter>
         </ModalContent>

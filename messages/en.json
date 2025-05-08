@@ -448,6 +448,7 @@
             "errors": {
                 "questionRequired": "Enter the question text",
                 "typeRequired": "Select a question type",
+                "topicRequired": "Select a topic from the list",
                 "optionsMin": "Provide at least two answer options",
                 "optionsFillAll": "Fill in all answer option fields",
                 "correctAnswerRequired": "Select the correct answer",

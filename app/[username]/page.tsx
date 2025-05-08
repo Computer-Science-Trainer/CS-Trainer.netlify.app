@@ -50,27 +50,33 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       const idParam = searchParams.get("id");
+
       if (idParam) {
         try {
           const dataById: ProfileUser = await makeApiRequest(
             `api/user/${idParam}`,
-            "GET"
+            "GET",
           );
+
           router.replace(`/${dataById.username}`);
+
           return;
         } catch {
           router.replace("/404");
+
           return;
         }
       }
       try {
         const data: ProfileUser = await makeApiRequest(
           `api/user/${username}`,
-          "GET"
+          "GET",
         );
+
         setProfileUser(data);
       } catch {
         router.replace("/404");
+
         return;
       }
     }
@@ -174,7 +180,7 @@ export default function ProfilePage() {
   if (!profileUser) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Spinner size="lg" label={t("loading")} />
+        <Spinner label={t("loading")} size="lg" />
       </div>
     );
   }
