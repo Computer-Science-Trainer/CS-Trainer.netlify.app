@@ -36,6 +36,7 @@ export async function makeApiRequest(
 
   if (!skipAuth) {
     const token = getToken("token");
+
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
@@ -47,12 +48,14 @@ export async function makeApiRequest(
 
   if (!res.ok) {
     let err;
+
     try {
       err = await res.json();
     } catch {
       err = { detail: res.statusText };
     }
     const code = typeof err.detail === "string" ? err.detail : err.detail?.code;
+
     if (
       !skipAuth &&
       retry &&
@@ -60,18 +63,26 @@ export async function makeApiRequest(
       (code === "token_expired" || code === "invalid_token")
     ) {
       const refreshToken = getToken("refresh_token");
+
       if (refreshToken) {
         const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refresh_token: refreshToken }),
         });
+
         if (refreshRes.ok) {
           const data = await refreshRes.json();
+
           setToken("token", data.access_token, !!localStorage.getItem("token"));
           if (data.refresh_token) {
-            setToken("refresh_token", data.refresh_token, !!localStorage.getItem("refresh_token"));
+            setToken(
+              "refresh_token",
+              data.refresh_token,
+              !!localStorage.getItem("refresh_token"),
+            );
           }
+
           return makeApiRequest(endpoint, method, body, skipAuth, false);
         } else {
           removeTokens();
@@ -85,6 +96,7 @@ export async function makeApiRequest(
         ? err.detail
         : err.detail?.code || err.message || "Request failed",
     );
+
     e.status = res.status;
     throw e;
   }

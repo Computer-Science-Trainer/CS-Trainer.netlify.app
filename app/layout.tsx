@@ -50,14 +50,12 @@ export default async function RootLayout({
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <RouteProgress />
           <div className="relative flex flex-col h-screen">
-            <NextIntlClientProvider>
+            <NextIntlClientProvider locale={locale}>
               <Navbar />
+              <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
+                <PageTransition>{children}</PageTransition>
+              </main>
             </NextIntlClientProvider>
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              <PageTransition>
-                <NextIntlClientProvider>{children}</NextIntlClientProvider>
-              </PageTransition>
-            </main>
             <footer className="w-full flex items-center justify-center py-3">
               <Link
                 isExternal

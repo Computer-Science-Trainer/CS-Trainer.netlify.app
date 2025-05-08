@@ -5,8 +5,8 @@ export const siteConfig = {
   description: "site.description",
   navItems: [
     {
-      label: "nav.problems",
-      href: "/problems",
+      label: "nav.tests",
+      href: "/tests",
     },
     {
       label: "nav.leaderboard",
@@ -23,8 +23,8 @@ export const siteConfig = {
       href: "/profile",
     },
     {
-      label: "nav.problems",
-      href: "/problems",
+      label: "nav.tests",
+      href: "/tests",
     },
     {
       label: "menu.leaderboard",

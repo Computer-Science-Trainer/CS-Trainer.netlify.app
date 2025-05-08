@@ -51,7 +51,7 @@ export default function Leaderboard() {
 
   // Define current user id.
   const currentUserId = user?.id ?? -1;
-
+  
   // Component state for search filter, current topic, pagination, and sorting.
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedTopic, setSelectedTopic] = React.useState<
@@ -86,7 +86,7 @@ export default function Leaderboard() {
   // build usersData based on selectedTopic only
   const usersData = React.useMemo(() => {
     return (rawData[selectedTopic] || []).map((item: any) => ({
-      id: item.id,
+      id: item.user_id,
       username: item.username,
       achievement: item.achievement ?? "",
       avatar: item.avatar || "",
@@ -308,6 +308,7 @@ export default function Leaderboard() {
             return (
               <div className="flex items-center gap-2">
                 <Progress
+                  aria-label="progress"
                   className="w-24"
                   color="primary"
                   maxValue={cellData[selectedTopic].totalTests}
@@ -389,7 +390,19 @@ export default function Leaderboard() {
             }}
           >
             {topics.map((topic) => (
-              <Tab key={topic.uid} title={topic.name} />
+              <Tab
+                key={topic.uid}
+                title={
+                  <>
+                    <span className="block sm:hidden">
+                      {t(`tests.sections.${topic.uid}`)}
+                    </span>
+                    <span className="hidden sm:block">
+                      {t(`leaderboard.topics.${topic.uid}`)}
+                    </span>
+                  </>
+                }
+              />
             ))}
           </Tabs>
         </div>

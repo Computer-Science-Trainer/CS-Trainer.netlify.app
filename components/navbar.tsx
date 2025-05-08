@@ -26,7 +26,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Settings01Icon,
-  ArrowRight01Icon,
+  ArrowDown01Icon,
   Globe02Icon,
 } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
@@ -84,7 +84,7 @@ export const SettingsDropdown = () => {
         >
           <Dropdown
             closeOnSelect={false}
-            placement="right-start"
+            placement="bottom"
             shouldBlockScroll={false}
           >
             <DropdownTrigger
@@ -95,7 +95,7 @@ export const SettingsDropdown = () => {
                 <HugeiconsIcon icon={Globe02Icon} />
                 <span>Language</span>
                 <div className="ml-auto">
-                  <HugeiconsIcon icon={ArrowRight01Icon} />
+                  <HugeiconsIcon icon={ArrowDown01Icon} />
                 </div>
               </div>
             </DropdownTrigger>
@@ -133,6 +133,7 @@ export const SettingsDropdown = () => {
 
 export const Navbar = () => {
   const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -146,7 +147,13 @@ export const Navbar = () => {
   const t = useTranslations();
 
   return (
-    <HeroUINavbar maxWidth="xl" position="sticky">
+    <HeroUINavbar
+      className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      maxWidth="xl"
+      style={{ position: "fixed" }}
+      isMenuOpen={menuOpen}
+      onMenuOpenChange={setMenuOpen}
+    >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
@@ -209,12 +216,16 @@ export const Navbar = () => {
         )}
       </NavbarContent>
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <NavbarMenuToggle className="" />
+        <SettingsDropdown />
+        <NavbarMenuToggle onChange={setMenuOpen} />
       </NavbarContent>
 
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => {
+            if (item.href === "/profile" && !user) {
+              return null;
+            }
             const href =
               item.href === "/profile" && user
                 ? `/${user.username}`
@@ -222,7 +233,12 @@ export const Navbar = () => {
 
             return (
               <NavbarMenuItem key={`${item.label}-${index}`}>
-                <Link color="foreground" href={href} size="lg">
+                <Link
+                  color="foreground"
+                  href={href}
+                  size="lg"
+                  onPress={() => setMenuOpen(false)}
+                >
                   {t(item.label)}
                 </Link>
               </NavbarMenuItem>
@@ -230,7 +246,15 @@ export const Navbar = () => {
           })}
           {!user && (
             <NavbarMenuItem>
-              <Link color="primary" href="#" size="lg" onPress={onOpen}>
+              <Link
+                color="primary"
+                href="#"
+                size="lg"
+                onPress={() => {
+                  setMenuOpen(false);
+                  onOpen();
+                }}
+              >
                 {t("nav.login")}
               </Link>
             </NavbarMenuItem>
