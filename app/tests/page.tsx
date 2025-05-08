@@ -41,7 +41,7 @@ export interface TopicState {
   accordions: AccordionState[];
 }
 
-// Константы
+// Reusable component to render topic accordions
 const TopicAccordions = ({
   t,
   topics,
@@ -65,11 +65,13 @@ const TopicAccordions = ({
 }) => (
   <>
     {topics.map((topic, topicIndex) => (
+      // Card per topic
       <Card key={topicIndex} className="mb-4 select-none rounded-3xl" shadow="none">
         <CardBody className="flex flex-col items-center bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900 rounded-3xl">
           <h2 className="text-lg font-semibold mb-4 mt-3">
             {t(`tests.topics.${topic.label}`)}
           </h2>
+          {/* Render each accordion or simple checkbox */}
           <div className="flex w-full flex-col gap-2">
             {topic.accordions.map((acc, accIndex) =>
               acc.options.length === 0 ? (
@@ -153,6 +155,7 @@ const TopicAccordions = ({
   </>
 );
 
+// Custom hook: track current window width
 function useWindowWidth(defaultWidth = 1024) {
   const [width, setWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : defaultWidth,
@@ -169,6 +172,7 @@ function useWindowWidth(defaultWidth = 1024) {
   return width;
 }
 
+// Helper: count total selected items across topics
 function countSelected(topics: TopicState[]) {
   return topics.reduce(
     (acc, topic) =>
@@ -189,6 +193,7 @@ function countSelected(topics: TopicState[]) {
 
 export default function TestsPage() {
   const t = useTranslations();
+  // State: topics, loading, UI flags
   const [topicStates, setTopicStates] = useState<TopicState[]>([]);
   const [asTopicStates, setAsTopicStates] = useState<TopicState[]>([]);
   const [loading, setLoading] = useState(true);
@@ -197,7 +202,7 @@ export default function TestsPage() {
   const windowWidth = useWindowWidth();
   const isCompact = windowWidth < 640;
 
-  // добавить отслеживание тёмной темы
+  // Effect: detect dark mode by observing <html> class
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   useEffect(() => {
     const root = document.documentElement;
@@ -208,6 +213,7 @@ export default function TestsPage() {
     return () => obs.disconnect();
   }, []);
 
+  // Load topics from API on mount
   useEffect(() => {
     setLoading(true);
     makeApiRequest("api/topics", "GET")
@@ -371,11 +377,9 @@ export default function TestsPage() {
       ? recommendedSubsAll.slice(0, 3)
       : recommendedSubsAll.slice(0, 6);
 
-  // theme color lists
+  // Generate circular color pairs once per mount
   const lightThemeColors = ["#FFAF64", "#FD8462", "#FF608D", "#C77ECC", "#ACA0D4"];
   const darkThemeColors  = ["#5F0F40", "#9A031E", "#FB8B24", "#E36414", "#0F4C5C"];
-
-  // при первой загрузке страницы генерируем кольцевые пары соседних цветов
   const [lightThemeCombos] = useState<[string, string][]>(() => {
     const start = Math.floor(Math.random() * lightThemeColors.length);
     return lightThemeColors.map((_, idx) => {
@@ -401,9 +405,10 @@ export default function TestsPage() {
     handleResetSelections();
   }, [activeTab]);
 
+  // Render main layout: left nav, central content, right panel
   return (
     <section className="pt-4 flex lg:gap-6">
-      {/* Левая панель */}
+      {/* Left navigation panel */}
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit border-3 p-4 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900">
         <div className="relative flex flex-col items-start ">
           <div className="absolute inset-y-4 left-3.5 w-[4px] bg-gray-300 dark:bg-gray-600 bottom-5" />
@@ -437,10 +442,10 @@ export default function TestsPage() {
           ))}
         </div>
       </aside>
-      {/* Центральная панель */}
+      {/* Central panel: recommendations, custom test, question form */}
       <aside className="flex flex-col items-center justify-center w-full">
         <div className="w-full">
-          {/* Рекомендованное Вам */}
+          {/* Recommended tests section */}
           <div
             ref={(el) => {
               if (el) sectionRefs.current[0] = el;
@@ -459,6 +464,7 @@ export default function TestsPage() {
                     const [from, to] = isDarkMode ? [darkFrom, darkTo] : [lightFrom, lightTo];
 
                     return (
+                      // Card with dynamic gradient
                       <Card
                         key={idx}
                         isPressable
@@ -506,7 +512,7 @@ export default function TestsPage() {
               </CardBody>
             </Card>
           </div>
-          {/* Создание собственного варианта */}
+          {/* Custom test creation section */}
           <div
             ref={(el) => {
               if (el) sectionRefs.current[1] = el;
@@ -580,7 +586,7 @@ export default function TestsPage() {
               </Tab>
             </Tabs>
           </div>
-          {/* Предложить вопрос */}
+          {/* Question suggestion form */}
           <div
             ref={(el) => {
               if (el) sectionRefs.current[2] = el;
@@ -594,7 +600,7 @@ export default function TestsPage() {
           </div>
         </div>
       </aside>
-      {/* Правая панель */}
+      {/* Right summary panel */}
       <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
         <div className="group">
           <Card className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2" radius="lg">
