@@ -552,5 +552,14 @@
             "googleClientId": "Google Client ID",
             "githubClientId": "GitHub Client ID"
         }
+    },
+    "about": {
+        "title": "About",
+        "description": "Welcome to our educational platform! Here you will find various tests on important topics such as Fundamental Informatics, as well as Algorithms and Data Structures. Our goal is to help you better understand the theory and learn how to apply the acquired knowledge in practice.",
+        "features": {
+        "tests": "Interactive tests on various topics.",
+        "feedback": "Feedback on each topic."
+        },
+        "contacts": "Contacts"
     }
 }
