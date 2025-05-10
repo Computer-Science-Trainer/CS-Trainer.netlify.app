@@ -557,6 +557,7 @@
         "title": "About",
         "description": "Welcome to our educational platform! Here you will find various tests on important topics such as Fundamental Informatics, as well as Algorithms and Data Structures. Our goal is to help you better understand the theory and deepen your knowledge in these areas.",
         "features": {
+            "title": "Features",
             "tests": "Take interactive coding tests",
             "feedback": "Receive detailed feedback",
             "statistics": "View your performance statistics",
