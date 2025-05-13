@@ -216,7 +216,7 @@ export default function ProfilePage() {
                       : undefined
                 }
               />
-              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
                 {profileUser.username}
               </h1>
               {profileUser?.bio && (
@@ -395,7 +395,7 @@ export default function ProfilePage() {
             shadow="none"
           >
             <div className="p-4 flex items-center gap-2 mt-2">
-              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
+              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
                 {t("profile.activityHeading")}
               </h2>
               <Spacer />
@@ -418,7 +418,7 @@ export default function ProfilePage() {
             shadow="none"
           >
             <div className="flex items-center justify-between mt-2 mb-4">
-              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
+              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
                 {t("profile.testResultsHeading")}
               </h2>
               <div className="flex gap-2">

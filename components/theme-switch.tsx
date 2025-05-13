@@ -62,7 +62,7 @@ export const ThemeSwitch = () => {
 
   return (
     <div className="flex items-center w-full gap-2 p-2">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         {isDark ? (
           <MoonIcon className="w-6 h-6" />
         ) : (
