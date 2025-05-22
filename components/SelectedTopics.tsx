@@ -16,7 +16,7 @@ export const SelectedTopics: React.FC<SelectedTopicsProps> = ({
   const t = useTranslations();
 
   return (
-    <div className="flex flex-col h-[10rem] bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
+    <div className="flex flex-col h-40 bg-white dark:bg-zinc-900 border-3 border-gray-200 dark:border-zinc-800 rounded-2xl overflow-y-auto">
       <div className="flex-1 overflow-y-auto">
         {topics.length > 0 ? (
           <ul className="p-3 list-disc text-sm text-gray-700 dark:text-gray-200">

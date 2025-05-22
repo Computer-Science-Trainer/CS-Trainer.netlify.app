@@ -71,7 +71,7 @@ const TopicAccordions = ({
         className="mb-4 select-none rounded-3xl"
         shadow="none"
       >
-        <CardBody className="flex flex-col items-center bg-gradient-to-r from-purple-200 via-pink-200 to-red-200 dark:from-slate-900 dark:to-emerald-900 rounded-3xl">
+        <CardBody className="flex flex-col items-center bg-linear-to-r from-purple-200 via-pink-200 dark:via-none to-red-200 dark:from-slate-900 dark:to-emerald-900 rounded-3xl">
           <h2 className="text-lg font-semibold mb-4 mt-3">
             {t(`tests.topics.${topic.label}`)}
           </h2>
@@ -82,9 +82,8 @@ const TopicAccordions = ({
                 <div key={accIndex} className="px-2">
                   <Card
                     isPressable
-                    className="w-full py-1 rounded-2xl"
+                    className="w-full py-1 rounded-2xl data-[pressed=true]:scale-100"
                     shadow="none"
-                    style={{ transform: "none" }}
                     onPress={(e) => {
                       if (
                         e.target instanceof HTMLElement &&
@@ -440,7 +439,7 @@ export default function TestsPage() {
   return (
     <section className="pt-4 flex lg:gap-6">
       {/* Left navigation panel */}
-      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit border-3 p-4 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900">
+      <aside className="hidden lg:block w-[250px] shrink-0 sticky top-32 h-fit border-3 p-4 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900">
         <div className="relative flex flex-col items-start ">
           <div className="absolute inset-y-4 left-3.5 w-[4px] bg-gray-300 dark:bg-gray-600 bottom-5" />
           {sectionLabels.map((label, idx) => (
@@ -450,7 +449,7 @@ export default function TestsPage() {
               onClick={() => scrollToSection(idx)}
             >
               <div
-                className={`z-10 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
+                className={`z-10 w-4 h-4 rounded-full border-2 shrink-0 transition-all ${
                   idx === currentIndex
                     ? "border-blue-500 bg-blue-500 animate-ping-slow"
                     : "border-gray-300 bg-white dark:bg-gray-700"
@@ -636,13 +635,13 @@ export default function TestsPage() {
         </div>
       </aside>
       {/* Right summary panel */}
-      <aside className="hidden lg:block w-[250px] flex-shrink-0 sticky top-32 h-fit">
+      <aside className="hidden lg:block w-[250px] shrink-0 sticky top-32 h-fit">
         <div className="group">
           <Card
-            className="group relative overflow-hidden rounded-3xl shadow-none border-3 dark:border-zinc-800 pb-2"
+            className="group relative overflow-hidden rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800 pb-2"
             radius="lg"
           >
-            <CardHeader className="flex flex-col justify-center gap-2 border-b-3 border-gray-200 dark:border-zinc-800 p-6 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:to-slate-900">
+            <CardHeader className="flex flex-col justify-center gap-2 border-b-3 border-gray-200 dark:border-zinc-800 p-6 bg-linear-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-800 dark:via-none dark:to-slate-900">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
                 {t("tests.labels.selectedTopicsHeader")}
               </h2>
@@ -665,7 +664,7 @@ export default function TestsPage() {
             </CardBody>
             <div className="mb-11" />
             <CardFooter
-              className={`absolute z-10 bg-gradient-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? "translate-y-0" : "translate-y-[85%]"}`}
+              className={`absolute z-10 bg-linear-to-r from-red-300 via-pink-300 to-purple-300 dark:from-emerald-900 dark:via-none dark:to-slate-800 duration-300 h-full ${isGenerateHovered ? "translate-y-0" : "translate-y-[85%]"}`}
               style={{ borderRadius: 12 }}
             >
               <div className="relative rounded-2xl w-full flex flex-col h-full">
@@ -717,7 +716,7 @@ export default function TestsPage() {
           </Card>
           <div className="absolute inset-x-0 bottom-0 z-20">
             <Button
-              className={`w-full h-16 rounded-b-3xl border-3 dark:border-zinc-800 font-bold text-lg shadow-none !opacity-100 hover:!bg-blue-450 hover:dark:!bg-blue-450-dark ${totalSelected === 0 ? "bg-gray-300 text-gray-500 dark:bg-zinc-800 dark:text-gray-400 cursor-not-allowed" : ""}`}
+              className={`w-full h-16 rounded-b-3xl border-3 border-gray-200 dark:border-zinc-800 font-bold text-lg shadow-none opacity-100! hover:color-blue-450! hover:dark:color-blue-450-dark! ${totalSelected === 0 ? "bg-gray-300 text-gray-500 dark:bg-zinc-800 dark:text-gray-400 cursor-not-allowed" : ""}`}
               color="primary"
               isDisabled={totalSelected === 0}
               variant="solid"
@@ -733,7 +732,7 @@ export default function TestsPage() {
       {/* Mobile Start Test Button (visible on small screens) */}
       {totalSelected !== 0 && (
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-20 p-4">
-          <Card className="rounded-3xl shadow-none border-3 dark:border-zinc-800">
+          <Card className="rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
             <span className="text-lg font-semibold text-center mb-2 mt-2">
               {t("tests.selected.mobileCount", { count: totalSelected })}
             </span>

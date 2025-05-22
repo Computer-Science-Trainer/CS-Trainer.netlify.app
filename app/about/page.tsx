@@ -16,25 +16,25 @@ export default function AboutPage() {
       </p>
       <h2 className="mt-8 text-2xl font-semibold text-center md:text-left">{t("features.title")}:</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
+        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
           <p className="flex items-center gap-2 text-base font-medium">
             <HugeiconsIcon icon={BookOpenIcon} className="text-2xl text-primary" />
             {t("features.tests")}
           </p>
         </Card>
-        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
+        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
           <p className="flex items-center gap-2 text-base font-medium">
             <HugeiconsIcon icon={InformationCircleIcon} className="text-2xl text-primary" />
             {t("features.feedback")}
           </p>
         </Card>
-        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
+        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
           <p className="flex items-center gap-2 text-base font-medium">
             <HugeiconsIcon icon={ChartUpIcon} className="text-2xl text-primary" />
             {t("features.statistics")}
           </p>
         </Card>
-        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
+        <Card className="flex w-full items-start gap-4 dark:bg-zinc-800 p-6 border-3 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
           <p className="flex items-center gap-2 text-base font-medium">
           <HugeiconsIcon icon={Edit02Icon} className="text-2xl text-primary" />
             {t("features.suggestQuestion")}
@@ -42,7 +42,7 @@ export default function AboutPage() {
         </Card>
       </div>
       <h2 className="mt-8 text-2xl font-semibold text-center md:text-left">{t("contacts")}:</h2>
-      <Card className="mt-4 dark:bg-zinc-800 p-6 border-3 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
+      <Card className="mt-4 dark:bg-zinc-800 p-6 border-3 border-gray-200 dark:border-zinc-800 rounded-3xl dark:bg-zinc-900" shadow="none">
         <p className="flex items-center gap-2">
           <HugeiconsIcon icon={Mail02Icon} className="text-xl text-primary" />
           <a href="mailto:cs-trainer@list.ru" className="text-base hover:underline">
