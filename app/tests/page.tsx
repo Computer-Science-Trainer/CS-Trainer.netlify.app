@@ -22,10 +22,12 @@ import {
   ModalFooter,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 
 import QuestionForm from "../../components/tests/QuestionForm";
 import { SelectedTopics } from "../../components/SelectedTopics";
 
+import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 
 export interface AccordionState {
@@ -196,6 +198,8 @@ function countSelected(topics: TopicState[]) {
 
 export default function TestsPage() {
   const t = useTranslations();
+  const router = useRouter();
+  const { user } = useAuth();
   // State: topics, loading, UI flags
   const [topicStates, setTopicStates] = useState<TopicState[]>([]);
   const [asTopicStates, setAsTopicStates] = useState<TopicState[]>([]);
@@ -371,18 +375,115 @@ export default function TestsPage() {
     ),
   );
 
-  const recommendedSubsAll = topicStates.flatMap((topic, tIdx) =>
-    topic.accordions.map((acc, aIdx) => ({
-      label: acc.label,
-      description: acc.description,
+  // --- Recommendations logic ---
+  const [recommendedTopics, setRecommendedTopics] = useState<string[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+
+  useEffect(() => {
+    async function fetchRecommendations() {
+      if (!user?.username) return;
+      setLoadingRecommendations(true);
+      try {
+        const recs = await makeApiRequest(
+          `api/user/${user.username}/recommendations`,
+          "GET",
+        );
+
+        setRecommendedTopics(Array.isArray(recs) ? recs : []);
+      } catch {
+        setRecommendedTopics([]);
+      } finally {
+        setLoadingRecommendations(false);
+      }
+    }
+    fetchRecommendations();
+  }, [user]);
+
+  // Собираем все разделы (topics, accordions, options)
+  let recommendedSubs = [
+    // Первый уровень (topics)
+    ...topicStates.map((topic, tIdx) => ({
+      label: topic.label,
+      description: undefined,
       topicIndex: tIdx,
-      accIndex: aIdx,
+      accIndex: undefined,
+      section: "FI",
+      isTopic: true,
+      isOption: false,
+      optionValue: undefined,
     })),
-  );
-  const recommendedSubs =
-    windowWidth < 640
-      ? recommendedSubsAll.slice(0, 3)
-      : recommendedSubsAll.slice(0, 6);
+    ...asTopicStates.map((topic, tIdx) => ({
+      label: topic.label,
+      description: undefined,
+      topicIndex: tIdx,
+      accIndex: undefined,
+      section: "AS",
+      isTopic: true,
+      isOption: false,
+      optionValue: undefined,
+    })),
+    ...topicStates.flatMap((topic, tIdx) =>
+      topic.accordions.map((acc, aIdx) => ({
+        label: acc.label,
+        description: acc.description,
+        topicIndex: tIdx,
+        accIndex: aIdx,
+        section: "FI",
+        isTopic: false,
+        isOption: false,
+        optionValue: undefined,
+      })),
+    ),
+    ...asTopicStates.flatMap((topic, tIdx) =>
+      topic.accordions.map((acc, aIdx) => ({
+        label: acc.label,
+        description: acc.description,
+        topicIndex: tIdx,
+        accIndex: aIdx,
+        section: "AS",
+        isTopic: false,
+        isOption: false,
+        optionValue: undefined,
+      })),
+    ),
+    ...topicStates.flatMap((topic, tIdx) =>
+      topic.accordions.flatMap((acc, aIdx) =>
+        acc.options.map((option) => ({
+          label: option,
+          description: undefined,
+          topicIndex: tIdx,
+          accIndex: aIdx,
+          section: "FI",
+          isTopic: false,
+          isOption: true,
+          optionValue: option,
+        })),
+      ),
+    ),
+    ...asTopicStates.flatMap((topic, tIdx) =>
+      topic.accordions.flatMap((acc, aIdx) =>
+        acc.options.map((option) => ({
+          label: option,
+          description: undefined,
+          topicIndex: tIdx,
+          accIndex: aIdx,
+          section: "AS",
+          isTopic: false,
+          isOption: true,
+          optionValue: option,
+        })),
+      ),
+    ),
+  ];
+
+  if (user?.username) {
+    recommendedSubs = recommendedSubs.filter((sub) =>
+      recommendedTopics.includes(sub.label),
+    );
+  } else {
+    // Показывать только первые 6 тем (topics, accordions, options) если не залогинен
+    recommendedSubs = recommendedSubs.slice(0, 6);
+  }
 
   // Generate circular color pairs once per mount
   const lightThemeColors = [
@@ -435,6 +536,59 @@ export default function TestsPage() {
     t("tests.leftNav.suggest"),
   ];
 
+  const handleStartTest = async () => {
+    if (!user?.username) {
+      addToast({
+        title: t("tests.errors.ErrorTitle"),
+        description: t("tests.errors.authRequired"),
+        color: "danger",
+      });
+
+      return;
+    }
+    const selected = activeTab === "FI" ? selectedFI : selectedAS;
+
+    if (selected.length === 0) return;
+    try {
+      const payload = { section: activeTab, topics: selected };
+      const data = await makeApiRequest("api/tests", "POST", payload);
+
+      if (data?.id) router.push(`/tests/${data.id}`);
+    } catch {
+      addToast({
+        title: t("tests.errors.ErrorTitle"),
+        description: t("tests.errors.loadErrorDescription"),
+        color: "danger",
+      });
+    }
+  };
+
+  const handleStartTestSingle = async (
+    sub: (typeof recommendedSubs)[number],
+  ) => {
+    if (!user?.username) {
+      addToast({
+        title: t("tests.errors.ErrorTitle"),
+        description: t("tests.errors.authRequired"),
+        color: "danger",
+      });
+
+      return;
+    }
+    try {
+      const payload = { section: sub.section, topics: [sub.label] };
+      const data = await makeApiRequest("api/tests", "POST", payload);
+
+      if (data?.id) router.push(`/tests/${data.id}`);
+    } catch {
+      addToast({
+        title: t("tests.errors.ErrorTitle"),
+        description: t("tests.errors.loadErrorDescription"),
+        color: "danger",
+      });
+    }
+  };
+
   // Render main layout: left nav, central content, right panel
   return (
     <section className="pt-4 flex lg:gap-6">
@@ -483,62 +637,76 @@ export default function TestsPage() {
             </h1>
             <Card className="mb-4 mt-4 p-2 rounded-3xl shadow-none border-3 border-gray-200 dark:border-zinc-800">
               <CardBody className="flex flex-col">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                  {recommendedSubs.map((sub, idx) => {
-                    const [lightFrom, lightTo] =
-                      lightThemeCombos[idx % lightThemeCombos.length];
-                    const [darkFrom, darkTo] =
-                      darkThemeCombos[idx % darkThemeCombos.length];
-                    const [from, to] = isDarkMode
-                      ? [darkFrom, darkTo]
-                      : [lightFrom, lightTo];
+                {loadingRecommendations ? (
+                  <div className="flex justify-center py-10">
+                    <Spinner label={t("loading")} size="lg" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                    {recommendedSubs.map((sub, idx) => {
+                      const [lightFrom, lightTo] =
+                        lightThemeCombos[idx % lightThemeCombos.length];
+                      const [darkFrom, darkTo] =
+                        darkThemeCombos[idx % darkThemeCombos.length];
+                      const [from, to] = isDarkMode
+                        ? [darkFrom, darkTo]
+                        : [lightFrom, lightTo];
 
-                    return (
-                      // Card with dynamic gradient
-                      <Card
-                        key={idx}
-                        isPressable
-                        className="group mx-auto rounded-b-3xl shadow-none"
-                        shadow="none"
-                        style={{
-                          backgroundImage: `linear-gradient(to right, ${from}, ${to})`,
-                          minHeight: 220,
-                          width: "100%",
-                          maxWidth: 340,
-                          borderRadius: 12,
-                        }}
-                        onPress={() =>
-                          handleAccordionChange(setTopicStates)(
-                            sub.topicIndex,
-                            sub.accIndex,
-                            true,
-                          )
+                      const onPress = () => {
+                        if (!user?.username) {
+                          addToast({
+                            title: t("tests.errors.ErrorTitle"),
+                            description: t("tests.errors.authRequired"),
+                            color: "danger",
+                          });
+
+                          return;
                         }
-                      >
-                        <CardFooter
-                          className="absolute flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
-                          style={{ borderRadius: 12 }}
+                        // Запуск теста сразу по выбранной рекомендации
+                        handleStartTestSingle(sub);
+                      };
+
+                      return (
+                        // Card with dynamic gradient
+                        <Card
+                          key={idx}
+                          isPressable
+                          className="group mx-auto rounded-b-3xl shadow-none"
+                          shadow="none"
+                          style={{
+                            backgroundImage: `linear-gradient(to right, ${from}, ${to})`,
+                            minHeight: 220,
+                            width: "100%",
+                            maxWidth: 340,
+                            borderRadius: 12,
+                          }}
+                          onPress={onPress}
                         >
-                          <div className="w-full flex flex-col h-full">
-                            <div className="w-full flex flex-col items-end absolute right-0 px-4 transition-all duration-300 z-20 top-3 group-hover:top-9">
-                              <span className="text-base font-bold text-right text-gray-900 dark:text-white transition-colors">
-                                {t(`tests.topics.${sub.label}`)}
-                              </span>
-                              <span className="text-xs text-gray-700 dark:text-gray-300 text-right mt-1 opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32 transition-all duration-300">
-                                {sub.description}
-                              </span>
+                          <CardFooter
+                            className="absolute flex bg-white/60 dark:bg-gray-900/60 duration-300 h-full translate-y-[60%] group-hover:translate-y-0"
+                            style={{ borderRadius: 12 }}
+                          >
+                            <div className="w-full flex flex-col h-full">
+                              <div className="w-full flex flex-col items-end absolute right-0 px-4 transition-all duration-300 z-20 top-3 group-hover:top-9">
+                                <span className="text-base font-bold text-right text-gray-900 dark:text-white transition-colors">
+                                  {t(`tests.topics.${sub.label}`)}
+                                </span>
+                                <span className="text-xs text-gray-700 dark:text-gray-300 text-right mt-1 opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-32 transition-all duration-300">
+                                  {sub.description}
+                                </span>
+                              </div>
+                              <div className="w-full flex justify-center absolute left-0 right-0 bottom-4 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                <span className="text-primary text-sm font-semibold">
+                                  {t("tests.labels.startTest")}
+                                </span>
+                              </div>
                             </div>
-                            <div className="w-full flex justify-center absolute left-0 right-0 bottom-4 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                              <span className="text-primary text-sm font-semibold">
-                                {t("tests.labels.startTest")}
-                              </span>
-                            </div>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    );
-                  })}
-                </div>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
               </CardBody>
             </Card>
           </div>
@@ -722,7 +890,7 @@ export default function TestsPage() {
               variant="solid"
               onMouseEnter={() => setIsGenerateHovered(true)}
               onMouseLeave={() => setIsGenerateHovered(false)}
-              // onPress={handleStartTest}
+              onPress={handleStartTest}
             >
               {t("tests.labels.startTest")}
             </Button>
@@ -819,7 +987,7 @@ export default function TestsPage() {
               variant="solid"
               onMouseEnter={() => setIsGenerateHovered(true)}
               onMouseLeave={() => setIsGenerateHovered(false)}
-              // onPress={handleStartTest}
+              onPress={handleStartTest}
             >
               {t("tests.labels.startTest")}
             </Button>

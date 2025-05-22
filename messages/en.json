@@ -213,12 +213,29 @@
             "leaderboard_top3": {
                 "title": "Top 3 Leaderboard",
                 "description": "You are in the top three!"
+            },
+            "passed_10_answers": {
+                "title": "10 Correct Answers",
+                "description": "🎉 Answered 10 questions correctly!"
+            },
+            "score_50": {
+                "title": "Score 50",
+                "description": "🥈 Scored 50 points!"
+            },
+            "score_100": {
+                "title": "Score 100",
+                "description": "🥇 Scored 100 points!"
+            },
+            "score_200": {
+                "title": "Score 200",
+                "description": "🏆 Scored 200 points!"
             }
         }
     },
     "tests": {
         "testTypes": {
             "custom": "Custom Test",
+            "practice": "Practice Test",
             "recommended": "Recommended test"
         },
         "sections": {
@@ -413,6 +430,15 @@
             "prolog_logical_programming_languages": "8.2 Prolog logical programming languages",
             "lisp_afp_functional_programming_languages": "8.3 LISP AFP functional programming languages"
         },
+        "runner": {
+            "questionOf": "Question {current} of {total}",
+            "timeLeft": "Time left: {time}",
+            "prev": "Previous",
+            "next": "Next",
+            "submit": "Submit",
+            "openPlaceholder": "Type your answer here...",
+            "submitWarning": "If you do not press the Submit button, your answers will not be saved"
+        },
         "questionForm": {
             "topicLabel": "Topic",
             "topicPlaceholder": "Select a topic",
@@ -464,7 +490,8 @@
         },
         "errors": {
             "ErrorTitle": "Error",
-            "loadErrorDescription": "Failed to load topics. Please check your server connection."
+            "loadErrorDescription": "Failed to load topics. Please check your server connection.",
+            "authRequired": "You need to be logged in to start a test."
         },
         "correctAnswersLabel": "Correct answers",
         "incorrectAnswersLabel": "Incorrect answers",
