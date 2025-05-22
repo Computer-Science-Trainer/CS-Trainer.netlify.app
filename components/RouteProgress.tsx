@@ -8,7 +8,7 @@ import { ProgressBar } from "./ProgressBar";
 export const RouteProgress: React.FC = () => {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const MIN_DISPLAY_MS = 300;
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export const RouteProgress: React.FC = () => {
         const url = new URL(href);
 
         setVisible(true);
-        clearTimeout(timerRef.current);
+        clearTimeout(timerRef.current!);
 
         if (url.pathname === window.location.pathname) {
           timerRef.current = setTimeout(
@@ -44,7 +44,7 @@ export const RouteProgress: React.FC = () => {
     timerRef.current = setTimeout(() => setVisible(false), MIN_DISPLAY_MS);
 
     return () => {
-      clearTimeout(timerRef.current);
+      clearTimeout(timerRef.current!);
     };
   }, [pathname]);
 

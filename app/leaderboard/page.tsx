@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
 import type { JSX } from "react";
+
+import React from "react";
 import {
   Table,
   TableHeader,
@@ -447,8 +448,8 @@ export default function Leaderboard() {
       <div className="rounded-3xl border-3 border-gray-200 dark:border-zinc-800 overflow-hidden mt-3">
         <Table
           aria-label={t("leaderboard.ariaLabel")}
-          sortDescriptor={sortDescriptor}
           shadow="none"
+          sortDescriptor={sortDescriptor}
           onSortChange={(descriptor) =>
             setSortDescriptor({
               column: String(descriptor.column),
