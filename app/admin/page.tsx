@@ -64,7 +64,7 @@ function QuestionTable({
     <Spinner label={t("loading")} />
   ) : (
     <Table
-      className="border-3 rounded-3xl dark:border-zinc-800 p-1 bg-content1"
+      className="border-3 rounded-3xl border-gray-200 dark:border-zinc-800 p-1 bg-content1"
       shadow="none"
     >
       <TableHeader className="">
@@ -296,7 +296,7 @@ export default function AdminPage() {
     <Tabs
       isVertical
       aria-label="admin-navigation"
-      className="mt-4 border-3 dark:border-zinc-800 bg-content1 h-full rounded-3xl p-2"
+      className="mt-4 border-3 border-gray-200 dark:border-zinc-800 bg-content1 h-full rounded-3xl p-2"
       radius="sm"
       selectedKey={tab}
       variant="light"
@@ -370,7 +370,7 @@ export default function AdminPage() {
             <Spinner label={t("loading")} />
           ) : (
             <Table
-              className="w-full rounded-3xl border-3 dark:border-zinc-800 p-1 bg-content1"
+              className="w-full rounded-3xl border-3 border-gray-200 dark:border-zinc-800 p-1 bg-content1"
               radius="lg"
               shadow="none"
             >

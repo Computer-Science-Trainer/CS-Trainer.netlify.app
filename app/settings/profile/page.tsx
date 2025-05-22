@@ -293,7 +293,10 @@ export default function SettingsProfilePage() {
       <h1 className="text-3xl font-bold text-center">
         {t("settings.profileTitle")}
       </h1>
-      <Card className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 space-y-6">
+      <Card
+        className="bg-white dark:bg-zinc-900 p-6 space-y-6 rounded-3xl border-3 border-gray-200 dark:border-zinc-800"
+        shadow="none"
+      >
         <h2 className="text-xl font-semibold border-b pb-2">
           {t("settings.infoHeading")}
         </h2>
@@ -441,7 +444,10 @@ export default function SettingsProfilePage() {
           </Button>
         </Form>
       </Card>
-      <Card className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 space-y-6">
+      <Card
+        className="bg-white dark:bg-zinc-900 p-6 space-y-6 rounded-3xl border-3 border-gray-200 dark:border-zinc-800"
+        shadow="none"
+      >
         <h2 className="text-xl font-semibold border-b pb-2">
           {t("settings.changePasswordHeading")}
         </h2>

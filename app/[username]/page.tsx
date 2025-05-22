@@ -199,13 +199,13 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
           <Card
-            className="p-6 border-3 dark:border-zinc-800 rounded-3xl"
+            className="p-6 border-3 border-gray-200 dark:border-zinc-800 rounded-3xl"
             shadow="none"
           >
             <div className="flex flex-col items-center space-y-4">
               <Avatar
                 showFallback
-                className="w-60 h-60 border-4 dark:border-zinc-800"
+                className="w-60 h-60 border-4 border-gray-200 dark:border-zinc-800"
                 radius="full"
                 size="lg"
                 src={
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                       : undefined
                 }
               />
-              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
                 {profileUser.username}
               </h1>
               {profileUser?.bio && (
@@ -289,7 +289,7 @@ export default function ProfilePage() {
             </div>
           </Card>
           <Card
-            className="p-4 rounded-3xl border-3 dark:border-zinc-800"
+            className="p-4 rounded-3xl border-3 border-gray-200 dark:border-zinc-800"
             shadow="none"
           >
             <Tabs color="secondary" variant="underlined">
@@ -391,11 +391,11 @@ export default function ProfilePage() {
         <div className="lg:col-span-2 space-y-8">
           <Card
             ref={setCalendarContainer}
-            className="rounded-3xl border-3 dark:border-zinc-800"
+            className="rounded-3xl border-3 border-gray-200 dark:border-zinc-800"
             shadow="none"
           >
             <div className="p-4 flex items-center gap-2 mt-2">
-              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
+              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
                 {t("profile.activityHeading")}
               </h2>
               <Spacer />
@@ -414,11 +414,11 @@ export default function ProfilePage() {
           </Card>
 
           <Card
-            className="p-4 rounded-3xl border-3 dark:border-zinc-800"
+            className="p-4 rounded-3xl border-3 border-gray-200 dark:border-zinc-800"
             shadow="none"
           >
             <div className="flex items-center justify-between mt-2 mb-4">
-              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
+              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary pl-4 border-l-4 border-purple-500">
                 {t("profile.testResultsHeading")}
               </h2>
               <div className="flex gap-2">

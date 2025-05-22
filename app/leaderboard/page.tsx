@@ -1,5 +1,7 @@
 "use client";
 
+import type { JSX } from "react";
+
 import React from "react";
 import {
   Table,
@@ -406,11 +408,6 @@ export default function Leaderboard() {
             ))}
           </Tabs>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">
-            {t("leaderboard.totalParticipants", { count: usersData.length })}
-          </span>
-        </div>
       </div>
     );
   }, [filterValue, selectedTopic, usersData.length, t]);
@@ -445,69 +442,73 @@ export default function Leaderboard() {
   return (
     <div key={selectedTopic} className="max-w-6xl mx-auto p-6">
       <h1 className="mb-4 text-2xl font-bold">{t("leaderboard.title")}</h1>
-      <Table
-        aria-label={t("leaderboard.ariaLabel")}
-        bottomContent={bottomContent}
-        bottomContentPlacement="outside"
-        sortDescriptor={sortDescriptor}
-        topContent={topContent}
-        topContentPlacement="outside"
-        onSortChange={(descriptor) =>
-          setSortDescriptor({
-            column: String(descriptor.column),
-            direction: descriptor.direction,
-          })
-        }
-      >
-        {/* Table header */}
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "rank" ? "center" : "start"}
-              allowsSorting={column.sortable}
-            >
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-
-        {/* Table body */}
-        <TableBody
-          isLoading={loading}
-          items={displayItems}
-          loadingContent={
-            <div className="flex justify-center items-center">
-              <Spinner size="lg" />
-            </div>
+      {/* Top content: search and tabs */}
+      {topContent}
+      {/* Table with border wrapping only header and body */}
+      <div className="rounded-3xl border-3 border-gray-200 dark:border-zinc-800 overflow-hidden mt-3">
+        <Table
+          aria-label={t("leaderboard.ariaLabel")}
+          shadow="none"
+          sortDescriptor={sortDescriptor}
+          onSortChange={(descriptor) =>
+            setSortDescriptor({
+              column: String(descriptor.column),
+              direction: descriptor.direction,
+            })
           }
         >
-          {(item: any): JSX.Element => {
-            // Check if the current row corresponds to the current user.
-            const isCurrentRow = item.isMyRank || item.id === currentUserId;
-            // Compute rank: use fixed rank if it's a special current-user row.
-            const rank = item.isMyRank ? fixedMyRank : getFixedRank(item);
-            // Apply border styles: If the current user row is special, use a top border;
-            // otherwise, if naturally present, use a left border.
-            const borderClass = isCurrentRow
-              ? item.isMyRank
-                ? "bg-gray-100 dark:bg-zinc-800 border-t border-t-2 border-blue-600"
-                : "bg-gray-100 dark:bg-zinc-800 border-l-4 border-blue-600"
-              : "";
-
-            return (
-              <TableRow
-                key={item.isMyRank ? "myRank" : item.id}
-                className={`${borderClass}`}
+          {/* Table header */}
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.uid}
+                align={column.uid === "rank" ? "center" : "start"}
+                allowsSorting={column.sortable}
               >
-                {(columnKey: string | number): JSX.Element => (
-                  <TableCell>{renderCell(item, columnKey, rank)}</TableCell>
-                )}
-              </TableRow>
-            );
-          }}
-        </TableBody>
-      </Table>
+                {column.name}
+              </TableColumn>
+            )}
+          </TableHeader>
+
+          {/* Table body */}
+          <TableBody
+            isLoading={loading}
+            items={displayItems}
+            loadingContent={
+              <div className="flex justify-center items-center">
+                <Spinner size="lg" />
+              </div>
+            }
+          >
+            {(item: any): JSX.Element => {
+              // Check if the current row corresponds to the current user.
+              const isCurrentRow = item.isMyRank || item.id === currentUserId;
+              // Compute rank: use fixed rank if it's a special current-user row.
+              const rank = item.isMyRank ? fixedMyRank : getFixedRank(item);
+              // Apply border styles: If the current user row is special, use a top border;
+              // otherwise, if naturally present, use a left border.
+              const borderClass = isCurrentRow
+                ? item.isMyRank
+                  ? "bg-gray-100 dark:bg-zinc-800 border-t border-t-2 border-blue-600"
+                  : "bg-gray-100 dark:bg-zinc-800 border-l-4 border-blue-600"
+                : "";
+
+              return (
+                <TableRow
+                  key={item.isMyRank ? "myRank" : item.id}
+                  className={`${borderClass}`}
+                >
+                  {(columnKey: string | number): JSX.Element => (
+                    <TableCell>{renderCell(item, columnKey, rank)}</TableCell>
+                  )}
+                </TableRow>
+              );
+            }}
+          </TableBody>
+        </Table>
+      </div>
+      {/* Bottom content: pagination and summary */}
+      {bottomContent}
     </div>
   );
 }

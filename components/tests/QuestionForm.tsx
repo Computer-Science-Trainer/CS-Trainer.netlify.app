@@ -455,7 +455,7 @@ export default function QuestionForm({
     <div>
       {/* Card container wrapping the entire question form */}
       <Card
-        className="mb-4 p-6 w-full mx-auto border-3 dark:border-zinc-800 rounded-3xl"
+        className="mb-4 p-6 w-full mx-auto border-3 border-gray-200 dark:border-zinc-800 rounded-3xl"
         shadow="none"
       >
         {/* Form component handling validation and events */}
@@ -499,7 +499,7 @@ export default function QuestionForm({
           {/* Select question type and difficulty */}
           <div className="flex flex-col sm:flex-row gap-2 w-full">
             {/* Question type */}
-            <div className="flex-grow basis-2/3">
+            <div className="grow basis-2/3">
               <Select
                 isRequired
                 className="w-full"
@@ -523,7 +523,7 @@ export default function QuestionForm({
             </div>
 
             {/* Question difficulty */}
-            <div className="flex-grow basis-1/3">
+            <div className="grow basis-1/3">
               <Select
                 isRequired
                 className="w-full"
