@@ -2,7 +2,7 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "CS Trainer",
-  description: "site.description",
+  description: "",
   navItems: [
     {
       label: "nav.tests",
