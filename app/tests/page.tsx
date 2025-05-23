@@ -847,10 +847,10 @@ export default function TestsPage() {
                           {t("tests.generation.questionCount")}
                         </span>
                         <span className="ml-auto font-mono text-primary">
-                          20
+                          10
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      {/* <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-700 dark:text-gray-100">
                           {t("tests.generation.time")}
                         </span>
@@ -865,7 +865,7 @@ export default function TestsPage() {
                         <span className="ml-auto font-mono text-primary">
                           100
                         </span>
-                      </div>
+                      </div> */}
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-700 dark:text-gray-100">
                           {t("tests.generation.section")}
