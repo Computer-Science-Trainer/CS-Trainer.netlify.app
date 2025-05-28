@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 
 import QuestionForm from "../../components/tests/QuestionForm";
 import { SelectedTopics } from "../../components/SelectedTopics";
+import LoginWindow from "@/components/login";
 
 import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
@@ -206,6 +207,7 @@ export default function TestsPage() {
   const [loading, setLoading] = useState(true);
   const [isGenerateHovered, setIsGenerateHovered] = useState(false);
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const windowWidth = useWindowWidth();
   const isCompact = windowWidth < 640;
 
@@ -399,9 +401,7 @@ export default function TestsPage() {
     fetchRecommendations();
   }, [user]);
 
-  // Собираем все разделы (topics, accordions, options)
   let recommendedSubs = [
-    // Первый уровень (topics)
     ...topicStates.map((topic, tIdx) => ({
       label: topic.label,
       description: undefined,
@@ -481,7 +481,6 @@ export default function TestsPage() {
       recommendedTopics.includes(sub.label),
     );
   } else {
-    // Показывать только первые 6 тем (topics, accordions, options) если не залогинен
     recommendedSubs = recommendedSubs.slice(0, 6);
   }
 
@@ -529,7 +528,6 @@ export default function TestsPage() {
     handleResetSelections();
   }, [activeTab]);
 
-  // Вынесены ключи локализации для левого меню
   const sectionLabels = [
     t("tests.leftNav.recommended"),
     t("tests.leftNav.custom"),
@@ -538,12 +536,7 @@ export default function TestsPage() {
 
   const handleStartTest = async () => {
     if (!user?.username) {
-      addToast({
-        title: t("tests.errors.ErrorTitle"),
-        description: t("tests.errors.authRequired"),
-        color: "danger",
-      });
-
+      setLoginModalOpen(true);
       return;
     }
     const selected = activeTab === "FI" ? selectedFI : selectedAS;
@@ -567,12 +560,7 @@ export default function TestsPage() {
     sub: (typeof recommendedSubs)[number],
   ) => {
     if (!user?.username) {
-      addToast({
-        title: t("tests.errors.ErrorTitle"),
-        description: t("tests.errors.authRequired"),
-        color: "danger",
-      });
-
+      setLoginModalOpen(true);
       return;
     }
     try {
@@ -654,15 +642,9 @@ export default function TestsPage() {
 
                       const onPress = () => {
                         if (!user?.username) {
-                          addToast({
-                            title: t("tests.errors.ErrorTitle"),
-                            description: t("tests.errors.authRequired"),
-                            color: "danger",
-                          });
-
+                          setLoginModalOpen(true);
                           return;
                         }
-                        // Запуск теста сразу по выбранной рекомендации
                         handleStartTestSingle(sub);
                       };
 
@@ -994,6 +976,8 @@ export default function TestsPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      {/* Login modal for unauthenticated users */}
+      <LoginWindow isOpen={loginModalOpen} onOpenChange={setLoginModalOpen} />
     </section>
   );
 }
