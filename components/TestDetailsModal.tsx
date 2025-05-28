@@ -329,41 +329,61 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                     ) : qDetail.question_type === "multiple-choice" ||
                       qDetail.question_type === "single-choice" ? (
                       <div className="mb-4 mt-4">
-                        <span className="font-semibold">Варианты ответа:</span>
-                        <ul className="list-disc pl-6 mt-2">
-                          {qDetail.options?.map((opt) => {
-                            const isCorrect =
-                              detail?.correct_answer.includes(opt);
-                            const isChosen = detail?.user_answer.includes(opt);
-                            let cls = "";
+                        {(() => {
+                          const normalize = (s: string) =>
+                            s.trim().toLowerCase().replace(/^"|"$/g, "");
+                          const correctAnswers =
+                            detail?.correct_answer.split(",").map(normalize) ||
+                            [];
+                          const userAnswers =
+                            detail?.user_answer.split(",").map(normalize) || [];
 
-                            if (isCorrect) cls = "text-success font-semibold";
-                            else if (isChosen) cls = "text-danger";
+                          return (
+                            <div>
+                              <span className="font-semibold">
+                                Варианты ответа:
+                              </span>
+                              <ul className="list-disc pl-6 mt-2">
+                                {qDetail.options?.map((opt) => {
+                                  const normOpt = normalize(opt);
+                                  const isCorrect =
+                                    correctAnswers.includes(normOpt);
+                                  const isChosen =
+                                    userAnswers.includes(normOpt);
+                                  let cls = "";
 
-                            return (
-                              <li key={opt} className={cls}>
-                                {opt}
-                                {isCorrect && isChosen && (
-                                  <span className="ml-2 text-sm text-success">
-                                    (Ваш выбор)
-                                  </span>
-                                )}
-                                {qDetail.question_type === "multiple-choice" &&
-                                  isCorrect &&
-                                  !isChosen && (
-                                    <span className="ml-2 text-sm text-warning">
-                                      (Не выбран)
-                                    </span>
-                                  )}
-                                {!isCorrect && isChosen && (
-                                  <span className="ml-2 text-sm text-danger">
-                                    (Ваш выбор)
-                                  </span>
-                                )}
-                              </li>
-                            );
-                          })}
-                        </ul>
+                                  if (isCorrect)
+                                    cls = "text-success font-semibold";
+                                  else if (isChosen) cls = "text-danger";
+
+                                  return (
+                                    <li key={opt} className={cls}>
+                                      {opt}
+                                      {isCorrect && isChosen && (
+                                        <span className="ml-2 text-sm text-success">
+                                          (Ваш выбор)
+                                        </span>
+                                      )}
+                                      {qDetail.question_type ===
+                                        "multiple-choice" &&
+                                        isCorrect &&
+                                        !isChosen && (
+                                          <span className="ml-2 text-sm text-warning">
+                                            (Не выбран)
+                                          </span>
+                                        )}
+                                      {!isCorrect && isChosen && (
+                                        <span className="ml-2 text-sm text-danger">
+                                          (Ваш выбор)
+                                        </span>
+                                      )}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          );
+                        })()}
                       </div>
                     ) : (
                       <div className="mb-4 mt-4">

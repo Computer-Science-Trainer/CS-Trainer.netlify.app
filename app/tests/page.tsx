@@ -929,21 +929,7 @@ export default function TestsPage() {
                   <span className="font-semibold">
                     {t("tests.generation.questionCount")}
                   </span>
-                  <span className="font-mono text-primary">20</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">
-                    {t("tests.generation.time")}
-                  </span>
-                  <span className="font-mono text-primary">
-                    60 {t("tests.generation.minutes")}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">
-                    {t("tests.generation.maxScore")}
-                  </span>
-                  <span className="font-mono text-primary">100</span>
+                  <span className="font-mono text-primary">10</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">
