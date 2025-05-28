@@ -528,6 +528,9 @@ export default function ProfilePage() {
       </div>
       <TestDetailsModal
         open={testModalOpen}
+        showReviewButton={
+          user?.username.toLocaleLowerCase() === username.toLocaleLowerCase()
+        }
         test={selectedTest}
         onClose={() => setTestModalOpen(false)}
       />

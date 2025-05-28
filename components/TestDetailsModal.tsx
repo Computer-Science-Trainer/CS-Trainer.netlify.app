@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalContent,
@@ -9,8 +9,24 @@ import {
   Progress,
   Chip,
   Divider,
+  Pagination,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
+
+import { makeApiRequest } from "../config/api";
+
+// define question detail type
+interface QuestionDetail {
+  id: string;
+  question_text: string;
+  question_type:
+    | "single-choice"
+    | "multiple-choice"
+    | "open-ended"
+    | "ordering"
+    | "short-answer";
+  options?: string[];
+}
 
 interface TestDetailsModalProps {
   open: boolean;
@@ -26,22 +42,69 @@ interface TestDetailsModalProps {
     created_at: string;
     earned_score: number;
   } | null;
+  showReviewButton?: boolean;
 }
 
 export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   open,
   onClose,
   test,
+  showReviewButton = true,
 }) => {
   const t = useTranslations();
+
+  // fetch answer details when modal opens
+  interface AnswerDetail {
+    question_id: number;
+    question_type: string;
+    difficulty: string;
+    user_answer: string;
+    correct_answer: string;
+    is_correct: boolean;
+    points_awarded: number;
+  }
+  const [answersData, setAnswersData] = useState<{
+    answers: AnswerDetail[];
+  } | null>(null);
+  const [loadingAnswers, setLoadingAnswers] = useState(false);
+  const [questionsList, setQuestionsList] = useState<QuestionDetail[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [currentAnswerIndex, setCurrentAnswerIndex] = useState(0);
+  const [reviewMode, setReviewMode] = useState(false);
+
+  useEffect(() => {
+    if (!showReviewButton) return;
+    if (open && test) {
+      setReviewMode(false);
+      setLoadingAnswers(true);
+      setLoadingQuestions(true);
+      // fetch answers and questions in parallel
+      Promise.all([
+        makeApiRequest(`api/tests/${test.id}/answers`, "GET"),
+        makeApiRequest(`api/tests/${test.id}`, "GET"),
+      ])
+        .then(([ansData, testDetail]: any) => {
+          setAnswersData(ansData);
+          setQuestionsList(testDetail.questions || []);
+          setCurrentAnswerIndex(0);
+        })
+        .catch(() => {
+          // TODO: handle error appropriately
+        })
+        .finally(() => {
+          setLoadingAnswers(false);
+          setLoadingQuestions(false);
+        });
+    }
+  }, [open, test?.id, showReviewButton]);
 
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
 
   return (
     <Modal isOpen={open} placement="center" size="lg" onOpenChange={onClose}>
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1 text-xl font-semibold">
+      <ModalContent className="bg-white rounded-xl shadow-xl p-6">
+        <ModalHeader className="relative flex flex-col gap-2 text-2xl font-bold pb-4">
           {t(`tests.testTypes.${test.type}`)}
           <div className="flex gap-2 w-full">
             <span className="text-base font-normal text-default-500">
@@ -54,88 +117,315 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
             </span>
           </div>
         </ModalHeader>
-        <Divider />
-        <ModalBody>
-          <div className="flex flex-col items-center md:items-start">
-            <div className="flex flex-col items-center w-full gap-4 rounded-2xl p-6">
-              <div className="flex flex-col items-center justify-center w-full gap-2">
-                <span className="text-3xl font-extrabold text-primary mb-4">
-                  {percent}%
-                </span>
-                <Progress
-                  color={
-                    percent >= 80
-                      ? "success"
-                      : percent >= 50
-                        ? "warning"
-                        : "danger"
-                  }
-                  isIndeterminate={false}
-                  label={undefined}
-                  size="lg"
-                  value={percent}
-                />
-              </div>
-              <div className="w-full mt-2 flex flex-wrap gap-2 justify-center">
-                <Chip
-                  className="text-base px-3 py-1 font-bold"
-                  color="success"
-                  variant="flat"
-                >
-                  {t("tests.correctAnswersLabel")} : {test.passed}
-                </Chip>
-                <Chip
-                  className="text-base px-3 py-1 font-bold"
-                  color="danger"
-                  variant="flat"
-                >
-                  {t("tests.incorrectAnswersLabel")} :{" "}
-                  {test.total - test.passed}
-                </Chip>
-                <Chip
-                  className="text-base px-3 py-1 font-bold"
-                  color="primary"
-                  variant="flat"
-                >
-                  {t("tests.earnedScoreLabel")} : {test.earned_score}
-                </Chip>
-                <Chip
-                  className="text-sm font-bold"
-                  color="default"
-                  variant="bordered"
-                >
-                  {t("tests.totalLabel")} : {test.total}
-                </Chip>
-              </div>
+        <Divider style={{ backgroundColor: "#c1c1c1" }} />
+        <ModalBody className="p-6 space-y-6">
+          {loadingAnswers || loadingQuestions ? (
+            <div className="flex justify-center items-center h-64">
+              <Progress isIndeterminate color="primary" size="lg" />
             </div>
-            <div className="flex-1 space-y-4 text-base rounded-2xl p-6 w-full">
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-default-700">
-                  {t("tests.dateLabel")}:
-                </span>
-                <span className="text-default-600">
-                  {new Date(test.created_at).toLocaleString()}
-                </span>
+          ) : !reviewMode ? (
+            <div className="flex flex-col items-center md:items-start">
+              <div className="flex flex-col items-center w-full gap-4 rounded-2xl p-6">
+                <div className="flex flex-col items-center justify-center w-full gap-2">
+                  <span className="text-3xl font-extrabold text-primary mb-4">
+                    {percent}%
+                  </span>
+                  <Progress
+                    color={
+                      percent >= 80
+                        ? "success"
+                        : percent >= 50
+                          ? "warning"
+                          : "danger"
+                    }
+                    isIndeterminate={false}
+                    label={undefined}
+                    size="lg"
+                    value={percent}
+                  />
+                </div>
+                <div className="w-full mt-2 flex flex-wrap gap-2 justify-center">
+                  <Chip
+                    className="text-base px-3 py-1 font-bold"
+                    color="success"
+                    variant="flat"
+                  >
+                    {t("tests.correctAnswersLabel")} : {test.passed}
+                  </Chip>
+                  <Chip
+                    className="text-base px-3 py-1 font-bold"
+                    color="danger"
+                    variant="flat"
+                  >
+                    {t("tests.incorrectAnswersLabel")} :{" "}
+                    {test.total - test.passed}
+                  </Chip>
+                  <Chip
+                    className="text-base px-3 py-1 font-bold"
+                    color="primary"
+                    variant="flat"
+                  >
+                    {t("tests.earnedScoreLabel")} : {test.earned_score}
+                  </Chip>
+                  <Chip
+                    className="text-sm font-bold"
+                    color="default"
+                    variant="bordered"
+                  >
+                    {t("tests.totalLabel")} : {test.total}
+                  </Chip>
+                </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-default-700">
-                  {t("tests.topicsLabel")}:
-                </span>
-                <div className="flex flex-col gap-0.5">
-                  {test.topics.map((topic, idx) => (
-                    <span key={idx} className="text-default-600">
-                      {t(`tests.topics.${topic}`)}
-                    </span>
-                  ))}
+              <div className="flex-1 space-y-4 text-base rounded-2xl p-6 w-full bg-default-100 border border-default-200 shadow-sm">
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-default-700 flex items-center gap-2">
+                    {t("tests.dateLabel")}:
+                  </span>
+                  <span className="text-default-600 ml-7">
+                    {new Date(test.created_at).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-default-700 flex items-center gap-2">
+                    {t("tests.topicsLabel")}:
+                  </span>
+                  <div className="flex flex-wrap gap-1 ml-7">
+                    {test.topics.map((topic, idx) => (
+                      <Chip
+                        key={idx}
+                        className="text-default-600 bg-default-200"
+                        size="sm"
+                        variant="flat"
+                      >
+                        {t(`tests.topics.${topic}`)}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+                <div className="w-full flex justify-center mt-2">
+                  {showReviewButton && (
+                    <Button
+                      className="font-semibold text-base px-6 py-2 shadow-md"
+                      color="primary"
+                      variant="flat"
+                      onPress={() => setReviewMode(true)}
+                    >
+                      Разбор
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="w-full">
+              {/* current question slide */}
+              {(() => {
+                const detail = answersData!.answers.find(
+                  (a) =>
+                    a.question_id ===
+                    Number(questionsList[currentAnswerIndex].id),
+                );
+                const qDetail = questionsList[currentAnswerIndex];
+
+                return (
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold">
+                        Вопрос {currentAnswerIndex + 1}.
+                      </h3>
+                      <Chip
+                        className="font-semibold"
+                        color={detail?.is_correct ? "success" : "danger"}
+                        size="md"
+                        variant="flat"
+                      >
+                        {detail?.is_correct ? "Верно" : "Неверно"}
+                      </Chip>
+                    </div>
+                    <p className="mt-2 mb-4 text-base text-default-700">
+                      {qDetail.question_text}
+                    </p>
+                    <div>
+                      <span className="font-semibold">Сложность:</span>{" "}
+                      <span>{detail?.difficulty}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Полученные баллы:</span>{" "}
+                      <span>{detail?.points_awarded}</span>
+                    </div>
+                    {/* render by type */}
+                    {qDetail.question_type === "ordering" ? (
+                      <div className="mb-4">
+                        {(() => {
+                          const correctSeq =
+                            detail?.correct_answer
+                              .split(",")
+                              .map((s) => s.trim()) || [];
+                          const userSeq =
+                            detail?.user_answer
+                              .split(",")
+                              .map((s) => s.trim()) || [];
+
+                          return (
+                            <>
+                              <div className="mb-2">
+                                <span className="font-semibold">
+                                  Правильная последовательность:
+                                </span>
+                                <div className="mt-1 space-y-1">
+                                  {correctSeq.map((opt, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <span className="font-semibold">
+                                        {i + 1}.
+                                      </span>
+                                      <span className="text-default-600">
+                                        {opt}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="mb-2">
+                                <span className="font-semibold">
+                                  Ваша последовательность:
+                                </span>
+                                <div className="mt-1 space-y-1">
+                                  {userSeq.map((ua, idx) => {
+                                    const num =
+                                      correctSeq.findIndex(
+                                        (item) => item === ua,
+                                      ) + 1;
+                                    const isRight = ua === correctSeq[idx];
+
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className="flex items-start gap-2"
+                                      >
+                                        <span className="font-semibold">
+                                          {num}.
+                                        </span>
+                                        <span
+                                          className={
+                                            isRight
+                                              ? "text-success"
+                                              : "text-danger"
+                                          }
+                                        >
+                                          {ua || "-"}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    ) : qDetail.question_type === "multiple-choice" ||
+                      qDetail.question_type === "single-choice" ? (
+                      <div className="mb-4 mt-4">
+                        <span className="font-semibold">Варианты ответа:</span>
+                        <ul className="list-disc pl-6 mt-2">
+                          {qDetail.options?.map((opt) => {
+                            const isCorrect =
+                              detail?.correct_answer.includes(opt);
+                            const isChosen = detail?.user_answer.includes(opt);
+                            let cls = "";
+
+                            if (isCorrect) cls = "text-success font-semibold";
+                            else if (isChosen) cls = "text-danger";
+
+                            return (
+                              <li key={opt} className={cls}>
+                                {opt}
+                                {isCorrect && isChosen && (
+                                  <span className="ml-2 text-sm text-success">
+                                    (Ваш выбор)
+                                  </span>
+                                )}
+                                {qDetail.question_type === "multiple-choice" &&
+                                  isCorrect &&
+                                  !isChosen && (
+                                    <span className="ml-2 text-sm text-warning">
+                                      (Не выбран)
+                                    </span>
+                                  )}
+                                {!isCorrect && isChosen && (
+                                  <span className="ml-2 text-sm text-danger">
+                                    (Ваш выбор)
+                                  </span>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="mb-4 mt-4">
+                        <div className="">
+                          <span className="font-semibold">
+                            Правильный ответ:
+                          </span>{" "}
+                          <span className="text-default-600">
+                            {detail?.correct_answer}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-semibold">Ваш ответ:</span>{" "}
+                          <span
+                            className={
+                              detail?.is_correct
+                                ? "text-success"
+                                : "text-danger"
+                            }
+                          >
+                            {detail?.user_answer}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              {/* question navigation */}
+              <div className="flex justify-center mb-6">
+                <Pagination
+                  showControls
+                  className="mx-auto"
+                  page={currentAnswerIndex + 1}
+                  size="lg"
+                  total={questionsList.length}
+                  onChange={(page) => setCurrentAnswerIndex(page - 1)}
+                />
+              </div>
+            </div>
+          )}
         </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onPress={onClose}>
-            {t("tests.closeButton")}
-          </Button>
+        <Divider style={{ backgroundColor: "#c1c1c1" }} />
+        <ModalFooter className="flex items-center p-4 space-x-2">
+          {reviewMode ? (
+            <div className="flex-1 flex items-center justify-between">
+              <Button
+                size="md"
+                variant="flat"
+                onPress={() => setReviewMode(false)}
+              >
+                Назад
+              </Button>
+              <Button color="primary" onPress={onClose}>
+                {t("tests.closeButton")}
+              </Button>
+            </div>
+          ) : (
+            <Button color="primary" onPress={onClose}>
+              {t("tests.closeButton")}
+            </Button>
+          )}
         </ModalFooter>
       </ModalContent>
     </Modal>

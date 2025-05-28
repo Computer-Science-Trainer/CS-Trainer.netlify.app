@@ -54,6 +54,18 @@ interface Question {
     | "ordering";
 }
 
+function shuffle(array: string[]) {
+  const arr = [...array];
+
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+
+  return arr;
+}
+
 export default function TestRunnerPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -67,8 +79,8 @@ export default function TestRunnerPage() {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [resultModalOpen, setResultModalOpen] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
-  const [testData, setTestData] = useState<any>(null); // сохраняем данные теста
-  const [isSubmitting, setIsSubmitting] = useState(false); // новое состояние для отслеживания сабмита
+  const [testData, setTestData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // DnD sensors for ordering questions
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -79,18 +91,28 @@ export default function TestRunnerPage() {
       try {
         const data = await makeApiRequest(`api/tests/${id}`, "GET");
 
-        setTestData(data); // сохраняем для дальнейшего использования
+        setTestData(data);
         const qArray = Array.isArray(data) ? data : (data.questions ?? []);
 
-        setQuestions(qArray);
+        // shuffle options for multi-choice and single-choice questions
+        const shuffledQuestions = qArray.map((q: any) => ({
+          ...q,
+          options:
+            q.question_type === "multiple-choice" ||
+            q.question_type === "single-choice"
+              ? shuffle(q.options)
+              : q.options,
+        }));
+
+        setQuestions(shuffledQuestions);
         setEndTime(data.end_time ? new Date(data.end_time).getTime() : null);
         setStartTime(
           data.start_time ? new Date(data.start_time).getTime() : null,
         );
         setAnswers(
-          qArray.map((q: any) =>
+          shuffledQuestions.map((q: any) =>
             q.question_type === "ordering"
-              ? [...q.options]
+              ? shuffle(q.options)
               : q.question_type === "multiple-choice"
                 ? []
                 : "",

@@ -26,8 +26,8 @@ import { useRouter } from "next/navigation";
 
 import QuestionForm from "../../components/tests/QuestionForm";
 import { SelectedTopics } from "../../components/SelectedTopics";
-import LoginWindow from "@/components/login";
 
+import LoginWindow from "@/components/login";
 import { useAuth } from "@/context/auth";
 import { makeApiRequest } from "@/config/api";
 
@@ -208,6 +208,7 @@ export default function TestsPage() {
   const [isGenerateHovered, setIsGenerateHovered] = useState(false);
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [isStartingTest, setIsStartingTest] = useState(false);
   const windowWidth = useWindowWidth();
   const isCompact = windowWidth < 640;
 
@@ -537,11 +538,13 @@ export default function TestsPage() {
   const handleStartTest = async () => {
     if (!user?.username) {
       setLoginModalOpen(true);
+
       return;
     }
     const selected = activeTab === "FI" ? selectedFI : selectedAS;
 
     if (selected.length === 0) return;
+    setIsStartingTest(true);
     try {
       const payload = { section: activeTab, topics: selected };
       const data = await makeApiRequest("api/tests", "POST", payload);
@@ -553,6 +556,8 @@ export default function TestsPage() {
         description: t("tests.errors.loadErrorDescription"),
         color: "danger",
       });
+    } finally {
+      setIsStartingTest(false);
     }
   };
 
@@ -561,8 +566,10 @@ export default function TestsPage() {
   ) => {
     if (!user?.username) {
       setLoginModalOpen(true);
+
       return;
     }
+    setIsStartingTest(true);
     try {
       const payload = { section: sub.section, topics: [sub.label] };
       const data = await makeApiRequest("api/tests", "POST", payload);
@@ -574,6 +581,8 @@ export default function TestsPage() {
         description: t("tests.errors.loadErrorDescription"),
         color: "danger",
       });
+    } finally {
+      setIsStartingTest(false);
     }
   };
 
@@ -643,6 +652,7 @@ export default function TestsPage() {
                       const onPress = () => {
                         if (!user?.username) {
                           setLoginModalOpen(true);
+
                           return;
                         }
                         handleStartTestSingle(sub);
@@ -868,13 +878,17 @@ export default function TestsPage() {
             <Button
               className={`w-full h-16 rounded-b-3xl border-3 border-gray-200 dark:border-zinc-800 font-bold text-lg shadow-none opacity-100! hover:color-blue-450! hover:dark:color-blue-450-dark! ${totalSelected === 0 ? "bg-gray-300 text-gray-500 dark:bg-zinc-800 dark:text-gray-400 cursor-not-allowed" : ""}`}
               color="primary"
-              isDisabled={totalSelected === 0}
+              isDisabled={totalSelected === 0 || isStartingTest}
               variant="solid"
               onMouseEnter={() => setIsGenerateHovered(true)}
               onMouseLeave={() => setIsGenerateHovered(false)}
               onPress={handleStartTest}
             >
-              {t("tests.labels.startTest")}
+              {isStartingTest ? (
+                <Spinner color="current" size="sm" />
+              ) : (
+                t("tests.labels.startTest")
+              )}
             </Button>
           </div>
         </div>
@@ -965,13 +979,17 @@ export default function TestsPage() {
             </Button>
             <Button
               color="primary"
-              isDisabled={totalSelected === 0}
+              isDisabled={totalSelected === 0 || isStartingTest}
               variant="solid"
               onMouseEnter={() => setIsGenerateHovered(true)}
               onMouseLeave={() => setIsGenerateHovered(false)}
               onPress={handleStartTest}
             >
-              {t("tests.labels.startTest")}
+              {isStartingTest ? (
+                <Spinner color="current" size="sm" />
+              ) : (
+                t("tests.labels.startTest")
+              )}
             </Button>
           </ModalFooter>
         </ModalContent>
