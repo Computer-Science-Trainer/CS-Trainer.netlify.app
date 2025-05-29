@@ -36,6 +36,7 @@ import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   CheckListIcon,
+  Alert01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
@@ -251,6 +252,22 @@ export default function TestRunnerPage() {
   const question = questions[currentIndex];
   const total = questions.length;
   const isLast = currentIndex === total - 1;
+
+  // локальная проверка для текущего open-ended
+  const currentAnswer = (answers[currentIndex] as string[])[0] || "";
+  const currentTooLong =
+    question?.question_type === "open-ended" &&
+    currentAnswer.length > 256;
+
+  // глобальная проверка: есть ли хоть один open-ended ответ длиннее 256
+  const isTooLong = questions
+    .map((q, i) =>
+      q.question_type === "open-ended"
+        ? ((answers[i] as string[])[0] || "").length
+        : 0,
+    )
+    .some((len) => len > 256);
+
   let timeProgress = 0;
 
   if (startTime && endTime) {
@@ -373,12 +390,15 @@ export default function TestRunnerPage() {
             </CheckboxGroup>
           )}
           {question.question_type === "open-ended" && (
-            <Textarea
-              className="mt-2 p-4 rounded-lg border-2 border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-400 dark:focus:border-blue-400 transition-all shadow-sm min-h-[120px] text-base"
-              placeholder={t("tests.runner.openPlaceholder")}
-              value={(answers[currentIndex] as string[])[0] || ""}
-              onChange={(e) => updateAnswer([e.target.value])}
-            />
+            <>
+              <Textarea
+                className="mt-2 p-4 rounded-lg border-2 border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-400 dark:focus:border-blue-400 transition-all shadow-sm min-h-[120px] text-base"
+                placeholder={t("tests.runner.openPlaceholder")}
+                maxLength={256}
+                value={(answers[currentIndex] as string[])[0] || ""}
+                onChange={(e) => updateAnswer([e.target.value])}
+              />
+            </>
           )}
           {question.question_type === "ordering" && (
             <DndContext
@@ -407,6 +427,12 @@ export default function TestRunnerPage() {
               </SortableContext>
             </DndContext>
           )}
+        {isTooLong && (
+            <div className="mt-2 flex justify-center gap-2 text-sm text-red-700">
+              <HugeiconsIcon icon={Alert01Icon} className="h-5 w-5" />
+              <span>Есть слишком длинный ответ в одном из вопросов.</span>
+            </div>
+        )}
         </CardBody>
         <CardFooter className="flex items-center justify-between bg-gray-50 dark:bg-zinc-800 p-6 pt-4 border-t border-gray-200 dark:border-zinc-700 animate-fade-in gap-2">
           <Button
@@ -428,13 +454,20 @@ export default function TestRunnerPage() {
             onChange={(page) => setCurrentIndex(page - 1)}
           />
           <Button
-            className="px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+            className={`px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transition-all ${
+              isLast && isTooLong
+                ? "opacity-50 cursor-not-allowed hover:from-blue-500 hover:to-purple-500"
+                : "hover:from-blue-600 hover:to-purple-600"
+            }`}
             color="primary"
             id="submit-btn"
             isLoading={isLast && isSubmitting}
-            onPress={() =>
-              isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1)
-            }
+            disabled={isLast && isTooLong}
+            isDisabled={isLast && isTooLong}
+            onPress={() => {
+              if (isLast && isTooLong) return;
+              isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1);
+            }}
           >
             {isLast ? t("tests.runner.submit") : t("tests.runner.next")}
             {isLast ? (

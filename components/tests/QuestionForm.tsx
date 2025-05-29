@@ -116,6 +116,7 @@ function SortableChoice({
         isInvalid={isInvalid}
         name="options"
         placeholder="Answer option"
+        maxLength={128}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onClick={(e) => e.stopPropagation()}
@@ -479,6 +480,7 @@ export default function QuestionForm({
             errorMessage={validationErrors.question}
             label={tForm("questionLabel")}
             labelPlacement="outside"
+            maxLength={512}
             minRows={5}
             placeholder={tForm("questionPlaceholder")}
             value={questionText}
@@ -591,6 +593,7 @@ export default function QuestionForm({
                             !o.trim())
                         }
                         name="options"
+                        maxLength={128}
                         placeholder={`Option ${i + 1}`}
                         value={o}
                         onChange={(e) => handleUpdateOption(i, e.target.value)}
@@ -676,6 +679,7 @@ export default function QuestionForm({
           {questionType === "open-ended" && (
             <Textarea
               isRequired
+              maxLength={128}
               errorMessage={validationErrors.correctAnswer}
               label={tForm("sampleAnswerLabel")}
               labelPlacement="outside"
