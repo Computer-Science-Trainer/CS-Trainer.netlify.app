@@ -103,7 +103,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
 
   return (
     <Modal isOpen={open} placement="center" size="lg" onOpenChange={onClose}>
-      <ModalContent className="bg-white rounded-xl shadow-xl p-6">
+      <ModalContent className="rounded-xl shadow-xl p-6">
         <ModalHeader className="relative flex flex-col gap-2 text-2xl font-bold pb-4">
           {t(`tests.testTypes.${test.type}`)}
           <div className="flex gap-2 w-full">

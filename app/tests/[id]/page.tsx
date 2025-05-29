@@ -341,7 +341,10 @@ export default function TestRunnerPage() {
           </h2>
         </CardHeader>
         <CardBody className="p-6 pt-0">
-          <p className="mb-6 text-lg font-medium text-gray-900 dark:text-gray-100 animate-fade-in">
+          <p
+            className="mb-6 text-lg font-medium text-gray-900 dark:text-gray-100 animate-fade-in"
+            style={{ whiteSpace: "pre-line" }}
+          >
             {question.question_text}
           </p>
           {question.question_type === "single-choice" && (

@@ -158,7 +158,7 @@ export default function QuestionForm({
   // State for the selected difficulty level
   const [difficulty, setDifficulty] = useState<string>("");
   // State for example answer in open-ended questions
-  const [sampleAnswer, setSampleAnswer] = useState<string>("");
+  const [openEndedAnswer, setOpenEndedAnswer] = useState<string>("");
   // Dynamic list of answer options
   const [answerOptions, setAnswerOptions] = useState<string[]>([]);
   // Index of selected answer in single-choice mode
@@ -184,25 +184,19 @@ export default function QuestionForm({
       setAnswerOptions(initialData.options || []);
       setSelectedTopicCode(initialData.topic_code ?? "");
       setQuestionText(initialData.question_text || "");
-      const corr = (initialData.correct_answers ??
-        initialData.correct_answer) as string;
+      const corrArr = (initialData.correct_answer ?? []) as string[];
 
       if (initialData.question_type === "single-choice") {
-        const idx = initialData.options?.indexOf(corr) ?? -1;
-
+        const idx = initialData.options?.indexOf(corrArr[0]) ?? -1;
         setSingleAnswerIndex(idx >= 0 ? idx : null);
       } else if (initialData.question_type === "multiple-choice") {
-        const arr = corr.split(",");
         const idxs = (initialData.options || [])
-          .map((opt: string, i: number) => (arr.includes(opt) ? i : -1))
+          .map((opt: string, i: number) => (corrArr.includes(opt) ? i : -1))
           .filter((i: number) => i >= 0);
-
         setMultipleAnswerIndices(idxs);
+      } else if (initialData.question_type === "open-ended") {
+        setOpenEndedAnswer(corrArr[0] || "");
       }
-      if (initialData.question_type === "open-ended") {
-        setSampleAnswer(initialData.sample_answer || "");
-      }
-      setTermsAccepted(initialData.terms_accepted ?? false);
     } else {
       handleReset();
     }
@@ -323,7 +317,6 @@ export default function QuestionForm({
       difficulty: difficulty,
       topicCode: selectedTopicCode!,
       options: answerOptions.filter((o) => o.trim()),
-      sampleAnswer: sampleAnswer,
       termsAccepted: termsAccepted,
     };
 
@@ -358,10 +351,6 @@ export default function QuestionForm({
       }
     }
 
-    if (data.questionType === "open-ended" && !data.sampleAnswer?.trim()) {
-      newErrors.sampleAnswer = tForm("errors.sampleAnswerRequired");
-    }
-
     if (!data.termsAccepted) newErrors.terms = tForm("errors.termsRequired");
 
     if (Object.keys(newErrors).length) {
@@ -371,26 +360,26 @@ export default function QuestionForm({
     }
     setValidationErrors({});
     setSubmitting(true);
-    let correctAnswersValue = "";
-
+    let correctAnswers: string[] = [];
     if (questionType === "single-choice" && singleAnswerIndex !== null) {
-      correctAnswersValue = answerOptions[singleAnswerIndex];
+      correctAnswers = [answerOptions[singleAnswerIndex]];
     } else if (questionType === "multiple-choice") {
-      correctAnswersValue = multipleAnswerIndices
-        .map((i) => answerOptions[i])
-        .join(",");
+      correctAnswers = multipleAnswerIndices.map((i) => answerOptions[i]);
     } else if (questionType === "ordering") {
-      correctAnswersValue = answerOptions.join(",");
+      correctAnswers = answerOptions;
+    } else if (questionType === "open-ended") {
+      correctAnswers = [openEndedAnswer];
     }
+    const trimmedQuestion = data.questionText.trim();
+    const trimmedOptions = data.options.map((o) => o.trim());
+    const trimmedCorrectAnswers = correctAnswers.map((c) => c.trim());
+
     const payload = {
-      title: data.questionText,
-      question_text: data.questionText,
+      question_text: trimmedQuestion,
       question_type: data.questionType,
       difficulty: data.difficulty,
-      options: data.options,
-      correct_answer: correctAnswersValue,
-      sample_answer: data.sampleAnswer || null,
-      terms_accepted: data.termsAccepted,
+      options: trimmedOptions,
+      correct_answer: trimmedCorrectAnswers,
       topic_code: data.topicCode,
       proposer_id: user?.id,
     };
@@ -447,7 +436,7 @@ export default function QuestionForm({
     setMultipleAnswerIndices([]);
     setSelectedTopicCode("");
     setQuestionText("");
-    setSampleAnswer("");
+    setOpenEndedAnswer("");
     setTermsAccepted(false);
   };
 
@@ -687,12 +676,17 @@ export default function QuestionForm({
           {questionType === "open-ended" && (
             <Textarea
               isRequired
-              errorMessage={validationErrors.sampleAnswer}
+              errorMessage={validationErrors.correctAnswer}
               label={tForm("sampleAnswerLabel")}
               labelPlacement="outside"
               placeholder={tForm("sampleAnswerPlaceholder")}
-              value={sampleAnswer}
-              onChange={(e) => setSampleAnswer(e.target.value)}
+              value={openEndedAnswer}
+              onChange={(e) => {
+                setOpenEndedAnswer(e.target.value);
+                if (validationErrors.correctAnswer) {
+                  setValidationErrors((prev) => ({ ...prev, correctAnswer: undefined }));
+                }
+              }}
             />
           )}
 
@@ -759,6 +753,7 @@ export default function QuestionForm({
               color="primary"
               isLoading={submitting}
               type="submit"
+              isDisabled={!termsAccepted}
             >
               {isEditMode
                 ? tForm("submitButton.save")
