@@ -1008,7 +1008,7 @@ export default function AuthWindow({
           {Array.from({ length: 6 }).map((_, index) => (
             <input
               key={index}
-              className="w-12 h-12 text-center text-xl border-2 rounded-lg focus:border-primary focus:outline-none"
+              className="w-12 h-12 text-center text-xl rounded-lg focus:border-primary focus:outline-none border-3 border-gray-200 dark:border-zinc-700"
               id={`code-${index}`}
               inputMode="numeric"
               maxLength={1}
