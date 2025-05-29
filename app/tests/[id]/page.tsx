@@ -434,54 +434,87 @@ export default function TestRunnerPage() {
             </div>
         )}
         </CardBody>
-        <CardFooter className="flex items-center justify-between bg-gray-50 dark:bg-zinc-800 p-6 pt-4 border-t border-gray-200 dark:border-zinc-700 animate-fade-in gap-2">
-          <Button
-            className="px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-white dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-400 transition-all shadow-sm"
-            isDisabled={currentIndex === 0}
-            onPress={() => setCurrentIndex((idx) => Math.max(idx - 1, 0))}
-          >
-            <HugeiconsIcon
-              className="text-default-300"
-              icon={ArrowLeft01Icon}
+        <CardFooter className="bg-gray-50 dark:bg-zinc-800 p-6 pt-4 border-t border-gray-200 dark:border-zinc-700 animate-fade-in">
+          {/* Mobile layout */}
+          <div className="block md:hidden w-full">
+            <Pagination
+              className="w-full flex justify-center mb-2"
+              page={currentIndex + 1}
+              size="sm"
+              total={total}
+              onChange={(page) => setCurrentIndex(page - 1)}
             />
-            {t("tests.runner.prev")}
-          </Button>
-          <Pagination
-            className="w-1/2 flex justify-center"
-            page={currentIndex + 1}
-            size="sm"
-            total={total}
-            onChange={(page) => setCurrentIndex(page - 1)}
-          />
-          <Button
-            className={`px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transition-all ${
-              isLast && isTooLong
-                ? "opacity-50 cursor-not-allowed hover:from-blue-500 hover:to-purple-500"
-                : "hover:from-blue-600 hover:to-purple-600"
-            }`}
-            color="primary"
-            id="submit-btn"
-            isLoading={isLast && isSubmitting}
-            disabled={isLast && isTooLong}
-            isDisabled={isLast && isTooLong}
-            onPress={() => {
-              if (isLast && isTooLong) return;
-              isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1);
-            }}
-          >
-            {isLast ? t("tests.runner.submit") : t("tests.runner.next")}
-            {isLast ? (
-              <HugeiconsIcon
-                className="text-default-300"
-                icon={CheckListIcon}
-              />
-            ) : (
-              <HugeiconsIcon
-                className="text-default-300"
-                icon={ArrowRight01Icon}
-              />
-            )}
-          </Button>
+            <div className="flex items-center justify-between w-full gap-2">
+              <Button
+                className="px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-white dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-400 transition-all shadow-sm"
+                isDisabled={currentIndex === 0}
+                onPress={() => setCurrentIndex((idx) => Math.max(idx - 1, 0))}
+              >
+                <HugeiconsIcon className="text-default-300" icon={ArrowLeft01Icon} />
+                {t("tests.runner.prev")}
+              </Button>
+              <Button
+                className={`px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transition-all ${
+                  isLast && isTooLong ? "opacity-50 cursor-not-allowed" : "hover:from-blue-600 hover:to-purple-600"
+                }`}
+                color="primary"
+                id="submit-btn"
+                isLoading={isLast && isSubmitting}
+                disabled={isLast && isTooLong}
+                isDisabled={isLast && isTooLong}
+                onPress={() => {
+                  if (isLast && isTooLong) return;
+                  isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1);
+                }}
+              >
+                {isLast ? t("tests.runner.submit") : t("tests.runner.next")}
+                {isLast ? (
+                  <HugeiconsIcon className="text-default-300" icon={CheckListIcon} />
+                ) : (
+                  <HugeiconsIcon className="text-default-300" icon={ArrowRight01Icon} />
+                )}
+              </Button>
+            </div>
+          </div>
+          {/* Desktop layout */}
+          <div className="hidden md:flex items-center justify-between w-full">
+            <Button
+              className="px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-white dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-400 transition-all shadow-sm"
+              isDisabled={currentIndex === 0}
+              onPress={() => setCurrentIndex((idx) => Math.max(idx - 1, 0))}
+            >
+              <HugeiconsIcon className="text-default-300" icon={ArrowLeft01Icon} />
+              {t("tests.runner.prev")}
+            </Button>
+            <Pagination
+              className="w-1/2 flex justify-center"
+              page={currentIndex + 1}
+              size="sm"
+              total={total}
+              onChange={(page) => setCurrentIndex(page - 1)}
+            />
+            <Button
+              className={`px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transition-all ${
+                isLast && isTooLong ? "opacity-50 cursor-not-allowed" : "hover:from-blue-600 hover:to-purple-600"
+              }`}
+              color="primary"
+              id="submit-btn"
+              isLoading={isLast && isSubmitting}
+              disabled={isLast && isTooLong}
+              isDisabled={isLast && isTooLong}
+              onPress={() => {
+                if (isLast && isTooLong) return;
+                isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1);
+              }}
+            >
+              {isLast ? t("tests.runner.submit") : t("tests.runner.next")}
+              {isLast ? (
+                <HugeiconsIcon className="text-default-300" icon={CheckListIcon} />
+              ) : (
+                <HugeiconsIcon className="text-default-300" icon={ArrowRight01Icon} />
+              )}
+            </Button>
+          </div>
         </CardFooter>
       </Card>
       <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400 opacity-50">
