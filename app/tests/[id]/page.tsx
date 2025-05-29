@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -82,6 +82,8 @@ export default function TestRunnerPage() {
   const [testResult, setTestResult] = useState<any>(null);
   const [testData, setTestData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Ref to store timer interval ID
+  const timerRef = useRef<number | null>(null);
   // DnD sensors for ordering questions
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -135,18 +137,20 @@ export default function TestRunnerPage() {
 
   useEffect(() => {
     if (!endTime) return;
-    const interval = setInterval(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    const id = window.setInterval(() => {
       const now = Date.now();
       const left = Math.max(0, Math.floor((endTime - now) / 1000));
-
       setTimeLeft(left);
       if (left <= 0) {
-        clearInterval(interval);
+        if (timerRef.current) clearInterval(timerRef.current);
         router.push("/404");
       }
     }, 1000);
-
-    return () => clearInterval(interval);
+    timerRef.current = id;
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [endTime, router]);
   // Handle drag end for ordering questions
   const handleDragEnd = (event: any) => {
@@ -208,6 +212,10 @@ export default function TestRunnerPage() {
   };
 
   const handleSubmit = async () => {
+    // Stop the timer when submitting
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     setIsSubmitting(true);
     try {
       const formattedAnswers = questions.map((q, idx) => {
