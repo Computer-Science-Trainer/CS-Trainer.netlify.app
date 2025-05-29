@@ -10,6 +10,8 @@ import {
   Chip,
   Divider,
   Pagination,
+  Card,
+  Textarea,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
@@ -53,7 +55,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
 }) => {
   const t = useTranslations();
 
-  // fetch answer details when modal opens
+  // Fetch answer details when modal opens
   interface AnswerDetail {
     question_id: number;
     question_type: string;
@@ -71,6 +73,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [currentAnswerIndex, setCurrentAnswerIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!showReviewButton) return;
@@ -98,27 +101,76 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
     }
   }, [open, test?.id, showReviewButton]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
 
   return (
-    <Modal isOpen={open} placement="center" size="lg" onOpenChange={onClose}>
+    <Modal isOpen={open} placement="center" size={isMobile ? 'full' : 'lg'} onOpenChange={onClose} scrollBehavior="inside">
       <ModalContent className="rounded-xl shadow-xl p-6">
         <ModalHeader className="relative flex flex-col gap-2 text-2xl font-bold pb-4">
-          {t(`tests.testTypes.${test.type}`)}
-          <div className="flex gap-2 w-full">
-            <span className="text-base font-normal text-default-500">
-              {test.section == "fundamentals"
-                ? t("leaderboard.topics.fundamentals")
-                : t("leaderboard.topics.algorithms")}
-            </span>
-            <span className="text-base font-normal text-default-500 text-right ml-auto">
-              {t("tests.testIdLabel")}: {test.id}
-            </span>
-          </div>
+          { !reviewMode ? (
+            <>
+              {t(`tests.testTypes.${test.type}`)}
+              <div className="flex gap-2 w-full">
+                <span className="text-base font-normal text-default-500">
+                  {test.section == "fundamentals"
+                    ? t("leaderboard.topics.fundamentals")
+                    : t("leaderboard.topics.algorithms")}
+                </span>
+                <span className="text-base font-normal text-default-500 text-right ml-auto">
+                  {t("tests.testIdLabel")} : {test.id}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-semibold">
+                  Вопрос {currentAnswerIndex + 1}.
+                </h3>
+                <Chip
+                  className="font-semibold"
+                  color={answersData?.answers[currentAnswerIndex]?.is_correct ? "success" : "danger"}
+                  size="md"
+                  variant="flat"
+                >
+                  {answersData?.answers[currentAnswerIndex]?.is_correct ? "Верно" : "Неверно"}
+                </Chip>
+                <div className="ml-auto">
+                  <Chip variant="flat" color="default">
+                    <span className="font-semibold">Получено:</span> {answersData?.answers[currentAnswerIndex]?.points_awarded}
+                  </Chip>
+                </div>
+                <div>
+                  <Chip
+                    variant="bordered"
+                    color={
+                      answersData?.answers[currentAnswerIndex]?.difficulty === 'easy'   ? 'success' :
+                      answersData?.answers[currentAnswerIndex]?.difficulty === 'medium' ? 'secondary' :
+                                                                                          'danger'
+                    }
+                  >
+                    {answersData?.answers[currentAnswerIndex]?.difficulty}
+                  </Chip>
+                </div>
+              </div>
+              
+              <p className="mt-3 mb-1 text-base text-default-700">
+                {questionsList[currentAnswerIndex].question_text}
+              </p>
+            </div>
+          )}
         </ModalHeader>
         <Divider style={{ backgroundColor: "#c1c1c1" }} />
-        <ModalBody className="p-6 space-y-6">
+        <ModalBody className="pt-2 px-6 pb-6 space-y-6">
           {loadingAnswers || loadingQuestions ? (
             <div className="flex justify-center items-center h-64">
               <Progress isIndeterminate color="primary" size="lg" />
@@ -218,214 +270,204 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
             </div>
           ) : (
             <div className="w-full">
-              {/* current question slide */}
-              {(() => {
-                const detail = answersData!.answers.find(
-                  (a) =>
-                    a.question_id ===
-                    Number(questionsList[currentAnswerIndex].id),
-                );
-                const qDetail = questionsList[currentAnswerIndex];
+               {/* Render question details by type */}
+               {(() => {
+                 const detail = answersData!.answers.find(
+                   (a) =>
+                     a.question_id ===
+                     Number(questionsList[currentAnswerIndex].id),
+                 );
+                 const qDetail = questionsList[currentAnswerIndex];
 
-                return (
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold">
-                        Вопрос {currentAnswerIndex + 1}.
-                      </h3>
-                      <Chip
-                        className="font-semibold"
-                        color={detail?.is_correct ? "success" : "danger"}
-                        size="md"
-                        variant="flat"
-                      >
-                        {detail?.is_correct ? "Верно" : "Неверно"}
-                      </Chip>
-                    </div>
-                    <p className="mt-2 mb-4 text-base text-default-700">
-                      {qDetail.question_text}
-                    </p>
-                    <div>
-                      <span className="font-semibold">Сложность:</span>{" "}
-                      <span>{detail?.difficulty}</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Полученные баллы:</span>{" "}
-                      <span>{detail?.points_awarded}</span>
-                    </div>
-                    {/* render by type */}
-                    {qDetail.question_type === "ordering" ? (
-                      <div className="mb-4">
-                        {(() => {
-                          const correctSeq =
-                            detail?.correct_answer
-                              .split(",")
-                              .map((s) => s.trim()) || [];
-                          const userSeq =
-                            detail?.user_answer
-                              .split(",")
-                              .map((s) => s.trim()) || [];
+                 return (
+                   <>
+                     {qDetail.question_type === "ordering" ? (
+                       <div className="mb-4">
+                         {(() => {
+                           const correctSeq =
+                             detail?.correct_answer
+                               .split(",")
+                               .map((s) => s.trim()) || [];
+                           const userSeq =
+                             detail?.user_answer
+                               .split(",")
+                               .map((s) => s.trim()) || [];
 
-                          return (
-                            <>
-                              <div className="mb-2">
-                                <span className="font-semibold">
-                                  Правильная последовательность:
-                                </span>
-                                <div className="mt-1 space-y-1">
-                                  {correctSeq.map((opt, i) => (
-                                    <div
-                                      key={i}
-                                      className="flex items-start gap-2"
-                                    >
-                                      <span className="font-semibold">
-                                        {i + 1}.
-                                      </span>
-                                      <span className="text-default-600">
-                                        {opt}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="mb-2">
-                                <span className="font-semibold">
-                                  Ваша последовательность:
-                                </span>
-                                <div className="mt-1 space-y-1">
-                                  {userSeq.map((ua, idx) => {
-                                    const num =
-                                      correctSeq.findIndex(
-                                        (item) => item === ua,
-                                      ) + 1;
-                                    const isRight = ua === correctSeq[idx];
+                           return (
+                             <>
+                               <div className="mb-2">
+                                 <span className="font-semibold">
+                                   Правильная последовательность:
+                                 </span>
+                                 <div className="mt-1 space-y-1">
+                                   {correctSeq.map((opt, i) => (
+                                     <div
+                                       key={i}
+                                       className="flex items-start gap-2"
+                                     >
+                                       <span className="font-semibold">
+                                         {i + 1}.
+                                       </span>
+                                       <span className="text-default-600">
+                                         {opt}
+                                       </span>
+                                     </div>
+                                   ))}
+                                 </div>
+                               </div>
+                               <div className="mb-2">
+                                 <span className="font-semibold">
+                                   Ваша последовательность:
+                                 </span>
+                                 <div className="mt-1 space-y-1">
+                                   {userSeq.map((ua, idx) => {
+                                     const num =
+                                       correctSeq.findIndex(
+                                         (item) => item === ua,
+                                       ) + 1;
+                                     const isRight = ua === correctSeq[idx];
 
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className="flex items-start gap-2"
-                                      >
-                                        <span className="font-semibold">
-                                          {num}.
-                                        </span>
-                                        <span
-                                          className={
-                                            isRight
-                                              ? "text-success"
-                                              : "text-danger"
-                                          }
-                                        >
-                                          {ua || "-"}
-                                        </span>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </div>
-                    ) : qDetail.question_type === "multiple-choice" ||
-                      qDetail.question_type === "single-choice" ? (
-                      <div className="mb-4 mt-4">
-                        {(() => {
-                          const normalize = (s: string) =>
-                            s.trim().toLowerCase().replace(/^"|"$/g, "");
-                          const correctAnswers =
-                            detail?.correct_answer.split(",").map(normalize) ||
-                            [];
-                          const userAnswers =
-                            detail?.user_answer.split(",").map(normalize) || [];
+                                     return (
+                                       <div
+                                         key={idx}
+                                         className="flex items-start gap-2"
+                                       >
+                                         <span className="font-semibold">
+                                           {num}.
+                                         </span>
+                                         <span
+                                           className={
+                                             isRight
+                                               ? "text-success"
+                                               : "text-danger"
+                                           }
+                                         >
+                                           {ua || "-"}
+                                         </span>
+                                       </div>
+                                     );
+                                   })}
+                                 </div>
+                               </div>
+                             </>
+                           );
+                         })()}
+                       </div>
+                     ) : qDetail.question_type === "multiple-choice" ||
+                       qDetail.question_type === "single-choice" ? (
+                       <div className="mb-4 mt-4">
+                         {(() => {
+                           const normalize = (s: string) =>
+                             s.trim().toLowerCase().replace(/^"|"$/g, "");
+                           const correctAnswers =
+                             detail?.correct_answer.split(",").map(normalize) ||
+                             [];
+                           const userAnswers =
+                             detail?.user_answer.split(",").map(normalize) || [];
 
-                          return (
-                            <div>
-                              <span className="font-semibold">
-                                Варианты ответа:
-                              </span>
-                              <ul className="list-disc pl-6 mt-2">
-                                {qDetail.options?.map((opt) => {
-                                  const normOpt = normalize(opt);
-                                  const isCorrect =
-                                    correctAnswers.includes(normOpt);
-                                  const isChosen =
-                                    userAnswers.includes(normOpt);
-                                  let cls = "";
+                           return (
+                             <div>
+                               <span className="font-semibold">
+                                 Варианты ответа:
+                               </span>
+                               <ul className="list-disc pl-6 mt-2">
+                                 {qDetail.options?.map((opt) => {
+                                   const normOpt = normalize(opt);
+                                   const isCorrect =
+                                     correctAnswers.includes(normOpt);
+                                   const isChosen =
+                                     userAnswers.includes(normOpt);
+                                   let cls = "";
 
-                                  if (isCorrect)
-                                    cls = "text-success font-semibold";
-                                  else if (isChosen) cls = "text-danger";
+                                   if (isCorrect)
+                                     cls = "text-success font-semibold";
+                                   else if (isChosen) cls = "text-danger";
 
-                                  return (
-                                    <li key={opt} className={cls}>
-                                      {opt}
-                                      {isCorrect && isChosen && (
-                                        <span className="ml-2 text-sm text-success">
-                                          (Ваш выбор)
-                                        </span>
-                                      )}
-                                      {qDetail.question_type ===
-                                        "multiple-choice" &&
-                                        isCorrect &&
-                                        !isChosen && (
-                                          <span className="ml-2 text-sm text-warning">
-                                            (Не выбран)
-                                          </span>
-                                        )}
-                                      {!isCorrect && isChosen && (
-                                        <span className="ml-2 text-sm text-danger">
-                                          (Ваш выбор)
-                                        </span>
-                                      )}
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    ) : (
-                      <div className="mb-4 mt-4">
-                        <div className="">
-                          <span className="font-semibold">
-                            Правильный ответ:
-                          </span>{" "}
-                          <span className="text-default-600">
-                            {detail?.correct_answer}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold">Ваш ответ:</span>{" "}
-                          <span
-                            className={
-                              detail?.is_correct
-                                ? "text-success"
-                                : "text-danger"
-                            }
-                          >
-                            {detail?.user_answer}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              {/* question navigation */}
-              <div className="flex justify-center mb-6">
-                <Pagination
-                  showControls
-                  className="mx-auto"
-                  page={currentAnswerIndex + 1}
-                  size="lg"
-                  total={questionsList.length}
-                  onChange={(page) => setCurrentAnswerIndex(page - 1)}
-                />
-              </div>
+                                   return (
+                                     <li key={opt} className={cls}>
+                                       {opt}
+                                       {isCorrect && isChosen && (
+                                         <span className="ml-2 text-sm text-success">
+                                           (Ваш выбор)
+                                         </span>
+                                       )}
+                                       {qDetail.question_type ===
+                                         "multiple-choice" &&
+                                         isCorrect &&
+                                         !isChosen && (
+                                           <span className="ml-2 text-sm text-warning">
+                                             (Не выбран)
+                                           </span>
+                                         )}
+                                       {!isCorrect && isChosen && (
+                                         <span className="ml-2 text-sm text-danger">
+                                           (Ваш выбор)
+                                         </span>
+                                       )}
+                                     </li>
+                                   );
+                                 })}
+                               </ul>
+                             </div>
+                           );
+                         })()}
+                       </div>
+                     ) : (
+                       <div className="mb-4 mt-4">
+                         <div className="mt-4">
+                           <span className="font-semibold">
+                             Правильный ответ:
+                           </span>
+                           <Textarea
+                             className="text-default-600 mt-2"
+                             value={detail?.correct_answer || ''}
+                             disabled
+                           />
+                         </div>
+                        {qDetail.question_type === 'open-ended' ? (
+                          <div className="mt-4">
+                            <span className="font-semibold">Ваш ответ:</span>
+                            <Textarea
+                              value={detail?.user_answer || ''}
+                              disabled
+                              placeholder="Ответ пуст"
+                              className="mt-2"
+                            />
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="font-semibold">Ваш ответ:</span>{" "}
+                            <span
+                              className={
+                                detail?.is_correct
+                                  ? "text-success"
+                                  : "text-danger"
+                              }
+                            >
+                              {detail?.user_answer}
+                            </span>
+                          </div>
+                        )}
+                       </div>
+                     )}
+                   </>
+                 );
+               })()}
             </div>
           )}
         </ModalBody>
+        {reviewMode && (
+          <div className="flex justify-center items-center p-4">
+            <Pagination
+              showControls
+              className="mx-auto"
+              page={currentAnswerIndex + 1}
+              size="lg"
+              total={questionsList.length}
+              onChange={(page) => setCurrentAnswerIndex(page - 1)}
+            />
+          </div>
+        )}
         <Divider style={{ backgroundColor: "#c1c1c1" }} />
         <ModalFooter className="flex items-center p-4 space-x-2">
           {reviewMode ? (
