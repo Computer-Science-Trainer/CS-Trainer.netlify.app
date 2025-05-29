@@ -115,7 +115,7 @@ export default function TestRunnerPage() {
               ? shuffle(q.options)
               : q.question_type === "multiple-choice"
                 ? []
-                : "",
+                : [""],
           ),
         );
       } catch {
@@ -132,7 +132,6 @@ export default function TestRunnerPage() {
     if (id) fetchTest();
   }, [id, t]);
 
-  // Таймер обратного отсчета
   useEffect(() => {
     if (!endTime) return;
     const interval = setInterval(() => {
@@ -211,19 +210,11 @@ export default function TestRunnerPage() {
     setIsSubmitting(true);
     try {
       const formattedAnswers = questions.map((q, idx) => {
-        let answer = answers[idx];
-
-        if (q.question_type === "multiple-choice" && Array.isArray(answer)) {
-          answer = answer.join(",");
-        } else if (q.question_type === "ordering" && Array.isArray(answer)) {
-          answer = answer.join(",");
-        } else if (typeof answer !== "string") {
-          answer = String(answer ?? "");
-        }
-
+        const raw = answers[idx];
+        const answerArray = Array.isArray(raw) ? raw : [String(raw ?? "")];
         return {
           question_id: q.id,
-          answer,
+          answer: answerArray,
         };
       });
       const res = await makeApiRequest(`api/tests/${id}/submit`, "POST", {
@@ -350,8 +341,8 @@ export default function TestRunnerPage() {
           {question.question_type === "single-choice" && (
             <RadioGroup
               className="space-y-3"
-              value={answers[currentIndex] as string}
-              onValueChange={(val) => updateAnswer(val)}
+              value={(answers[currentIndex] as string[])[0] || ""}
+              onValueChange={(val) => updateAnswer([val])}
             >
               {question.options.map((opt) => (
                 <Radio
@@ -385,8 +376,8 @@ export default function TestRunnerPage() {
             <Textarea
               className="mt-2 p-4 rounded-lg border-2 border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-400 dark:focus:border-blue-400 transition-all shadow-sm min-h-[120px] text-base"
               placeholder={t("tests.runner.openPlaceholder")}
-              value={answers[currentIndex] as string}
-              onChange={(e) => updateAnswer(e.target.value)}
+              value={(answers[currentIndex] as string[])[0] || ""}
+              onChange={(e) => updateAnswer([e.target.value])}
             />
           )}
           {question.question_type === "ordering" && (
