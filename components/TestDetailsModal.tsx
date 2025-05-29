@@ -139,7 +139,46 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
             </>
           ) : (
             <div className="flex flex-col">
-              <div className="flex items-center gap-3">
+              {/* Mobile: question and chips below */}
+              <div className="sm:hidden">
+                <h3 className="text-lg font-semibold">
+                  Вопрос {currentAnswerIndex + 1}.
+                </h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <Chip
+                    className="font-semibold"
+                    color={
+                      answersData?.answers[currentAnswerIndex]?.is_correct
+                        ? "success"
+                        : "danger"
+                    }
+                    size="md"
+                    variant="flat"
+                  >
+                    {answersData?.answers[currentAnswerIndex]?.is_correct
+                      ? "Верно"
+                      : "Неверно"}
+                  </Chip>
+                  <Chip color="default" variant="flat">
+                    <span className="font-semibold">Получено:</span>{" "}
+                    {answersData?.answers[currentAnswerIndex]?.points_awarded}
+                  </Chip>
+                  <Chip
+                    color={
+                      answersData?.answers[currentAnswerIndex]?.difficulty === "easy"
+                        ? "success"
+                        : answersData?.answers[currentAnswerIndex]?.difficulty === "medium"
+                        ? "secondary"
+                        : "danger"
+                    }
+                    variant="bordered"
+                  >
+                    {answersData?.answers[currentAnswerIndex]?.difficulty}
+                  </Chip>
+                </div>
+              </div>
+              {/* Desktop: inline header */}
+              <div className="hidden sm:flex items-center gap-3">
                 <h3 className="text-lg font-semibold">
                   Вопрос {currentAnswerIndex + 1}.
                 </h3>
@@ -166,13 +205,11 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                 <div>
                   <Chip
                     color={
-                      answersData?.answers[currentAnswerIndex]?.difficulty ===
-                      "easy"
+                      answersData?.answers[currentAnswerIndex]?.difficulty === "easy"
                         ? "success"
-                        : answersData?.answers[currentAnswerIndex]
-                              ?.difficulty === "medium"
-                          ? "secondary"
-                          : "danger"
+                        : answersData?.answers[currentAnswerIndex]?.difficulty === "medium"
+                        ? "secondary"
+                        : "danger"
                     }
                     variant="bordered"
                   >
@@ -180,7 +217,6 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                   </Chip>
                 </div>
               </div>
-
               <p className="mt-3 mb-1 text-base text-default-700">
                 {questionsList[currentAnswerIndex].question_text}
               </p>
@@ -468,9 +504,10 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
           <div className="flex justify-center items-center p-4">
             <Pagination
               showControls
-              className="mx-auto"
+              isCompact={isMobile}
+              className=""
               page={currentAnswerIndex + 1}
-              size="lg"
+              size={isMobile ? "sm" : "lg"}
               total={questionsList.length}
               onChange={(page) => setCurrentAnswerIndex(page - 1)}
             />
