@@ -58,8 +58,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
     question_id: number;
     question_type: string;
     difficulty: string;
-    user_answer: string;
-    correct_answer: string;
+    user_answer: string[];
+    correct_answer: string[];
     is_correct: boolean;
     points_awarded: number;
   }
@@ -221,10 +221,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
               {/* current question slide */}
               {(() => {
                 const detail = answersData!.answers.find(
-                  (a) =>
-                    a.question_id ===
-                    Number(questionsList[currentAnswerIndex].id),
-                );
+                  (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
+                )!;
                 const qDetail = questionsList[currentAnswerIndex];
 
                 return (
@@ -257,14 +255,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                     {qDetail.question_type === "ordering" ? (
                       <div className="mb-4">
                         {(() => {
-                          const correctSeq =
-                            detail?.correct_answer
-                              .split(",")
-                              .map((s) => s.trim()) || [];
-                          const userSeq =
-                            detail?.user_answer
-                              .split(",")
-                              .map((s) => s.trim()) || [];
+                          const correctSeq = detail.correct_answer.map((s) => s.trim());
+                          const userSeq = detail.user_answer.map((s) => s.trim());
 
                           return (
                             <>
@@ -332,11 +324,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                         {(() => {
                           const normalize = (s: string) =>
                             s.trim().toLowerCase().replace(/^"|"$/g, "");
-                          const correctAnswers =
-                            detail?.correct_answer.split(",").map(normalize) ||
-                            [];
-                          const userAnswers =
-                            detail?.user_answer.split(",").map(normalize) || [];
+                          const correctAnswers = detail.correct_answer.map(normalize);
+                          const userAnswers = detail.user_answer.map(normalize);
 
                           return (
                             <div>
@@ -391,20 +380,20 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                           <span className="font-semibold">
                             Правильный ответ:
                           </span>{" "}
-                          <span className="text-default-600">
-                            {detail?.correct_answer}
+                         <span className="text-default-600">
+                            {detail.correct_answer[0]}
                           </span>
                         </div>
                         <div>
                           <span className="font-semibold">Ваш ответ:</span>{" "}
-                          <span
-                            className={
-                              detail?.is_correct
-                                ? "text-success"
-                                : "text-danger"
-                            }
-                          >
-                            {detail?.user_answer}
+                         <span
+                           className={
+                             detail?.is_correct
+                               ? "text-success"
+                               : "text-danger"
+                           }
+                         >
+                            {detail.user_answer[0]}
                           </span>
                         </div>
                       </div>
