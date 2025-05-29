@@ -10,7 +10,6 @@ import {
   Chip,
   Divider,
   Pagination,
-  Card,
   Textarea,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
@@ -55,13 +54,13 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
 }) => {
   const t = useTranslations();
 
-  // Fetch answer details when modal opens
+  // fetch answer details when modal opens
   interface AnswerDetail {
     question_id: number;
     question_type: string;
     difficulty: string;
-    user_answer: string;
-    correct_answer: string;
+    user_answer: string[];
+    correct_answer: string[];
     is_correct: boolean;
     points_awarded: number;
   }
@@ -270,13 +269,11 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
             </div>
           ) : (
             <div className="w-full">
-               {/* Render question details by type */}
+               {/* render by type */}
                {(() => {
                  const detail = answersData!.answers.find(
-                   (a) =>
-                     a.question_id ===
-                     Number(questionsList[currentAnswerIndex].id),
-                 );
+                  (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
+                )!;
                  const qDetail = questionsList[currentAnswerIndex];
 
                  return (
@@ -284,14 +281,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                      {qDetail.question_type === "ordering" ? (
                        <div className="mb-4">
                          {(() => {
-                           const correctSeq =
-                             detail?.correct_answer
-                               .split(",")
-                               .map((s) => s.trim()) || [];
-                           const userSeq =
-                             detail?.user_answer
-                               .split(",")
-                               .map((s) => s.trim()) || [];
+                          const correctSeq = detail.correct_answer.map((s) => s.trim());
+                          const userSeq = detail.user_answer.map((s) => s.trim());
 
                            return (
                              <>
@@ -359,11 +350,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                          {(() => {
                            const normalize = (s: string) =>
                              s.trim().toLowerCase().replace(/^"|"$/g, "");
-                           const correctAnswers =
-                             detail?.correct_answer.split(",").map(normalize) ||
-                             [];
-                           const userAnswers =
-                             detail?.user_answer.split(",").map(normalize) || [];
+                          const correctAnswers = detail.correct_answer.map(normalize);
+                          const userAnswers = detail.user_answer.map(normalize);
 
                            return (
                              <div>
@@ -420,7 +408,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                            </span>
                            <Textarea
                              className="text-default-600 mt-2"
-                             value={detail?.correct_answer || ''}
+                             value={detail.correct_answer[0] || ''}
                              disabled
                            />
                          </div>
@@ -428,7 +416,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                           <div className="mt-4">
                             <span className="font-semibold">Ваш ответ:</span>
                             <Textarea
-                              value={detail?.user_answer || ''}
+                              value={detail.user_answer[0] || ''}
                               disabled
                               placeholder="Ответ пуст"
                               className="mt-2"
@@ -444,7 +432,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                                   : "text-danger"
                               }
                             >
-                              {detail?.user_answer}
+                              {detail.user_answer[0]}
                             </span>
                           </div>
                         )}
