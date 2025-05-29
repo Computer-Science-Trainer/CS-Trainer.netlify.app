@@ -101,21 +101,29 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   }, [open, test?.id, showReviewButton]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const onResize = () => setIsMobile(window.innerWidth < 640);
+
     onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    window.addEventListener("resize", onResize);
+
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
 
   return (
-    <Modal isOpen={open} placement="center" size={isMobile ? 'full' : 'lg'} onOpenChange={onClose} scrollBehavior="inside">
+    <Modal
+      isOpen={open}
+      placement="center"
+      scrollBehavior="inside"
+      size={isMobile ? "full" : "lg"}
+      onOpenChange={onClose}
+    >
       <ModalContent className="rounded-xl shadow-xl p-6">
         <ModalHeader className="relative flex flex-col gap-2 text-2xl font-bold pb-4">
-          { !reviewMode ? (
+          {!reviewMode ? (
             <>
               {t(`tests.testTypes.${test.type}`)}
               <div className="flex gap-2 w-full">
@@ -137,31 +145,42 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                 </h3>
                 <Chip
                   className="font-semibold"
-                  color={answersData?.answers[currentAnswerIndex]?.is_correct ? "success" : "danger"}
+                  color={
+                    answersData?.answers[currentAnswerIndex]?.is_correct
+                      ? "success"
+                      : "danger"
+                  }
                   size="md"
                   variant="flat"
                 >
-                  {answersData?.answers[currentAnswerIndex]?.is_correct ? "Верно" : "Неверно"}
+                  {answersData?.answers[currentAnswerIndex]?.is_correct
+                    ? "Верно"
+                    : "Неверно"}
                 </Chip>
                 <div className="ml-auto">
-                  <Chip variant="flat" color="default">
-                    <span className="font-semibold">Получено:</span> {answersData?.answers[currentAnswerIndex]?.points_awarded}
+                  <Chip color="default" variant="flat">
+                    <span className="font-semibold">Получено:</span>{" "}
+                    {answersData?.answers[currentAnswerIndex]?.points_awarded}
                   </Chip>
                 </div>
                 <div>
                   <Chip
-                    variant="bordered"
                     color={
-                      answersData?.answers[currentAnswerIndex]?.difficulty === 'easy'   ? 'success' :
-                      answersData?.answers[currentAnswerIndex]?.difficulty === 'medium' ? 'secondary' :
-                                                                                          'danger'
+                      answersData?.answers[currentAnswerIndex]?.difficulty ===
+                      "easy"
+                        ? "success"
+                        : answersData?.answers[currentAnswerIndex]
+                              ?.difficulty === "medium"
+                          ? "secondary"
+                          : "danger"
                     }
+                    variant="bordered"
                   >
                     {answersData?.answers[currentAnswerIndex]?.difficulty}
                   </Chip>
                 </div>
               </div>
-              
+
               <p className="mt-3 mb-1 text-base text-default-700">
                 {questionsList[currentAnswerIndex].question_text}
               </p>
@@ -269,157 +288,165 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
             </div>
           ) : (
             <div className="w-full">
-               {/* render by type */}
-               {(() => {
-                 const detail = answersData!.answers.find(
-                  (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
+              {/* current question slide */}
+              {(() => {
+                const detail = answersData!.answers.find(
+                  (a) =>
+                    a.question_id ===
+                    Number(questionsList[currentAnswerIndex].id),
                 )!;
-                 const qDetail = questionsList[currentAnswerIndex];
+                const qDetail = questionsList[currentAnswerIndex];
 
-                 return (
-                   <>
-                     {qDetail.question_type === "ordering" ? (
-                       <div className="mb-4">
-                         {(() => {
-                          const correctSeq = detail.correct_answer.map((s) => s.trim());
-                          const userSeq = detail.user_answer.map((s) => s.trim());
+                return (
+                  <>
+                    {/* render by type */}
+                    {qDetail.question_type === "ordering" ? (
+                      <div className="mb-4">
+                        {(() => {
+                          const correctSeq = detail.correct_answer.map((s) =>
+                            s.trim(),
+                          );
+                          const userSeq = detail.user_answer.map((s) =>
+                            s.trim(),
+                          );
 
-                           return (
-                             <>
-                               <div className="mb-2">
-                                 <span className="font-semibold">
-                                   Правильная последовательность:
-                                 </span>
-                                 <div className="mt-1 space-y-1">
-                                   {correctSeq.map((opt, i) => (
-                                     <div
-                                       key={i}
-                                       className="flex items-start gap-2"
-                                     >
-                                       <span className="font-semibold">
-                                         {i + 1}.
-                                       </span>
-                                       <span className="text-default-600">
-                                         {opt}
-                                       </span>
-                                     </div>
-                                   ))}
-                                 </div>
-                               </div>
-                               <div className="mb-2">
-                                 <span className="font-semibold">
-                                   Ваша последовательность:
-                                 </span>
-                                 <div className="mt-1 space-y-1">
-                                   {userSeq.map((ua, idx) => {
-                                     const num =
-                                       correctSeq.findIndex(
-                                         (item) => item === ua,
-                                       ) + 1;
-                                     const isRight = ua === correctSeq[idx];
+                          return (
+                            <>
+                              <div className="mb-2">
+                                <span className="font-semibold">
+                                  Правильная последовательность:
+                                </span>
+                                <div className="mt-1 space-y-1">
+                                  {correctSeq.map((opt, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <span className="font-semibold">
+                                        {i + 1}.
+                                      </span>
+                                      <span className="text-default-600">
+                                        {opt}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="mb-2">
+                                <span className="font-semibold">
+                                  Ваша последовательность:
+                                </span>
+                                <div className="mt-1 space-y-1">
+                                  {userSeq.map((ua, idx) => {
+                                    const num =
+                                      correctSeq.findIndex(
+                                        (item) => item === ua,
+                                      ) + 1;
+                                    const isRight = ua === correctSeq[idx];
 
-                                     return (
-                                       <div
-                                         key={idx}
-                                         className="flex items-start gap-2"
-                                       >
-                                         <span className="font-semibold">
-                                           {num}.
-                                         </span>
-                                         <span
-                                           className={
-                                             isRight
-                                               ? "text-success"
-                                               : "text-danger"
-                                           }
-                                         >
-                                           {ua || "-"}
-                                         </span>
-                                       </div>
-                                     );
-                                   })}
-                                 </div>
-                               </div>
-                             </>
-                           );
-                         })()}
-                       </div>
-                     ) : qDetail.question_type === "multiple-choice" ||
-                       qDetail.question_type === "single-choice" ? (
-                       <div className="mb-4 mt-4">
-                         {(() => {
-                           const normalize = (s: string) =>
-                             s.trim().toLowerCase().replace(/^"|"$/g, "");
-                          const correctAnswers = detail.correct_answer.map(normalize);
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className="flex items-start gap-2"
+                                      >
+                                        <span className="font-semibold">
+                                          {num}.
+                                        </span>
+                                        <span
+                                          className={
+                                            isRight
+                                              ? "text-success"
+                                              : "text-danger"
+                                          }
+                                        >
+                                          {ua || "-"}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    ) : qDetail.question_type === "multiple-choice" ||
+                      qDetail.question_type === "single-choice" ? (
+                      <div className="mb-4 mt-4">
+                        {(() => {
+                          const normalize = (s: string) =>
+                            s.trim().toLowerCase().replace(/^"|"$/g, "");
+                          const correctAnswers =
+                            detail.correct_answer.map(normalize);
                           const userAnswers = detail.user_answer.map(normalize);
 
-                           return (
-                             <div>
-                               <span className="font-semibold">
-                                 Варианты ответа:
-                               </span>
-                               <ul className="list-disc pl-6 mt-2">
-                                 {qDetail.options?.map((opt) => {
-                                   const normOpt = normalize(opt);
-                                   const isCorrect =
-                                     correctAnswers.includes(normOpt);
-                                   const isChosen =
-                                     userAnswers.includes(normOpt);
-                                   let cls = "";
+                          return (
+                            <div>
+                              <span className="font-semibold">
+                                Варианты ответа:
+                              </span>
+                              <ul className="list-disc pl-6 mt-2">
+                                {qDetail.options?.map((opt) => {
+                                  const normOpt = normalize(opt);
+                                  const isCorrect =
+                                    correctAnswers.includes(normOpt);
+                                  const isChosen =
+                                    userAnswers.includes(normOpt);
+                                  let cls = "";
 
-                                   if (isCorrect)
-                                     cls = "text-success font-semibold";
-                                   else if (isChosen) cls = "text-danger";
+                                  if (isCorrect)
+                                    cls = "text-success font-semibold";
+                                  else if (isChosen) cls = "text-danger";
 
-                                   return (
-                                     <li key={opt} className={cls}>
-                                       {opt}
-                                       {isCorrect && isChosen && (
-                                         <span className="ml-2 text-sm text-success">
-                                           (Ваш выбор)
-                                         </span>
-                                       )}
-                                       {qDetail.question_type ===
-                                         "multiple-choice" &&
-                                         isCorrect &&
-                                         !isChosen && (
-                                           <span className="ml-2 text-sm text-warning">
-                                             (Не выбран)
-                                           </span>
-                                         )}
-                                       {!isCorrect && isChosen && (
-                                         <span className="ml-2 text-sm text-danger">
-                                           (Ваш выбор)
-                                         </span>
-                                       )}
-                                     </li>
-                                   );
-                                 })}
-                               </ul>
-                             </div>
-                           );
-                         })()}
-                       </div>
-                     ) : (
-                       <div className="mb-4 mt-4">
-                         <div className="mt-4">
-                           <span className="font-semibold">
-                             Правильный ответ:
-                           </span>
-                           <Textarea
-                             className="text-default-600 mt-2"
-                             value={detail.correct_answer[0] || ''}
-                             disabled
-                           />
-                         </div>
-                        {qDetail.question_type === 'open-ended' ? (
+                                  return (
+                                    <li key={opt} className={cls}>
+                                      {opt}
+                                      {isCorrect && isChosen && (
+                                        <span className="ml-2 text-sm text-success">
+                                          (Ваш выбор)
+                                        </span>
+                                      )}
+                                      {qDetail.question_type ===
+                                        "multiple-choice" &&
+                                        isCorrect &&
+                                        !isChosen && (
+                                          <span className="ml-2 text-sm text-warning">
+                                            (Не выбран)
+                                          </span>
+                                        )}
+                                      {!isCorrect && isChosen && (
+                                        <span className="ml-2 text-sm text-danger">
+                                          (Ваш выбор)
+                                        </span>
+                                      )}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    ) : (
+                      <div className="mb-4 mt-4">
+                        <div className="mt-4">
+                          <span className="font-semibold">
+                            Правильный ответ:
+                          </span>
+                          <Textarea
+                            disabled
+                            className="text-default-600 mt-2"
+                            value={detail.correct_answer[0] || ""}
+                          />
+                        </div>
+                        {qDetail.question_type === "open-ended" ? (
                           <div className="mt-4">
                             <span className="font-semibold">Ваш ответ:</span>
                             <Textarea
-                              value={detail.user_answer[0] || ''}
                               disabled
-                              placeholder="Ответ пуст"
                               className="mt-2"
+                              placeholder="Ответ пуст"
+                              value={detail.user_answer[0] || ""}
                             />
                           </div>
                         ) : (
@@ -436,11 +463,11 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                             </span>
                           </div>
                         )}
-                       </div>
-                     )}
-                   </>
-                 );
-               })()}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </ModalBody>
