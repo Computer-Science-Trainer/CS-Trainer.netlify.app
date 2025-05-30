@@ -110,6 +110,11 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // compute current answer detail for reviewMode header
+  const detailForCurrent = answersData?.answers.find(
+    (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
+  );
+
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
 
@@ -147,33 +152,26 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                 <div className="flex items-center gap-2 mt-2">
                   <Chip
                     className="font-semibold"
-                    color={
-                      answersData?.answers[currentAnswerIndex]?.is_correct
-                        ? "success"
-                        : "danger"
-                    }
+                    color={detailForCurrent?.is_correct ? "success" : "danger"}
                     size="md"
                     variant="flat"
                   >
-                    {answersData?.answers[currentAnswerIndex]?.is_correct
-                      ? "Верно"
-                      : "Неверно"}
+                    {detailForCurrent?.is_correct ? "Верно" : "Неверно"}
                   </Chip>
                   <Chip color="default" variant="flat">
-                    <span className="font-semibold">Получено:</span>{" "}
-                    {answersData?.answers[currentAnswerIndex]?.points_awarded}
+                    <span className="font-semibold">Получено:</span> {detailForCurrent?.points_awarded}
                   </Chip>
                   <Chip
                     color={
-                      answersData?.answers[currentAnswerIndex]?.difficulty === "easy"
+                      detailForCurrent?.difficulty === "easy"
                         ? "success"
-                        : answersData?.answers[currentAnswerIndex]?.difficulty === "medium"
+                        : detailForCurrent?.difficulty === "medium"
                         ? "secondary"
                         : "danger"
                     }
                     variant="bordered"
                   >
-                    {answersData?.answers[currentAnswerIndex]?.difficulty}
+                    {detailForCurrent?.difficulty}
                   </Chip>
                 </div>
               </div>
@@ -184,36 +182,29 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                 </h3>
                 <Chip
                   className="font-semibold"
-                  color={
-                    answersData?.answers[currentAnswerIndex]?.is_correct
-                      ? "success"
-                      : "danger"
-                  }
+                  color={detailForCurrent?.is_correct ? "success" : "danger"}
                   size="md"
                   variant="flat"
                 >
-                  {answersData?.answers[currentAnswerIndex]?.is_correct
-                    ? "Верно"
-                    : "Неверно"}
+                  {detailForCurrent?.is_correct ? "Верно" : "Неверно"}
                 </Chip>
                 <div className="ml-auto">
                   <Chip color="default" variant="flat">
-                    <span className="font-semibold">Получено:</span>{" "}
-                    {answersData?.answers[currentAnswerIndex]?.points_awarded}
+                    <span className="font-semibold">Получено:</span> {detailForCurrent?.points_awarded}
                   </Chip>
                 </div>
                 <div>
                   <Chip
                     color={
-                      answersData?.answers[currentAnswerIndex]?.difficulty === "easy"
+                      detailForCurrent?.difficulty === "easy"
                         ? "success"
-                        : answersData?.answers[currentAnswerIndex]?.difficulty === "medium"
+                        : detailForCurrent?.difficulty === "medium"
                         ? "secondary"
                         : "danger"
                     }
                     variant="bordered"
                   >
-                    {answersData?.answers[currentAnswerIndex]?.difficulty}
+                    {detailForCurrent?.difficulty}
                   </Chip>
                 </div>
               </div>
