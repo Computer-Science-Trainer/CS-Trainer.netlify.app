@@ -11,10 +11,13 @@ import {
   Divider,
   Pagination,
   Textarea,
+  Slider,
+  Toast,
+  addToast,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
-import { makeApiRequest } from "../config/api";
+import { makeApiRequest, getToken, API_BASE_URL } from "../config/api";
 
 // define question detail type
 interface QuestionDetail {
@@ -73,6 +76,10 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   const [currentAnswerIndex, setCurrentAnswerIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [ratings, setRatings] = useState<number[]>([]);
+  const [feedbackVisible, setFeedbackVisible] = useState<boolean[]>([]);
+  const [feedbackTexts, setFeedbackTexts] = useState<string[]>([]);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean[]>([]);
 
   useEffect(() => {
     if (!showReviewButton) return;
@@ -88,6 +95,11 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
         .then(([ansData, testDetail]: any) => {
           setAnswersData(ansData);
           setQuestionsList(testDetail.questions || []);
+          const count = (testDetail.questions || []).length;
+          setRatings(Array(count).fill(0));
+          setFeedbackVisible(Array(count).fill(false));
+          setFeedbackTexts(Array(count).fill(''));
+          setFeedbackSubmitted(Array(count).fill(false));
           setCurrentAnswerIndex(0);
         })
         .catch(() => {
@@ -114,6 +126,39 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   const detailForCurrent = answersData?.answers.find(
     (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
   );
+
+  // submit all feedback at once (send proposals)
+  const submitAllFeedback = async () => {
+    const proposalsPayload = {
+      proposals: questionsList.map((q, idx) => {
+        const detail = answersData?.answers.find(a => a.question_id === Number(q.id));
+        return {
+          question_text: q.question_text,
+          question_type: q.question_type,
+          difficulty: detail?.difficulty || '',
+          options: q.options || [],
+          correct_answer: detail?.correct_answer || [],
+          topic_code: test?.section || '',
+        };
+      }).filter((_, idx) => feedbackVisible[idx] && !feedbackSubmitted[idx]),
+    };
+    try {
+      if (test) {
+        const token = getToken("token");
+        await fetch(`${API_BASE_URL}/api/tests/${test.id}/feedback`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(proposalsPayload),
+        });
+      }
+    } catch {
+      // TODO: обработать ошибку
+    }
+    setFeedbackSubmitted(feedbackSubmitted.map(() => true));
+  };
 
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
@@ -485,6 +530,93 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                         )}
                       </div>
                     )}
+                    <div className="mt-6">
+                      {/* Button to show feedback slider */}
+                      {!feedbackVisible[currentAnswerIndex] && !feedbackSubmitted[currentAnswerIndex] && (
+                        <Button size="md" variant="flat" onPress={() => {
+                          const vis = [...feedbackVisible];
+                          vis[currentAnswerIndex] = true;
+                          setFeedbackVisible(vis);
+                        }}>
+                          Оставить отзыв о вопросе
+                        </Button>
+                      )}
+                      {/* Feedback slider and text feedback */}
+                      {feedbackVisible[currentAnswerIndex] && !feedbackSubmitted[currentAnswerIndex] && (
+                        <>
+                          <Slider
+                            className="max-w-md"
+                            color={
+                              ratings[currentAnswerIndex] === 0
+                                ? "primary"
+                                : ratings[currentAnswerIndex] >= 4
+                                ? "success"
+                                : ratings[currentAnswerIndex] === 3
+                                ? "warning"
+                                : "danger"
+                            }
+                            label="Оцените вопрос"
+                            minValue={1}
+                            maxValue={5}
+                            showSteps
+                            size="md"
+                            step={1}
+                            value={ratings[currentAnswerIndex]}
+                            onChange={(val: number | number[]) => {
+                              const value = Array.isArray(val) ? val[0] : val;
+                              const newRatings = [...ratings];
+                              newRatings[currentAnswerIndex] = value;
+                              setRatings(newRatings);
+                            }}
+                          />
+                          <div className="mt-2 space-y-2">
+                            <span className="font-semibold">Объясните свой выбор оценки</span>
+                            <Textarea
+                              className="mt-1"
+                              placeholder="Напишите, что вам понравилось или не понравилось в вопросе"
+                              rows={3}
+                              value={feedbackTexts[currentAnswerIndex]}
+                              onChange={(e) => {
+                                const txt = e.currentTarget.value;
+                                const newTexts = [...feedbackTexts];
+                                newTexts[currentAnswerIndex] = txt;
+                                setFeedbackTexts(newTexts);
+                              }}
+                            />
+                            <Button
+                              size="md"
+                              variant="flat"
+                              onPress={async () => {
+                                const questionId = questionsList[currentAnswerIndex].id;
+                                try {
+                                  const token = getToken("token");
+                                  await fetch(`${API_BASE_URL}/api/tests/${test?.id}/feedback`, {
+                                    method: 'POST',
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                      'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                      question_id: Number(questionId),
+                                      rating: ratings[currentAnswerIndex],
+                                      feedback_message: feedbackTexts[currentAnswerIndex],
+                                    }),
+                                  });
+                                  addToast({ title: t("tests.feedbackSent") || "Отзыв отправлен", color: "success" });
+                                } catch {
+                                  addToast({ title: t("tests.feedbackError") || "Ошибка при отправке отзыва", color: "danger" });
+                                }
+                                const subs = [...feedbackSubmitted];
+                                subs[currentAnswerIndex] = true;
+                                setFeedbackSubmitted(subs);
+                              }}
+                            >
+                              Отправить отзыв
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </>
                 );
               })()}
@@ -500,7 +632,23 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
               page={currentAnswerIndex + 1}
               size={isMobile ? "sm" : "lg"}
               total={questionsList.length}
-              onChange={(page) => setCurrentAnswerIndex(page - 1)}
+              onChange={(page) => {
+                const newIndex = page - 1;
+                setCurrentAnswerIndex(newIndex);
+                // reset feedback UI if no feedback text entered and not submitted
+                if (!feedbackSubmitted[newIndex] && feedbackTexts[newIndex] === '') {
+                  setFeedbackVisible(vis => {
+                    const newVis = [...vis];
+                    newVis[newIndex] = false;
+                    return newVis;
+                  });
+                  setRatings(rates => {
+                    const newRates = [...rates];
+                    newRates[newIndex] = 0;
+                    return newRates;
+                  });
+                }
+              }}
             />
           </div>
         )}

@@ -439,6 +439,8 @@
             "openPlaceholder": "Type your answer here...",
             "submitWarning": "If you do not press the Submit button, your answers will not be saved"
         },
+        "feedbackSent": "Feedback sent successfully",
+        "feedbackError": "Failed to send feedback",
         "questionForm": {
             "topicLabel": "Topic",
             "topicPlaceholder": "Select a topic",
