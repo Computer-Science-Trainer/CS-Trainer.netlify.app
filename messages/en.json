@@ -552,7 +552,8 @@
         "tabs": {
             "current": "Current questions",
             "proposed": "Proposed questions",
-            "settings": "Settings"
+            "settings": "Settings",
+            "feedback": "Feedback"
         },
         "table": {
             "proposedBy": "Proposed by",
@@ -580,6 +581,28 @@
             "fromEmail": "From Email",
             "googleClientId": "Google Client ID",
             "githubClientId": "GitHub Client ID"
+        },
+        "feedback": {
+            "table": {
+                "markRead": "Mark as read",
+                "createdAt": "Created at",
+                "questionId": "Question ID",
+                "comment": "Comment",
+                "rating": "Rate",
+                "view": "View"
+            },
+            "modal": {
+                "title": "Feedback for Question #{id}",
+                "questionTags": "Tags",
+                "questionOptions": "Options",
+                "questionCorrectAnswer": "Correct answer",
+                "question": "Question",
+                "userId": "User ID",
+                "rating": "Rating",
+                "comment": "Comment",
+                "createdAt": "Created at",
+                "close": "Close"
+            }
         }
     },
     "about": {

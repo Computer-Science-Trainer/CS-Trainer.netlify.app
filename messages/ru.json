@@ -552,7 +552,8 @@
         "tabs": {
             "current": "Текущие вопросы",
             "proposed": "Предложенные вопросы",
-            "settings": "Настройки"
+            "settings": "Настройки",
+            "feedback": "Отзывы"
         },
         "table": {
             "proposedBy": "Автор предложения",
@@ -580,6 +581,28 @@
             "fromEmail": "Email отправителя",
             "googleClientId": "ID клиента Google",
             "githubClientId": "ID клиента GitHub"
+        },
+        "feedback": {
+            "table": {
+                "markRead": "Прочитано",
+                "createdAt": "Создано",
+                "questionId": "ID вопроса",
+                "comment": "Комментарий",
+                "rating": "Оценка",
+                "view": "Просмотр"
+            },
+            "modal": {
+                "title": "Отзыв по вопросу №{id}",
+                "questionTags": "Тэги",
+                "questionOptions": "Варианты ответа",
+                "questionCorrectAnswer": "Правильный ответ",
+                "question": "Вопрос",
+                "userId": "ID пользователя",
+                "rating": "Оценка",
+                "comment": "Комментарий",
+                "createdAt": "Создано",
+                "close": "Закрыть"
+            }
         }
     },
     "about": {
