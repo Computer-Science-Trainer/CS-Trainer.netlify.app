@@ -17,7 +17,7 @@ import {
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
-import { makeApiRequest, getToken, API_BASE_URL } from "../config/api";
+import { makeApiRequest } from "../config/api";
 
 // define question detail type
 interface QuestionDetail {
@@ -544,15 +544,12 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                         <>
                           <Slider
                             className="max-w-md"
-                            color={
-                              feedbackState[currentAnswerIndex].rating === 0
-                                ? "primary"
-                                : feedbackState[currentAnswerIndex].rating >= 4
-                                ? "success"
-                                : feedbackState[currentAnswerIndex].rating === 3
-                                ? "warning"
-                                : "danger"
-                            }
+                            color={(() => {
+                              const rating = feedbackState[currentAnswerIndex].rating;
+                              if (rating >= 4) return "success";
+                              if (rating === 3) return "warning";
+                              return "danger";
+                            })()}
                             label="Оцените вопрос"
                             minValue={1}
                             maxValue={5}
@@ -561,7 +558,10 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                             step={1}
                             value={feedbackState[currentAnswerIndex].rating}
                             onChange={(val: number | number[]) => {
-                              updateFeedback(currentAnswerIndex, { rating: Array.isArray(val) ? val[0] : val });
+                              updateFeedback(
+                                currentAnswerIndex,
+                                { rating: Array.isArray(val) ? val[0] : val }
+                              );
                             }}
                           />
                           <div className="mt-2 space-y-2">

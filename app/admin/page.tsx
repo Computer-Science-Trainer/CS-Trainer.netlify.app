@@ -11,7 +11,6 @@ import {
   TableCell,
   Tabs,
   Tab,
-  Checkbox,
   Pagination,
   Modal,
   ModalContent,
@@ -301,21 +300,10 @@ export default function AdminPage() {
     [handleAction],
   );
 
-  const handleMarkRead = useCallback((id: number) => {
-    setFeedbacks((prev) => {
-      const idx = prev.findIndex((f) => f.question.id === id);
-      if (idx < 0) return prev;
-      const item = { ...prev[idx], isRead: !prev[idx].isRead };
-      const others = prev.filter((_, i) => i !== idx);
-      // move read to bottom, unread to top
-      return item.isRead ? [...others, item] : [item, ...others];
-    });
-  }, []);
   // Show modal with the feedback item data
   const handleView = useCallback((item: FeedbackItem) => {
     setSelectedFeedback({ ...item, isRead: true });
-    handleMarkRead(item.question.id);
-  }, [handleMarkRead]);
+  }, []);
 
   useEffect(() => {
     if (authLoading || isAdminChecked) return;
