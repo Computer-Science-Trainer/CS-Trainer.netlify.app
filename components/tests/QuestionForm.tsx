@@ -114,9 +114,9 @@ function SortableChoice({
         className="flex-1 max-w-md"
         isDisabled={isDisabled}
         isInvalid={isInvalid}
+        maxLength={128}
         name="options"
         placeholder="Answer option"
-        maxLength={128}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onClick={(e) => e.stopPropagation()}
@@ -189,11 +189,13 @@ export default function QuestionForm({
 
       if (initialData.question_type === "single-choice") {
         const idx = initialData.options?.indexOf(corrArr[0]) ?? -1;
+
         setSingleAnswerIndex(idx >= 0 ? idx : null);
       } else if (initialData.question_type === "multiple-choice") {
         const idxs = (initialData.options || [])
           .map((opt: string, i: number) => (corrArr.includes(opt) ? i : -1))
           .filter((i: number) => i >= 0);
+
         setMultipleAnswerIndices(idxs);
       } else if (initialData.question_type === "open-ended") {
         setOpenEndedAnswer(corrArr[0] || "");
@@ -362,6 +364,7 @@ export default function QuestionForm({
     setValidationErrors({});
     setSubmitting(true);
     let correctAnswers: string[] = [];
+
     if (questionType === "single-choice" && singleAnswerIndex !== null) {
       correctAnswers = [answerOptions[singleAnswerIndex]];
     } else if (questionType === "multiple-choice") {
@@ -592,8 +595,8 @@ export default function QuestionForm({
                           (answerOptions.filter((x) => x.trim()).length < 2 ||
                             !o.trim())
                         }
-                        name="options"
                         maxLength={128}
+                        name="options"
                         placeholder={`Option ${i + 1}`}
                         value={o}
                         onChange={(e) => handleUpdateOption(i, e.target.value)}
@@ -679,16 +682,19 @@ export default function QuestionForm({
           {questionType === "open-ended" && (
             <Textarea
               isRequired
-              maxLength={128}
               errorMessage={validationErrors.correctAnswer}
               label={tForm("sampleAnswerLabel")}
               labelPlacement="outside"
+              maxLength={128}
               placeholder={tForm("sampleAnswerPlaceholder")}
               value={openEndedAnswer}
               onChange={(e) => {
                 setOpenEndedAnswer(e.target.value);
                 if (validationErrors.correctAnswer) {
-                  setValidationErrors((prev) => ({ ...prev, correctAnswer: undefined }));
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    correctAnswer: undefined,
+                  }));
                 }
               }}
             />
@@ -755,9 +761,9 @@ export default function QuestionForm({
             <Button
               className="flex-1"
               color="primary"
+              isDisabled={!termsAccepted}
               isLoading={submitting}
               type="submit"
-              isDisabled={!termsAccepted}
             >
               {isEditMode
                 ? tForm("submitButton.save")

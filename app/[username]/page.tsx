@@ -368,7 +368,9 @@ export default function ProfilePage() {
                       />
                       <div className="flex justify-between text-default-500">
                         <span>{t("profile.avgResultLabel")}</span>
-                        <span className="text-primary">{stats.avg.toFixed(2)}%</span>
+                        <span className="text-primary">
+                          {stats.avg.toFixed(2)}%
+                        </span>
                       </div>
                       <div className="flex justify-between text-default-500">
                         <span>{t("profile.fundamentalsScoreLabel")}</span>
