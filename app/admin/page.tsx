@@ -459,7 +459,6 @@ export default function AdminPage() {
         }
           >
         <TableHeader>
-          <TableColumn>{t("admin.feedback.table.markRead")}</TableColumn>
           <TableColumn>{t("admin.feedback.table.createdAt")}</TableColumn>
           <TableColumn>{t("admin.feedback.table.questionId")}</TableColumn>
           <TableColumn>{t("admin.feedback.table.comment")}</TableColumn>
@@ -469,29 +468,23 @@ export default function AdminPage() {
         <TableBody>
           {displayedFeedbacks.map((f) => (
             <TableRow key={`${f.question.id}-${f.user_id}-${f.created_at}`}>
-          <TableCell>
-            <Checkbox
-              checked={f.isRead}
-              onChange={() => handleMarkRead(f.question.id)}
-            />
-          </TableCell>
-          <TableCell>
-            {new Date(f.created_at).toLocaleString()}
-          </TableCell>
-          <TableCell>{f.question.id}</TableCell>
-          <TableCell>{f.feedback_message}</TableCell>
-          <TableCell>{f.rating}</TableCell>
-          <TableCell>
-            <Button
-              isIconOnly
-              aria-label="view"
-              size="sm"
-              variant="flat"
-              onPress={() => handleView(f)}
-            >
-              <HugeiconsIcon icon={ViewIcon} size={20} />
-            </Button>
-          </TableCell>
+              <TableCell>
+                {new Date(f.created_at).toLocaleString()}
+              </TableCell>
+              <TableCell>{f.question.id}</TableCell>
+              <TableCell>{f.feedback_message}</TableCell>
+              <TableCell>{f.rating}</TableCell>
+              <TableCell>
+                <Button
+                  isIconOnly
+                  aria-label="view"
+                  size="sm"
+                  variant="flat"
+                  onPress={() => handleView(f)}
+                >
+                  <HugeiconsIcon icon={ViewIcon} size={20} />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

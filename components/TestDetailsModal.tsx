@@ -76,10 +76,9 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   const [currentAnswerIndex, setCurrentAnswerIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [ratings, setRatings] = useState<number[]>([]);
-  const [feedbackVisible, setFeedbackVisible] = useState<boolean[]>([]);
-  const [feedbackTexts, setFeedbackTexts] = useState<string[]>([]);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean[]>([]);
+  const [feedbackState, setFeedbackState] = useState<
+    { rating: number; visible: boolean; text: string; submitted: boolean }[]
+  >([]);
 
   useEffect(() => {
     if (!showReviewButton) return;
@@ -87,7 +86,6 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
       setReviewMode(false);
       setLoadingAnswers(true);
       setLoadingQuestions(true);
-      // fetch answers and questions in parallel
       Promise.all([
         makeApiRequest(`api/tests/${test.id}/answers`, "GET"),
         makeApiRequest(`api/tests/${test.id}`, "GET"),
@@ -96,10 +94,14 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
           setAnswersData(ansData);
           setQuestionsList(testDetail.questions || []);
           const count = (testDetail.questions || []).length;
-          setRatings(Array(count).fill(0));
-          setFeedbackVisible(Array(count).fill(false));
-          setFeedbackTexts(Array(count).fill(''));
-          setFeedbackSubmitted(Array(count).fill(false));
+          setFeedbackState(
+            Array.from({ length: count }, () => ({
+              rating: 1,
+              visible: false,
+              text: '',
+              submitted: false,
+            }))
+          );
           setCurrentAnswerIndex(0);
         })
         .catch(() => {
@@ -129,39 +131,39 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
 
   // submit all feedback at once (send proposals)
   const submitAllFeedback = async () => {
-    const proposalsPayload = {
-      proposals: questionsList.map((q, idx) => {
-        const detail = answersData?.answers.find(a => a.question_id === Number(q.id));
-        return {
-          question_text: q.question_text,
-          question_type: q.question_type,
-          difficulty: detail?.difficulty || '',
-          options: q.options || [],
-          correct_answer: detail?.correct_answer || [],
-          topic_code: test?.section || '',
-        };
-      }).filter((_, idx) => feedbackVisible[idx] && !feedbackSubmitted[idx]),
-    };
+    // build FeedbackIn[] matching backend model
+    const payload = feedbackState
+      .map((item, idx) => ({
+        question_id: Number(questionsList[idx].id),
+        rating: item.rating,
+        feedback_message: item.text || undefined,
+      }))
+      .filter((_, idx) => feedbackState[idx].visible && !feedbackState[idx].submitted);
     try {
-      if (test) {
-        const token = getToken("token");
-        await fetch(`${API_BASE_URL}/api/tests/${test.id}/feedback`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(proposalsPayload),
-        });
+      if (test && payload.length) {
+        await makeApiRequest(`api/tests/${test.id}/feedback`, 'POST', payload);
       }
-    } catch {
-      // TODO: обработать ошибку
+    } catch (error) {
+      addToast({
+        title: t("tests.feedbackSubmissionErrorTitle"),
+        description: t("tests.feedbackSubmissionErrorDescription"),
+        color: "danger",
+      });
     }
-    setFeedbackSubmitted(feedbackSubmitted.map(() => true));
+    // mark all as submitted
+    setFeedbackState(state => state.map(item => ({ ...item, submitted: true })));
   };
 
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
+
+  // helper to update a single entry
+  const updateFeedback = (
+    idx: number,
+    changes: Partial<{ rating: number; visible: boolean; text: string; submitted: boolean }>
+  ) => setFeedbackState(state =>
+    state.map((item, i) => i === idx ? { ...item, ...changes } : item)
+  );
 
   return (
     <Modal
@@ -532,26 +534,22 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                     )}
                     <div className="mt-6">
                       {/* Button to show feedback slider */}
-                      {!feedbackVisible[currentAnswerIndex] && !feedbackSubmitted[currentAnswerIndex] && (
-                        <Button size="md" variant="flat" onPress={() => {
-                          const vis = [...feedbackVisible];
-                          vis[currentAnswerIndex] = true;
-                          setFeedbackVisible(vis);
-                        }}>
+                      {!feedbackState[currentAnswerIndex].visible && !feedbackState[currentAnswerIndex].submitted && (
+                        <Button size="md" variant="flat" onPress={() => updateFeedback(currentAnswerIndex, { visible: true })}>
                           Оставить отзыв о вопросе
                         </Button>
                       )}
                       {/* Feedback slider and text feedback */}
-                      {feedbackVisible[currentAnswerIndex] && !feedbackSubmitted[currentAnswerIndex] && (
+                      {feedbackState[currentAnswerIndex].visible && !feedbackState[currentAnswerIndex].submitted && (
                         <>
                           <Slider
                             className="max-w-md"
                             color={
-                              ratings[currentAnswerIndex] === 0
+                              feedbackState[currentAnswerIndex].rating === 0
                                 ? "primary"
-                                : ratings[currentAnswerIndex] >= 4
+                                : feedbackState[currentAnswerIndex].rating >= 4
                                 ? "success"
-                                : ratings[currentAnswerIndex] === 3
+                                : feedbackState[currentAnswerIndex].rating === 3
                                 ? "warning"
                                 : "danger"
                             }
@@ -561,12 +559,9 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                             showSteps
                             size="md"
                             step={1}
-                            value={ratings[currentAnswerIndex]}
+                            value={feedbackState[currentAnswerIndex].rating}
                             onChange={(val: number | number[]) => {
-                              const value = Array.isArray(val) ? val[0] : val;
-                              const newRatings = [...ratings];
-                              newRatings[currentAnswerIndex] = value;
-                              setRatings(newRatings);
+                              updateFeedback(currentAnswerIndex, { rating: Array.isArray(val) ? val[0] : val });
                             }}
                           />
                           <div className="mt-2 space-y-2">
@@ -575,40 +570,32 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                               className="mt-1"
                               placeholder="Напишите, что вам понравилось или не понравилось в вопросе"
                               rows={3}
-                              value={feedbackTexts[currentAnswerIndex]}
-                              onChange={(e) => {
-                                const txt = e.currentTarget.value;
-                                const newTexts = [...feedbackTexts];
-                                newTexts[currentAnswerIndex] = txt;
-                                setFeedbackTexts(newTexts);
-                              }}
+                              value={feedbackState[currentAnswerIndex].text}
+                              onChange={(e) =>
+                                updateFeedback(currentAnswerIndex, { text: e.currentTarget.value })
+                              }
                             />
                             <Button
                               size="md"
                               variant="flat"
+                              isDisabled={feedbackState[currentAnswerIndex].text.trim().length === 0}
                               onPress={async () => {
                                 const questionId = questionsList[currentAnswerIndex].id;
                                 try {
-                                  const token = getToken("token");
-                                  await fetch(`${API_BASE_URL}/api/tests/${test?.id}/feedback`, {
-                                    method: 'POST',
-                                    headers: {
-                                      Authorization: `Bearer ${token}`,
-                                      'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
+                                  await makeApiRequest(
+                                    `api/tests/${test?.id}/feedback`,
+                                    'POST',
+                                    {
                                       question_id: Number(questionId),
-                                      rating: ratings[currentAnswerIndex],
-                                      feedback_message: feedbackTexts[currentAnswerIndex],
-                                    }),
-                                  });
-                                  addToast({ title: t("tests.feedbackSent") || "Отзыв отправлен", color: "success" });
+                                      rating: feedbackState[currentAnswerIndex].rating,
+                                      feedback_message: feedbackState[currentAnswerIndex].text,
+                                    }
+                                  );
+                                  addToast({ title: t("tests.feedbackSent"), color: "success" });
                                 } catch {
-                                  addToast({ title: t("tests.feedbackError") || "Ошибка при отправке отзыва", color: "danger" });
+                                  addToast({ title: t("tests.feedbackError"), color: "danger" });
                                 }
-                                const subs = [...feedbackSubmitted];
-                                subs[currentAnswerIndex] = true;
-                                setFeedbackSubmitted(subs);
+                                updateFeedback(currentAnswerIndex, { submitted: true });
                               }}
                             >
                               Отправить отзыв
@@ -635,18 +622,15 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
               onChange={(page) => {
                 const newIndex = page - 1;
                 setCurrentAnswerIndex(newIndex);
-                // reset feedback UI if no feedback text entered and not submitted
-                if (!feedbackSubmitted[newIndex] && feedbackTexts[newIndex] === '') {
-                  setFeedbackVisible(vis => {
-                    const newVis = [...vis];
-                    newVis[newIndex] = false;
-                    return newVis;
-                  });
-                  setRatings(rates => {
-                    const newRates = [...rates];
-                    newRates[newIndex] = 0;
-                    return newRates;
-                  });
+                // сбрасываем видимость и возвращаем рейтинг к 1
+                if (!feedbackState[newIndex].submitted && feedbackState[newIndex].text === '') {
+                  setFeedbackState(state =>
+                    state.map((item, i) =>
+                      i === newIndex
+                        ? { ...item, visible: false, rating: 1 }
+                        : item
+                    )
+                  );
                 }
               }}
             />

@@ -537,8 +537,10 @@
             "openPlaceholder": "Введите ваш ответ здесь...",
             "submitWarning": "Если вы не нажмёте кнопку Отправить, ваши ответы не сохранятся"
           },
-          "feedbackSent": "Отзыв успешно отправлен",
-          "feedbackError": "Не удалось отправить отзыв"
+        "feedbackSent": "Отзыв успешно отправлен",
+        "feedbackError": "Не удалось отправить отзыв",
+        "feedbackSubmissionErrorTitle": "Ошибка отправки отзыва",
+        "feedbackSubmissionErrorDescription": "Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже."
     },
     "notFound": {
         "title": "404",

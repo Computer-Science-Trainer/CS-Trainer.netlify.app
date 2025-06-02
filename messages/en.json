@@ -430,17 +430,6 @@
             "prolog_logical_programming_languages": "8.2 Prolog logical programming languages",
             "lisp_afp_functional_programming_languages": "8.3 LISP AFP functional programming languages"
         },
-        "runner": {
-            "questionOf": "Question {current} of {total}",
-            "timeLeft": "Time left: {time}",
-            "prev": "Previous",
-            "next": "Next",
-            "submit": "Submit",
-            "openPlaceholder": "Type your answer here...",
-            "submitWarning": "If you do not press the Submit button, your answers will not be saved"
-        },
-        "feedbackSent": "Feedback sent successfully",
-        "feedbackError": "Failed to send feedback",
         "questionForm": {
             "topicLabel": "Topic",
             "topicPlaceholder": "Select a topic",
@@ -538,7 +527,20 @@
         },
         "modal": {
             "close": "Close"
-        }
+        },
+        "runner": {
+            "questionOf": "Question {current} of {total}",
+            "timeLeft": "Time left: {time}",
+            "prev": "Previous",
+            "next": "Next",
+            "submit": "Submit",
+            "openPlaceholder": "Type your answer here...",
+            "submitWarning": "If you do not press the Submit button, your answers will not be saved"
+        },
+        "feedbackSent": "Feedback sent successfully",
+        "feedbackError": "Failed to send feedback",
+        "feedbackSubmissionErrorTitle": "Error submitting feedback",
+        "feedbackSubmissionErrorDescription": "An error occurred while submitting feedback. Please try again later."
     },
     "notFound": {
         "title": "404",
