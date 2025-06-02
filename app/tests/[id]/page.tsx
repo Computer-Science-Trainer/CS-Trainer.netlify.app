@@ -141,13 +141,16 @@ export default function TestRunnerPage() {
     const id = window.setInterval(() => {
       const now = Date.now();
       const left = Math.max(0, Math.floor((endTime - now) / 1000));
+
       setTimeLeft(left);
       if (left <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
         router.push("/404");
       }
     }, 1000);
+
     timerRef.current = id;
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -221,6 +224,7 @@ export default function TestRunnerPage() {
       const formattedAnswers = questions.map((q, idx) => {
         const raw = answers[idx];
         const answerArray = Array.isArray(raw) ? raw : [String(raw ?? "")];
+
         return {
           question_id: q.id,
           answer: answerArray,
@@ -260,12 +264,6 @@ export default function TestRunnerPage() {
   const question = questions[currentIndex];
   const total = questions.length;
   const isLast = currentIndex === total - 1;
-
-  // локальная проверка для текущего open-ended
-  const currentAnswer = (answers[currentIndex] as string[])[0] || "";
-  const currentTooLong =
-    question?.question_type === "open-ended" &&
-    currentAnswer.length > 256;
 
   // глобальная проверка: есть ли хоть один open-ended ответ длиннее 256
   const isTooLong = questions
@@ -401,8 +399,8 @@ export default function TestRunnerPage() {
             <>
               <Textarea
                 className="mt-2 p-4 rounded-lg border-2 border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:border-blue-400 dark:focus:border-blue-400 transition-all shadow-sm min-h-[120px] text-base"
-                placeholder={t("tests.runner.openPlaceholder")}
                 maxLength={256}
+                placeholder={t("tests.runner.openPlaceholder")}
                 value={(answers[currentIndex] as string[])[0] || ""}
                 onChange={(e) => updateAnswer([e.target.value])}
               />
@@ -435,12 +433,12 @@ export default function TestRunnerPage() {
               </SortableContext>
             </DndContext>
           )}
-        {isTooLong && (
+          {isTooLong && (
             <div className="mt-2 flex justify-center gap-2 text-sm text-red-700">
-              <HugeiconsIcon icon={Alert01Icon} className="h-5 w-5" />
+              <HugeiconsIcon className="h-5 w-5" icon={Alert01Icon} />
               <span>Есть слишком длинный ответ в одном из вопросов.</span>
             </div>
-        )}
+          )}
         </CardBody>
         <CardFooter className="bg-gray-50 dark:bg-zinc-800 p-6 pt-4 border-t border-gray-200 dark:border-zinc-700 animate-fade-in">
           {/* Mobile layout */}
@@ -458,18 +456,23 @@ export default function TestRunnerPage() {
                 isDisabled={currentIndex === 0}
                 onPress={() => setCurrentIndex((idx) => Math.max(idx - 1, 0))}
               >
-                <HugeiconsIcon className="text-default-300" icon={ArrowLeft01Icon} />
+                <HugeiconsIcon
+                  className="text-default-300"
+                  icon={ArrowLeft01Icon}
+                />
                 {t("tests.runner.prev")}
               </Button>
               <Button
                 className={`px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transition-all ${
-                  isLast && isTooLong ? "opacity-50 cursor-not-allowed" : "hover:from-blue-600 hover:to-purple-600"
+                  isLast && isTooLong
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:from-blue-600 hover:to-purple-600"
                 }`}
                 color="primary"
-                id="submit-btn"
-                isLoading={isLast && isSubmitting}
                 disabled={isLast && isTooLong}
+                id="submit-btn"
                 isDisabled={isLast && isTooLong}
+                isLoading={isLast && isSubmitting}
                 onPress={() => {
                   if (isLast && isTooLong) return;
                   isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1);
@@ -477,9 +480,15 @@ export default function TestRunnerPage() {
               >
                 {isLast ? t("tests.runner.submit") : t("tests.runner.next")}
                 {isLast ? (
-                  <HugeiconsIcon className="text-default-300" icon={CheckListIcon} />
+                  <HugeiconsIcon
+                    className="text-default-300"
+                    icon={CheckListIcon}
+                  />
                 ) : (
-                  <HugeiconsIcon className="text-default-300" icon={ArrowRight01Icon} />
+                  <HugeiconsIcon
+                    className="text-default-300"
+                    icon={ArrowRight01Icon}
+                  />
                 )}
               </Button>
             </div>
@@ -491,7 +500,10 @@ export default function TestRunnerPage() {
               isDisabled={currentIndex === 0}
               onPress={() => setCurrentIndex((idx) => Math.max(idx - 1, 0))}
             >
-              <HugeiconsIcon className="text-default-300" icon={ArrowLeft01Icon} />
+              <HugeiconsIcon
+                className="text-default-300"
+                icon={ArrowLeft01Icon}
+              />
               {t("tests.runner.prev")}
             </Button>
             <Pagination
@@ -503,13 +515,15 @@ export default function TestRunnerPage() {
             />
             <Button
               className={`px-6 py-2 rounded-lg text-base font-semibold flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transition-all ${
-                isLast && isTooLong ? "opacity-50 cursor-not-allowed" : "hover:from-blue-600 hover:to-purple-600"
+                isLast && isTooLong
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:from-blue-600 hover:to-purple-600"
               }`}
               color="primary"
-              id="submit-btn"
-              isLoading={isLast && isSubmitting}
               disabled={isLast && isTooLong}
+              id="submit-btn"
               isDisabled={isLast && isTooLong}
+              isLoading={isLast && isSubmitting}
               onPress={() => {
                 if (isLast && isTooLong) return;
                 isLast ? handleSubmit() : setCurrentIndex((idx) => idx + 1);
@@ -517,9 +531,15 @@ export default function TestRunnerPage() {
             >
               {isLast ? t("tests.runner.submit") : t("tests.runner.next")}
               {isLast ? (
-                <HugeiconsIcon className="text-default-300" icon={CheckListIcon} />
+                <HugeiconsIcon
+                  className="text-default-300"
+                  icon={CheckListIcon}
+                />
               ) : (
-                <HugeiconsIcon className="text-default-300" icon={ArrowRight01Icon} />
+                <HugeiconsIcon
+                  className="text-default-300"
+                  icon={ArrowRight01Icon}
+                />
               )}
             </Button>
           </div>

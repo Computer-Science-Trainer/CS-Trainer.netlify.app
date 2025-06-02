@@ -11,9 +11,23 @@ import {
   TableCell,
   Tabs,
   Tab,
+  Pagination,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Divider,
+  Chip,
+  Slider,
+  Textarea,
 } from "@heroui/react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { CheckmarkSquare01Icon, Edit02Icon } from "@hugeicons/core-free-icons";
+import {
+  CheckmarkSquare01Icon,
+  Edit02Icon,
+  ViewIcon,
+} from "@hugeicons/core-free-icons";
 import { useRouter } from "next/navigation";
 import { Link } from "@heroui/link";
 import { useTranslations } from "next-intl";
@@ -29,6 +43,24 @@ interface Question {
   title: string;
   content: string;
   [key: string]: any;
+}
+
+// API returns nested question and feedback metadata
+interface FeedbackItem {
+  question: {
+    id: number;
+    question_text: string;
+    question_type: string;
+    difficulty: string;
+    options: string[];
+    correct_answer: string[];
+    topic_code: string;
+    proposer_id: number;
+  };
+  user_id: number;
+  rating: number;
+  feedback_message: string;
+  created_at: string;
 }
 
 function QuestionTable({
@@ -159,20 +191,49 @@ export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const t = useTranslations();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+
+    onResize();
+    window.addEventListener("resize", onResize);
+
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const [isAdminChecked, setIsAdminChecked] = useState(false);
-  const [tab, setTab] = useState<"current" | "proposed" | "settings">(
-    "current",
-  );
+  const [tab, setTab] = useState<
+    "current" | "proposed" | "settings" | "feedback"
+  >("current");
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [proposedQuestions, setProposedQuestions] = useState<Question[]>([]);
   const [settings, setSettings] = useState<any>(null);
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackItem | null>(
+    null,
+  );
+  const open = !!selectedFeedback;
+  const onClose = () => setSelectedFeedback(null);
   const [loadingState, setLoadingState] = useState<{
     loading: boolean;
     deletingId?: string;
     approvingId?: string;
     rejectingId?: string;
   }>({ loading: false });
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const rowsPerPage = 10;
+
+  const feedbackPages = React.useMemo(() => {
+    return feedbacks.length ? Math.ceil(feedbacks.length / rowsPerPage) : 0;
+  }, [feedbacks, rowsPerPage]);
+
+  const displayedFeedbacks = React.useMemo(() => {
+    const start = (feedbackPage - 1) * rowsPerPage;
+
+    return feedbacks.slice(start, start + rowsPerPage);
+  }, [feedbacks, feedbackPage, rowsPerPage]);
 
   // ref to scroll to the question table
   const tableRef = useRef<HTMLDivElement>(null);
@@ -199,6 +260,11 @@ export default function AdminPage() {
         const data = await makeApiRequest("api/admin/settings", "GET");
 
         setSettings(data);
+      }
+      if (tab === "feedback") {
+        const data = await makeApiRequest("api/admin/feedback", "GET");
+
+        setFeedbacks(data || []);
       }
     } finally {
       setLoadingState((s) => ({ ...s, loading: false }));
@@ -244,6 +310,11 @@ export default function AdminPage() {
       handleAction(id, "reject", `api/admin/proposed/${id}/reject`, "POST"),
     [handleAction],
   );
+
+  // Show modal with the feedback item data
+  const handleView = useCallback((item: FeedbackItem) => {
+    setSelectedFeedback(item);
+  }, []);
 
   useEffect(() => {
     if (authLoading || isAdminChecked) return;
@@ -301,7 +372,7 @@ export default function AdminPage() {
       selectedKey={tab}
       variant="light"
       onSelectionChange={(key) =>
-        setTab(key as "current" | "proposed" | "settings")
+        setTab(key as "current" | "proposed" | "settings" | "feedback")
       }
     >
       <Tab
@@ -358,6 +429,203 @@ export default function AdminPage() {
             onEdit={handleEditClick}
             onReject={handleReject}
           />
+        </div>
+      </Tab>
+      <Tab
+        key="feedback"
+        className="w-full justify-start"
+        title={t("admin.tabs.feedback") || "Feedback"}
+      >
+        <div className="p-4 w-full">
+          <Table
+            isStriped
+            bottomContent={
+              feedbackPages > 1 ? (
+                <div className="flex w-full justify-center">
+                  <Pagination
+                    isCompact
+                    showControls
+                    showShadow
+                    color="primary"
+                    page={feedbackPage}
+                    total={feedbackPages}
+                    onChange={(page) => setFeedbackPage(page)}
+                  />
+                </div>
+              ) : null
+            }
+            className="w-full"
+            shadow="none"
+          >
+            <TableHeader>
+              <TableColumn>{t("admin.feedback.table.createdAt")}</TableColumn>
+              <TableColumn>{t("admin.feedback.table.questionId")}</TableColumn>
+              <TableColumn>{t("admin.feedback.table.comment")}</TableColumn>
+              <TableColumn>{t("admin.feedback.table.rating")}</TableColumn>
+              <TableColumn>{t("admin.feedback.table.view")}</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {displayedFeedbacks.map((f) => (
+                <TableRow key={`${f.question.id}-${f.user_id}-${f.created_at}`}>
+                  <TableCell>
+                    {new Date(f.created_at).toLocaleString()}
+                  </TableCell>
+                  <TableCell>{f.question.id}</TableCell>
+                  <TableCell>{f.feedback_message}</TableCell>
+                  <TableCell>{f.rating}</TableCell>
+                  <TableCell>
+                    <Button
+                      isIconOnly
+                      aria-label="view"
+                      size="sm"
+                      variant="flat"
+                      onPress={() => handleView(f)}
+                    >
+                      <HugeiconsIcon icon={ViewIcon} size={20} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <Modal
+            isOpen={open}
+            placement="center"
+            scrollBehavior="inside"
+            size={isMobile ? "full" : "lg"}
+            onOpenChange={onClose}
+          >
+            <ModalContent className="rounded-xl shadow-xl p-6">
+              <ModalHeader className="relative flex flex-col gap-2 text-2xl font-bold pb-4">
+                {t("admin.feedback.modal.title", {
+                  id: selectedFeedback?.question.id ?? "",
+                })}
+              </ModalHeader>
+              <Divider style={{ backgroundColor: "#c1c1c1" }} />
+              <ModalBody className="pt-2 px-6 pb-6">
+                <div>
+                  <div className="flex flex-col mb-2">
+                    <div className="flex flex-rows gap-4 mb-2">
+                      <span className="font-semibold">
+                        {t("admin.feedback.modal.questionTags") || "Тэги"}:
+                      </span>
+                    </div>
+                    <Chip>{selectedFeedback?.question.topic_code}</Chip>
+                  </div>
+                  <div className="flex flex-rows gap-4 mb-4">
+                    <Chip>{selectedFeedback?.question.difficulty}</Chip>
+                    <Chip>{selectedFeedback?.question.question_type}</Chip>
+                  </div>
+                  <div className="flex flex-col mb-4">
+                    <span className="font-semibold">
+                      {t("admin.feedback.modal.question")}:
+                    </span>
+                    <span>{selectedFeedback?.question.question_text}</span>
+                  </div>
+                  {/* Render answer display based on question type */}
+                  {selectedFeedback?.question.question_type ===
+                    "single-choice" ||
+                  selectedFeedback?.question.question_type ===
+                    "multiple-choice" ? (
+                    <div className="flex flex-col mb-4">
+                      <span className="font-semibold mb-1">
+                        {t("admin.feedback.modal.questionOptions")}:
+                      </span>
+                      <ul className="list-disc ml-6">
+                        {selectedFeedback.question.options.map((opt, idx) => (
+                          <li
+                            key={idx}
+                            className={
+                              selectedFeedback.question.correct_answer.includes(
+                                opt,
+                              )
+                                ? "text-green-600"
+                                : undefined
+                            }
+                          >
+                            {opt}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : selectedFeedback?.question.question_type ===
+                    "ordering" ? (
+                    <div className="flex flex-col mb-4">
+                      <span className="font-semibold mb-1">
+                        {t("admin.feedback.modal.questionCorrectAnswer")}:
+                      </span>
+                      <ol className="list-decimal ml-6">
+                        {selectedFeedback.question.correct_answer.map(
+                          (ans, idx) => (
+                            <li key={idx}>{ans}</li>
+                          ),
+                        )}
+                      </ol>
+                    </div>
+                  ) : selectedFeedback?.question.question_type ===
+                    "open-ended" ? (
+                    <div className="flex flex-col mb-4">
+                      <span className="font-semibold mb-1">
+                        {t("admin.feedback.modal.questionCorrectAnswer")}:
+                      </span>
+                      <Textarea
+                        readOnly
+                        placeholder={
+                          selectedFeedback.question.correct_answer[0] || ""
+                        }
+                      />
+                    </div>
+                  ) : null}
+                  <div className="flex flex-col mb-4">
+                    <span className="font-semibold">
+                      {t("admin.feedback.modal.userId")}:
+                    </span>
+                    <span>{selectedFeedback?.user_id}</span>
+                  </div>
+                  <div className="flex flex-col mb-4 sm:col-span-2">
+                    <span className="font-semibold">
+                      {t("admin.feedback.modal.rating")}:{" "}
+                      {selectedFeedback?.rating}
+                    </span>
+                    <Slider
+                      isDisabled
+                      showSteps
+                      className="max-w-md"
+                      color="foreground"
+                      defaultValue={selectedFeedback?.rating}
+                      maxValue={5}
+                      minValue={1}
+                      size="md"
+                      step={1}
+                    />
+                  </div>
+                  <div className="flex flex-col sm:col-span-2 mb-4">
+                    <span className="font-semibold mb-2">
+                      {t("admin.feedback.modal.comment")}:
+                    </span>
+                    <Textarea
+                      readOnly
+                      value={selectedFeedback?.feedback_message}
+                    />
+                  </div>
+                  <div className="flex flex-col sm:col-span-2">
+                    <span className="font-semibold">
+                      {t("admin.feedback.modal.createdAt")}:
+                    </span>
+                    <span>
+                      {selectedFeedback &&
+                        new Date(selectedFeedback.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </ModalBody>
+              <ModalFooter className="flex justify-end p-4">
+                <Button color="primary" onPress={onClose}>
+                  {t("admin.feedback.modal.close")}
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
         </div>
       </Tab>
       <Tab

@@ -535,8 +535,12 @@
             "next": "Следующий",
             "submit": "Ответить",
             "openPlaceholder": "Введите ваш ответ здесь...",
-            "submitWarning": "Если вы не нажмете на кнопку Ответить, то ответы не будут сохранены"
-        }
+            "submitWarning": "Если вы не нажмёте кнопку Отправить, ваши ответы не сохранятся"
+          },
+        "feedbackSent": "Отзыв успешно отправлен",
+        "feedbackError": "Не удалось отправить отзыв",
+        "feedbackSubmissionErrorTitle": "Ошибка отправки отзыва",
+        "feedbackSubmissionErrorDescription": "Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже."
     },
     "notFound": {
         "title": "404",
@@ -550,7 +554,8 @@
         "tabs": {
             "current": "Текущие вопросы",
             "proposed": "Предложенные вопросы",
-            "settings": "Настройки"
+            "settings": "Настройки",
+            "feedback": "Отзывы"
         },
         "table": {
             "proposedBy": "Автор предложения",
@@ -578,6 +583,28 @@
             "fromEmail": "Email отправителя",
             "googleClientId": "ID клиента Google",
             "githubClientId": "ID клиента GitHub"
+        },
+        "feedback": {
+            "table": {
+                "markRead": "Прочитано",
+                "createdAt": "Создано",
+                "questionId": "ID вопроса",
+                "comment": "Комментарий",
+                "rating": "Оценка",
+                "view": "Просмотр"
+            },
+            "modal": {
+                "title": "Отзыв по вопросу №{id}",
+                "questionTags": "Тэги",
+                "questionOptions": "Варианты ответа",
+                "questionCorrectAnswer": "Правильный ответ",
+                "question": "Вопрос",
+                "userId": "ID пользователя",
+                "rating": "Оценка",
+                "comment": "Комментарий",
+                "createdAt": "Создано",
+                "close": "Закрыть"
+            }
         }
     },
     "about": {

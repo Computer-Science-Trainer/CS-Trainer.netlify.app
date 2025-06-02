@@ -11,6 +11,8 @@ import {
   Divider,
   Pagination,
   Textarea,
+  Slider,
+  addToast,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
@@ -73,6 +75,9 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   const [currentAnswerIndex, setCurrentAnswerIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [feedbackState, setFeedbackState] = useState<
+    { rating: number; visible: boolean; text: string; submitted: boolean }[]
+  >([]);
 
   useEffect(() => {
     if (!showReviewButton) return;
@@ -80,7 +85,6 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
       setReviewMode(false);
       setLoadingAnswers(true);
       setLoadingQuestions(true);
-      // fetch answers and questions in parallel
       Promise.all([
         makeApiRequest(`api/tests/${test.id}/answers`, "GET"),
         makeApiRequest(`api/tests/${test.id}`, "GET"),
@@ -88,6 +92,16 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
         .then(([ansData, testDetail]: any) => {
           setAnswersData(ansData);
           setQuestionsList(testDetail.questions || []);
+          const count = (testDetail.questions || []).length;
+
+          setFeedbackState(
+            Array.from({ length: count }, () => ({
+              rating: 1,
+              visible: false,
+              text: "",
+              submitted: false,
+            })),
+          );
           setCurrentAnswerIndex(0);
         })
         .catch(() => {
@@ -115,8 +129,52 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
     (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
   );
 
+  // submit all feedback at once (send proposals)
+  const submitAllFeedback = async () => {
+    // build FeedbackIn[] matching backend model
+    const payload = feedbackState
+      .map((item, idx) => ({
+        question_id: Number(questionsList[idx].id),
+        rating: item.rating,
+        feedback_message: item.text || undefined,
+      }))
+      .filter(
+        (_, idx) => feedbackState[idx].visible && !feedbackState[idx].submitted,
+      );
+
+    try {
+      if (test && payload.length) {
+        await makeApiRequest(`api/tests/${test.id}/feedback`, "POST", payload);
+      }
+    } catch {
+      addToast({
+        title: t("tests.feedbackSubmissionErrorTitle"),
+        description: t("tests.feedbackSubmissionErrorDescription"),
+        color: "danger",
+      });
+    }
+    // mark all as submitted
+    setFeedbackState((state) =>
+      state.map((item) => ({ ...item, submitted: true })),
+    );
+  };
+
   if (!test) return null;
   const percent = test.total ? Math.round((test.passed / test.total) * 100) : 0;
+
+  // helper to update a single entry
+  const updateFeedback = (
+    idx: number,
+    changes: Partial<{
+      rating: number;
+      visible: boolean;
+      text: string;
+      submitted: boolean;
+    }>,
+  ) =>
+    setFeedbackState((state) =>
+      state.map((item, i) => (i === idx ? { ...item, ...changes } : item)),
+    );
 
   return (
     <Modal
@@ -159,15 +217,16 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                     {detailForCurrent?.is_correct ? "Верно" : "Неверно"}
                   </Chip>
                   <Chip color="default" variant="flat">
-                    <span className="font-semibold">Получено:</span> {detailForCurrent?.points_awarded}
+                    <span className="font-semibold">Получено:</span>{" "}
+                    {detailForCurrent?.points_awarded}
                   </Chip>
                   <Chip
                     color={
                       detailForCurrent?.difficulty === "easy"
                         ? "success"
                         : detailForCurrent?.difficulty === "medium"
-                        ? "secondary"
-                        : "danger"
+                          ? "secondary"
+                          : "danger"
                     }
                     variant="bordered"
                   >
@@ -190,7 +249,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                 </Chip>
                 <div className="ml-auto">
                   <Chip color="default" variant="flat">
-                    <span className="font-semibold">Получено:</span> {detailForCurrent?.points_awarded}
+                    <span className="font-semibold">Получено:</span>{" "}
+                    {detailForCurrent?.points_awarded}
                   </Chip>
                 </div>
                 <div>
@@ -199,8 +259,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                       detailForCurrent?.difficulty === "easy"
                         ? "success"
                         : detailForCurrent?.difficulty === "medium"
-                        ? "secondary"
-                        : "danger"
+                          ? "secondary"
+                          : "danger"
                     }
                     variant="bordered"
                   >
@@ -318,7 +378,9 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
               {/* current question slide */}
               {(() => {
                 const detail = answersData!.answers.find(
-                  (a) => a.question_id === Number(questionsList[currentAnswerIndex].id),
+                  (a) =>
+                    a.question_id ===
+                    Number(questionsList[currentAnswerIndex].id),
                 )!;
                 const qDetail = questionsList[currentAnswerIndex];
 
@@ -328,8 +390,12 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                     {qDetail.question_type === "ordering" ? (
                       <div className="mb-4">
                         {(() => {
-                          const correctSeq = detail.correct_answer.map((s) => s.trim());
-                          const userSeq = detail.user_answer.map((s) => s.trim());
+                          const correctSeq = detail.correct_answer.map((s) =>
+                            s.trim(),
+                          );
+                          const userSeq = detail.user_answer.map((s) =>
+                            s.trim(),
+                          );
 
                           return (
                             <>
@@ -397,7 +463,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                         {(() => {
                           const normalize = (s: string) =>
                             s.trim().toLowerCase().replace(/^"|"$/g, "");
-                          const correctAnswers = detail.correct_answer.map(normalize);
+                          const correctAnswers =
+                            detail.correct_answer.map(normalize);
                           const userAnswers = detail.user_answer.map(normalize);
 
                           return (
@@ -454,7 +521,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                             Правильный ответ:
                           </span>
                           <Textarea
-                            disabled
+                            readOnly
                             className="text-default-600 mt-2"
                             value={detail.correct_answer[0] || ""}
                           />
@@ -463,7 +530,7 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                           <div className="mt-4">
                             <span className="font-semibold">Ваш ответ:</span>
                             <Textarea
-                              disabled
+                              readOnly
                               className="mt-2"
                               placeholder="Ответ пуст"
                               value={detail.user_answer[0] || ""}
@@ -485,6 +552,111 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
                         )}
                       </div>
                     )}
+                    <div className="mt-6">
+                      {/* Button to show feedback slider */}
+                      {!feedbackState[currentAnswerIndex].visible &&
+                        !feedbackState[currentAnswerIndex].submitted && (
+                          <Button
+                            size="md"
+                            variant="flat"
+                            onPress={() =>
+                              updateFeedback(currentAnswerIndex, {
+                                visible: true,
+                              })
+                            }
+                          >
+                            Оставить отзыв о вопросе
+                          </Button>
+                        )}
+                      {/* Feedback slider and text feedback */}
+                      {feedbackState[currentAnswerIndex].visible &&
+                        !feedbackState[currentAnswerIndex].submitted && (
+                          <>
+                            <Slider
+                              showSteps
+                              className="max-w-md"
+                              color={(() => {
+                                const rating =
+                                  feedbackState[currentAnswerIndex].rating;
+
+                                if (rating >= 4) return "success";
+                                if (rating === 3) return "warning";
+
+                                return "danger";
+                              })()}
+                              label="Оцените вопрос"
+                              maxValue={5}
+                              minValue={1}
+                              size="md"
+                              step={1}
+                              value={feedbackState[currentAnswerIndex].rating}
+                              onChange={(val: number | number[]) => {
+                                updateFeedback(currentAnswerIndex, {
+                                  rating: Array.isArray(val) ? val[0] : val,
+                                });
+                              }}
+                            />
+                            <div className="mt-2 space-y-2">
+                              <span className="font-semibold">
+                                Объясните свой выбор оценки
+                              </span>
+                              <Textarea
+                                className="mt-1"
+                                placeholder="Напишите, что вам понравилось или не понравилось в вопросе"
+                                rows={3}
+                                value={feedbackState[currentAnswerIndex].text}
+                                onChange={(e) =>
+                                  updateFeedback(currentAnswerIndex, {
+                                    text: e.currentTarget.value,
+                                  })
+                                }
+                              />
+                              <Button
+                                isDisabled={
+                                  feedbackState[currentAnswerIndex].text.trim()
+                                    .length === 0
+                                }
+                                size="md"
+                                variant="flat"
+                                onPress={async () => {
+                                  const questionId =
+                                    questionsList[currentAnswerIndex].id;
+
+                                  try {
+                                    await makeApiRequest(
+                                      `api/tests/${test?.id}/feedback`,
+                                      "POST",
+                                      {
+                                        question_id: Number(questionId),
+                                        rating:
+                                          feedbackState[currentAnswerIndex]
+                                            .rating,
+                                        feedback_message:
+                                          feedbackState[currentAnswerIndex]
+                                            .text,
+                                      },
+                                    );
+                                    addToast({
+                                      title: t("tests.feedbackSent"),
+                                      color: "success",
+                                    });
+                                  } catch {
+                                    addToast({
+                                      title: t("tests.feedbackError"),
+                                      color: "danger",
+                                    });
+                                  }
+                                  updateFeedback(currentAnswerIndex, {
+                                    submitted: true,
+                                  });
+                                }}
+                              >
+                                Отправить отзыв
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                    </div>
                   </>
                 );
               })()}
@@ -495,12 +667,29 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
           <div className="flex justify-center items-center p-4">
             <Pagination
               showControls
-              isCompact={isMobile}
               className=""
+              isCompact={isMobile}
               page={currentAnswerIndex + 1}
               size={isMobile ? "sm" : "lg"}
               total={questionsList.length}
-              onChange={(page) => setCurrentAnswerIndex(page - 1)}
+              onChange={(page) => {
+                const newIndex = page - 1;
+
+                setCurrentAnswerIndex(newIndex);
+                // сбрасываем видимость и возвращаем рейтинг к 1
+                if (
+                  !feedbackState[newIndex].submitted &&
+                  feedbackState[newIndex].text === ""
+                ) {
+                  setFeedbackState((state) =>
+                    state.map((item, i) =>
+                      i === newIndex
+                        ? { ...item, visible: false, rating: 1 }
+                        : item,
+                    ),
+                  );
+                }
+              }}
             />
           </div>
         )}
