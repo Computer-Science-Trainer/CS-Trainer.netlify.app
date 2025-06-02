@@ -604,8 +604,8 @@ export default function AdminPage() {
                       {t("admin.feedback.modal.comment")}:
                     </span>
                     <Textarea
-                      isDisabled
-                      placeholder={selectedFeedback?.feedback_message}
+                      readOnly
+                      value={selectedFeedback?.feedback_message}
                     />
                   </div>
                   <div className="flex flex-col sm:col-span-2">
